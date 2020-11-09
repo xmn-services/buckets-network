@@ -1,0 +1,45 @@
+package mined
+
+import (
+	"github.com/xmn-services/buckets-network/domain/memory/links"
+	transfer_mined_link "github.com/xmn-services/buckets-network/domain/transfers/links/mined"
+	"github.com/xmn-services/buckets-network/libs/hash"
+)
+
+type repository struct {
+	builder        Builder
+	linkRepository links.Repository
+	trRepository   transfer_mined_link.Repository
+}
+
+func createRepository(
+	builder Builder,
+	linkRepository links.Repository,
+	trRepository transfer_mined_link.Repository,
+) Repository {
+	out := repository{
+		builder:        builder,
+		linkRepository: linkRepository,
+		trRepository:   trRepository,
+	}
+
+	return &out
+}
+
+// Retrieve retrieves a link by hash
+func (app *repository) Retrieve(hash hash.Hash) (Link, error) {
+	trLink, err := app.trRepository.Retrieve(hash)
+	if err != nil {
+		return nil, err
+	}
+
+	linkHash := trLink.Link()
+	subLink, err := app.linkRepository.Retrieve(linkHash)
+	if err != nil {
+		return nil, err
+	}
+
+	mining := trLink.Mining()
+	createdOn := trLink.CreatedOn()
+	return app.builder.Create().WithLink(subLink).WithMining(mining).CreatedOn(createdOn).Now()
+}
