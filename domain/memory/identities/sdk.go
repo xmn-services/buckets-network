@@ -3,8 +3,7 @@ package identities
 import (
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/identities/buckets"
-	"github.com/xmn-services/buckets-network/domain/memory/identities/buckets/bucket"
+	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -15,7 +14,6 @@ type Builder interface {
 	WithSeed(seed string) Builder
 	WithName(name string) Builder
 	WithRoot(root string) Builder
-	WithBuckets(buckets []bucket.Bucket) Builder
 	CreatedOn(createdOn time.Time) Builder
 	LastUpdatedOn(lastUpdatedOn time.Time) Builder
 	Now() (Identity, error)
@@ -27,7 +25,7 @@ type Identity interface {
 	Seed() string
 	Name() string
 	Root() string
-	Buckets() buckets.Buckets
+	Wallet() wallets.Wallet
 }
 
 // Repository represents an identity repository

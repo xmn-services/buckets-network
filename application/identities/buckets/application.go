@@ -10,7 +10,7 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
-	identity_buckets "github.com/xmn-services/buckets-network/domain/memory/identities/buckets/bucket"
+	identity_buckets "github.com/xmn-services/buckets-network/domain/memory/identities/wallets/buckets/bucket"
 	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -22,7 +22,6 @@ type application struct {
 	fileBuilder           files.Builder
 	bucketBuilder         buckets.Builder
 	bucketRepository      buckets.Repository
-	bucketService         buckets.Service
 	identityBucketBuilder identity_buckets.Builder
 	identityRepository    identities.Repository
 	identityService       identities.Service
@@ -40,7 +39,6 @@ func createApplication(
 	fileBuilder files.Builder,
 	bucketBuilder buckets.Builder,
 	bucketRepository buckets.Repository,
-	bucketService buckets.Service,
 	identityBucketBuilder identity_buckets.Builder,
 	identityRepository identities.Repository,
 	identityService identities.Service,
@@ -57,7 +55,6 @@ func createApplication(
 		fileBuilder:           fileBuilder,
 		bucketBuilder:         bucketBuilder,
 		bucketRepository:      bucketRepository,
-		bucketService:         bucketService,
 		identityBucketBuilder: identityBucketBuilder,
 		identityRepository:    identityRepository,
 		identityService:       identityService,
@@ -73,6 +70,11 @@ func createApplication(
 
 // Add adds the bucket path
 func (app *application) Add(absolutePath string) error {
+	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	if err != nil {
+		return err
+	}
+
 	files, err := app.dirToFiles(absolutePath, ".")
 	if err != nil {
 		return err
@@ -101,13 +103,7 @@ func (app *application) Add(absolutePath string) error {
 		return err
 	}
 
-	// retrieve identity:
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
-	if err != nil {
-		return err
-	}
-
-	err = identity.Buckets().Add(identityBucket)
+	err = identity.Wallet().Buckets().Add(identityBucket)
 	if err != nil {
 		return err
 	}
@@ -117,16 +113,15 @@ func (app *application) Add(absolutePath string) error {
 
 // Delete deletes a bucket from the given path
 func (app *application) Delete(absolutePath string) error {
-	// retrieve identity:
 	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
 	if err != nil {
 		return err
 	}
 
-	buckets := identity.Buckets().All()
+	buckets := identity.Wallet().Buckets().All()
 	for _, oneBucket := range buckets {
 		if oneBucket.AbsolutePath() == absolutePath {
-			err := identity.Buckets().Delete(oneBucket)
+			err := identity.Wallet().Buckets().Delete(oneBucket)
 			if err != nil {
 				return err
 			}

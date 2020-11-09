@@ -4,8 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/identities/buckets"
-	"github.com/xmn-services/buckets-network/domain/memory/identities/buckets/bucket"
+	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -13,11 +12,10 @@ import (
 type builder struct {
 	hashAdapter    hash.Adapter
 	mutableBuilder entities.MutableBuilder
-	bucketsBuilder buckets.Builder
+	walletFactory  wallets.Factory
 	seed           string
 	name           string
 	root           string
-	buckets        []bucket.Bucket
 	createdOn      *time.Time
 	lastUpdatedOn  *time.Time
 }
@@ -25,16 +23,15 @@ type builder struct {
 func createBuilder(
 	hashAdapter hash.Adapter,
 	mutableBuilder entities.MutableBuilder,
-	bucketsBuilder buckets.Builder,
+	walletFactory wallets.Factory,
 ) Builder {
 	out := builder{
 		hashAdapter:    hashAdapter,
 		mutableBuilder: mutableBuilder,
-		bucketsBuilder: bucketsBuilder,
+		walletFactory:  walletFactory,
 		seed:           "",
 		name:           "",
 		root:           "",
-		buckets:        nil,
 		createdOn:      nil,
 		lastUpdatedOn:  nil,
 	}
@@ -47,7 +44,7 @@ func (app *builder) Create() Builder {
 	return createBuilder(
 		app.hashAdapter,
 		app.mutableBuilder,
-		app.bucketsBuilder,
+		app.walletFactory,
 	)
 }
 
@@ -66,12 +63,6 @@ func (app *builder) WithName(name string) Builder {
 // WithRoot adds a root to the builder
 func (app *builder) WithRoot(root string) Builder {
 	app.root = root
-	return app
-}
-
-// WithBuckets add buckets to the builder
-func (app *builder) WithBuckets(buckets []bucket.Bucket) Builder {
-	app.buckets = buckets
 	return app
 }
 
@@ -107,12 +98,6 @@ func (app *builder) Now() (Identity, error) {
 		[]byte(app.root),
 	}
 
-	if app.buckets != nil {
-		for _, oneBucket := range app.buckets {
-			data = append(data, oneBucket.Hash().Bytes())
-		}
-	}
-
 	hsh, err := app.hashAdapter.FromMultiBytes(data)
 	if err != nil {
 		return nil, err
@@ -123,15 +108,6 @@ func (app *builder) Now() (Identity, error) {
 		return nil, err
 	}
 
-	bucketsBuilder := app.bucketsBuilder.Create()
-	if app.buckets != nil && len(app.buckets) > 0 {
-		bucketsBuilder.WithBuckets(app.buckets)
-	}
-
-	buckets, err := bucketsBuilder.Now()
-	if err != nil {
-		return nil, err
-	}
-
-	return createIdentity(mutable, app.seed, app.name, app.root, buckets), nil
+	wallet := app.walletFactory.Create()
+	return createIdentity(mutable, app.seed, app.name, app.root, wallet), nil
 }

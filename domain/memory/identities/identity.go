@@ -3,7 +3,7 @@ package identities
 import (
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/identities/buckets"
+	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -13,7 +13,7 @@ type identity struct {
 	seed    string
 	name    string
 	root    string
-	buckets buckets.Buckets
+	wallet  wallets.Wallet
 }
 
 func createIdentity(
@@ -21,9 +21,9 @@ func createIdentity(
 	seed string,
 	name string,
 	root string,
-	buckets buckets.Buckets,
+	wallet wallets.Wallet,
 ) Identity {
-	return createIdentityInternally(mutable, seed, name, root, buckets)
+	return createIdentityInternally(mutable, seed, name, root, wallet)
 }
 
 func createIdentityInternally(
@@ -31,14 +31,14 @@ func createIdentityInternally(
 	seed string,
 	name string,
 	root string,
-	buckets buckets.Buckets,
+	wallet wallets.Wallet,
 ) Identity {
 	out := identity{
 		mutable: mutable,
 		seed:    seed,
 		name:    name,
 		root:    root,
-		buckets: buckets,
+		wallet:  wallet,
 	}
 
 	return &out
@@ -64,9 +64,9 @@ func (obj *identity) Root() string {
 	return obj.root
 }
 
-// Buckets returns the buckets
-func (obj *identity) Buckets() buckets.Buckets {
-	return obj.buckets
+// Wallet returns the wallet
+func (obj *identity) Wallet() wallets.Wallet {
+	return obj.wallet
 }
 
 // LastUpdatedOn returns the lastUpdatedOn time

@@ -82,14 +82,14 @@ func (app *application) Start() error {
 			return err
 		}
 
-		followBuckets := identity.Buckets().Follows()
+		followBuckets := identity.Wallet().Follows().Requests()
 		for _, oneBucketHash := range followBuckets {
 			bucket, err := removeBucketApp.Retrieve(oneBucketHash)
 			if err != nil {
 				return err
 			}
 
-			err = identity.Buckets().Follow(bucket)
+			err = identity.Wallet().Follows().Add(bucket)
 			if err != nil {
 				return err
 			}
