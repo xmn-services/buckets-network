@@ -1,31 +1,32 @@
-package peers
+package daemons
 
 import (
 	"time"
 
-	"github.com/xmn-services/buckets-network/application/peers"
+	"github.com/xmn-services/buckets-network/application/identities/daemons"
+	peers_app "github.com/xmn-services/buckets-network/application/peers"
 	domain_peers "github.com/xmn-services/buckets-network/domain/memory/peers"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 	client_peer "github.com/xmn-services/buckets-network/infrastructure/clients/peers"
 )
 
-type application struct {
+type peers struct {
 	remoteApplicationBuilder client_peer.Builder
-	localApplication         peers.Application
+	localApplication         peers_app.Application
 	peersBuilder             domain_peers.Builder
 	peersService             domain_peers.Service
 	waitPeriod               time.Duration
 	isStarted                bool
 }
 
-func createApplication(
+func createPeers(
 	remoteApplicationBuilder client_peer.Builder,
-	localApplication peers.Application,
+	localApplication peers_app.Application,
 	peersBuilder domain_peers.Builder,
 	peersService domain_peers.Service,
 	waitPeriod time.Duration,
-) Application {
-	out := application{
+) daemons.Application {
+	out := peers{
 		remoteApplicationBuilder: remoteApplicationBuilder,
 		localApplication:         localApplication,
 		peersBuilder:             peersBuilder,
@@ -38,7 +39,7 @@ func createApplication(
 }
 
 // Start starts the application
-func (app *application) Start() error {
+func (app *peers) Start() error {
 	app.isStarted = true
 
 	for {
@@ -85,7 +86,7 @@ func (app *application) Start() error {
 }
 
 // Stop stops the application
-func (app *application) Stop() error {
+func (app *peers) Stop() error {
 	app.isStarted = true
 	return nil
 }

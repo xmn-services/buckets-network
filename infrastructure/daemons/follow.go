@@ -1,15 +1,16 @@
-package buckets
+package daemons
 
 import (
 	"time"
 
+	"github.com/xmn-services/buckets-network/application/identities/daemons"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
-	"github.com/xmn-services/buckets-network/domain/memory/peers"
+	peers_mem "github.com/xmn-services/buckets-network/domain/memory/peers"
 	client_bucket "github.com/xmn-services/buckets-network/infrastructure/clients/identities/buckets"
 )
 
-type application struct {
-	peersRepository        peers.Repository
+type follow struct {
+	peersRepository        peers_mem.Repository
 	identityRepository     identities.Repository
 	identityService        identities.Service
 	remoteBucketAppBuilder client_bucket.Builder
@@ -20,8 +21,8 @@ type application struct {
 	isStarted              bool
 }
 
-func createApplication(
-	peersRepository peers.Repository,
+func createFollow(
+	peersRepository peers_mem.Repository,
 	identityRepository identities.Repository,
 	identityService identities.Service,
 	remoteBucketAppBuilder client_bucket.Builder,
@@ -29,8 +30,8 @@ func createApplication(
 	name string,
 	password string,
 	seed string,
-) Application {
-	out := application{
+) daemons.Application {
+	out := follow{
 		peersRepository:        peersRepository,
 		identityRepository:     identityRepository,
 		identityService:        identityService,
@@ -46,7 +47,7 @@ func createApplication(
 }
 
 // Start starts the application
-func (app *application) Start() error {
+func (app *follow) Start() error {
 	app.isStarted = true
 
 	for {
@@ -110,7 +111,7 @@ func (app *application) Start() error {
 }
 
 // Stop stops the application
-func (app *application) Stop() error {
+func (app *follow) Stop() error {
 	app.isStarted = true
 	return nil
 }

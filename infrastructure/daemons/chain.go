@@ -1,16 +1,17 @@
-package chains
+package daemons
 
 import (
 	"time"
 
 	application_chain "github.com/xmn-services/buckets-network/application/chains"
+	"github.com/xmn-services/buckets-network/application/identities/daemons"
 	application_peer "github.com/xmn-services/buckets-network/application/peers"
 	"github.com/xmn-services/buckets-network/domain/memory/chains"
 	client_chain "github.com/xmn-services/buckets-network/infrastructure/clients/chains"
 	client_link "github.com/xmn-services/buckets-network/infrastructure/clients/chains/links"
 )
 
-type application struct {
+type chain struct {
 	chainApp              application_chain.Application
 	peerApp               application_peer.Application
 	remoteChainAppBuilder client_chain.Builder
@@ -19,14 +20,14 @@ type application struct {
 	isStarted             bool
 }
 
-func createApplication(
+func createChain(
 	chainApp application_chain.Application,
 	peerApp application_peer.Application,
 	remoteChainAppBuilder client_chain.Builder,
 	remoteLinkAppBuilder client_link.Builder,
 	waitPeriod time.Duration,
-) Application {
-	out := application{
+) daemons.Application {
+	out := chain{
 		chainApp:              chainApp,
 		peerApp:               peerApp,
 		remoteChainAppBuilder: remoteChainAppBuilder,
@@ -38,7 +39,7 @@ func createApplication(
 }
 
 // Start starts the application
-func (app *application) Start() error {
+func (app *chain) Start() error {
 	app.isStarted = true
 
 	for {
@@ -112,7 +113,7 @@ func (app *application) Start() error {
 }
 
 // Stop stops the application
-func (app *application) Stop() error {
+func (app *chain) Stop() error {
 	app.isStarted = true
 	return nil
 }

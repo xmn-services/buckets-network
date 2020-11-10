@@ -1,9 +1,10 @@
-package miners
+package daemons
 
 import (
 	"time"
 
 	app "github.com/xmn-services/buckets-network/application"
+	"github.com/xmn-services/buckets-network/application/identities/daemons"
 	"github.com/xmn-services/buckets-network/domain/memory/blocks"
 	mined_blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets"
@@ -35,7 +36,7 @@ func createBlockMiner(
 	password string,
 	waitPeriod time.Duration,
 	isStarted bool,
-) Application {
+) daemons.Application {
 	out := blockMiner{
 		hashAdapter:       hashAdapter,
 		blockBuilder:      blockBuilder,

@@ -1,13 +1,14 @@
-package queues
+package daemons
 
 import (
 	"time"
 
 	app "github.com/xmn-services/buckets-network/application"
+	"github.com/xmn-services/buckets-network/application/identities/daemons"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 )
 
-type application struct {
+type queue struct {
 	application     app.Application
 	identityService identities.Service
 	name            string
@@ -17,7 +18,7 @@ type application struct {
 	isStarted       bool
 }
 
-func createApplication(
+func createQueue(
 	app app.Application,
 	identityService identities.Service,
 	name string,
@@ -25,8 +26,8 @@ func createApplication(
 	password string,
 	waitPeriod time.Duration,
 	isStarted bool,
-) Application {
-	out := application{
+) daemons.Application {
+	out := queue{
 		application:     app,
 		identityService: identityService,
 		name:            name,
@@ -40,7 +41,7 @@ func createApplication(
 }
 
 // Start starts the application
-func (app *application) Start() error {
+func (app *queue) Start() error {
 	app.isStarted = true
 
 	for {
@@ -90,7 +91,7 @@ func (app *application) Start() error {
 }
 
 // Stop stops the application
-func (app *application) Stop() error {
+func (app *queue) Stop() error {
 	app.isStarted = true
 	return nil
 }
