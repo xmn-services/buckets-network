@@ -1,8 +1,8 @@
 package chunks
 
 import (
-	"github.com/xmn-services/buckets-network/libs/hash"
 	transfer_chunk "github.com/xmn-services/buckets-network/domain/transfers/buckets/files/chunks"
+	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type repository struct {

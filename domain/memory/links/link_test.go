@@ -5,24 +5,36 @@ import (
 	"testing"
 
 	"github.com/xmn-services/buckets-network/domain/memory/blocks"
+	mined_blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
+	"github.com/xmn-services/buckets-network/domain/memory/buckets"
+	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
+	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	"github.com/xmn-services/buckets-network/domain/memory/genesis"
-	"github.com/xmn-services/buckets-network/domain/memory/transactions"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 func TestLink_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
-	bucketHash, _ := hashAdapter.FromBytes([]byte("lets say this is the bucket hash"))
+	firstHash, _ := hashAdapter.FromBytes([]byte("this is the first hash"))
+	secondHash, _ := hashAdapter.FromBytes([]byte("this is the second hash"))
 
-	// transaction:
-	executesOnTrigger := true
-	amountPubKeyInRing := uint(20)
-	trxIns := transactions.CreateTransactionForTests(amountPubKeyInRing, executesOnTrigger, *bucketHash)
-
-	// transactions:
-	trx := []transactions.Transaction{
-		trxIns,
+	firstChunks := []chunks.Chunk{
+		chunks.CreateChunkForTests(uint(345234), *firstHash),
 	}
+
+	secondChunks := []chunks.Chunk{
+		chunks.CreateChunkForTests(uint(2345234), *secondHash),
+	}
+
+	firstRelativePath := "/first/is/relative/path"
+	secondRelativePath := "/second/is/relative/path"
+
+	files := []files.File{
+		files.CreateFileForTests(firstRelativePath, firstChunks),
+		files.CreateFileForTests(secondRelativePath, secondChunks),
+	}
+
+	bucketIns := buckets.CreateBucketForTests(files)
 
 	// genesis:
 	blockDiffBase := uint(1)
@@ -32,12 +44,18 @@ func TestLink_Success(t *testing.T) {
 
 	// block:
 	additional := uint(0)
-	blockIns := blocks.CreateBlockForTests(genesisIns, additional, trx)
+	blockIns := blocks.CreateBlockForTests(genesisIns, additional, []buckets.Bucket{
+		bucketIns,
+	})
+
+	// mined block:
+	mining := "this is a mining"
+	minedBlockIns := mined_blocks.CreateBlockForTests(blockIns, mining)
 
 	// link:
 	index := uint(5)
 	prevLink, _ := hashAdapter.FromBytes([]byte("this is the prev link"))
-	linkIns := CreateLinkForTests(*prevLink, blockIns, index)
+	linkIns := CreateLinkForTests(*prevLink, minedBlockIns, index)
 
 	// repository and service:
 	genService, repository, service := CreateRepositoryServiceForTests()

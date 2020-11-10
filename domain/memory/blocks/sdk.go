@@ -3,8 +3,8 @@ package blocks
 import (
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/buckets"
 	"github.com/xmn-services/buckets-network/domain/memory/genesis"
-	"github.com/xmn-services/buckets-network/domain/memory/transactions"
 	transfer_block "github.com/xmn-services/buckets-network/domain/transfers/blocks"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
@@ -14,21 +14,21 @@ import (
 // NewService creates a new service instance
 func NewService(
 	repository Repository,
-	trxService transactions.Service,
+	bucketService buckets.Service,
 	trService transfer_block.Service,
 ) Service {
 	adapter := NewAdapter()
-	return createService(adapter, repository, trxService, trService)
+	return createService(adapter, repository, bucketService, trService)
 }
 
 // NewRepository creates a new repository instance
 func NewRepository(
 	genesisRepository genesis.Repository,
-	trxRepository transactions.Repository,
+	bucketRepository buckets.Repository,
 	trRepository transfer_block.Repository,
 ) Repository {
 	builder := NewBuilder()
-	return createRepository(builder, genesisRepository, trxRepository, trRepository)
+	return createRepository(builder, genesisRepository, bucketRepository, trRepository)
 }
 
 // NewAdapter creates a new adapter instance
@@ -57,7 +57,7 @@ type Builder interface {
 	Create() Builder
 	WithGenesis(gen genesis.Genesis) Builder
 	WithAdditional(additional uint) Builder
-	WithTransactions(trx []transactions.Transaction) Builder
+	WithBuckets(buckets []buckets.Bucket) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Block, error)
 }
@@ -67,7 +67,7 @@ type Block interface {
 	entities.Immutable
 	Genesis() genesis.Genesis
 	Additional() uint
-	Transactions() []transactions.Transaction
+	Buckets() []buckets.Bucket
 }
 
 // Repository represents a block repository

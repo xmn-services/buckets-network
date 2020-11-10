@@ -16,16 +16,16 @@ func TestBlock_Success(t *testing.T) {
 
 	data := [][]byte{}
 	for i := 0; i < 5; i++ {
-		str := fmt.Sprintf("to build the %d trx hash...", i)
+		str := fmt.Sprintf("to build the %d bucket hash...", i)
 		oneTrx, _ := hashAdapter.FromBytes([]byte(str))
 		data = append(data, oneTrx.Bytes())
 	}
 
-	trx, _ := hashtree.NewBuilder().Create().WithBlocks(data).Now()
+	buckets, _ := hashtree.NewBuilder().Create().WithBlocks(data).Now()
 	amount := uint(len(data))
 	createdOn := time.Now().UTC()
 
-	block, err := NewBuilder().Create().WithHash(*hsh).WithTransactions(trx).WithAmount(amount).CreatedOn(createdOn).Now()
+	block, err := NewBuilder().Create().WithHash(*hsh).WithBuckets(buckets).WithAmount(amount).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -36,7 +36,7 @@ func TestBlock_Success(t *testing.T) {
 		return
 	}
 
-	if !block.Transactions().Head().Compare(trx.Head()) {
+	if !block.Buckets().Head().Compare(buckets.Head()) {
 		t.Errorf("the hashtree is invalid")
 		return
 	}

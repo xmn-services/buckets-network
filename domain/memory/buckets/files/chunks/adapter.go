@@ -26,3 +26,13 @@ func (app *adapter) ToTransfer(chunk Chunk) (transfer_chunk.Chunk, error) {
 	createdOn := chunk.CreatedOn()
 	return app.trBuilder.Create().WithHash(hash).WithSizeInBytes(sizeInBytes).WithData(data).CreatedOn(createdOn).Now()
 }
+
+// ToJSON converts a chunk to JSON
+func (app *adapter) ToJSON(chunk Chunk) *JSONChunk {
+	return createJSONChunkFromChunk(chunk)
+}
+
+// ToChunk converts JSON to chunk
+func (app *adapter) ToChunk(ins *JSONChunk) (Chunk, error) {
+	return createChunkFromJSON(ins)
+}

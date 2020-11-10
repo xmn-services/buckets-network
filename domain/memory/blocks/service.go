@@ -1,28 +1,28 @@
 package blocks
 
 import (
-	"github.com/xmn-services/buckets-network/domain/memory/transactions"
+	"github.com/xmn-services/buckets-network/domain/memory/buckets"
 	transfer_block "github.com/xmn-services/buckets-network/domain/transfers/blocks"
 )
 
 type service struct {
-	adapter    Adapter
-	repository Repository
-	trxService transactions.Service
-	trService  transfer_block.Service
+	adapter       Adapter
+	repository    Repository
+	bucketService buckets.Service
+	trService     transfer_block.Service
 }
 
 func createService(
 	adapter Adapter,
 	repository Repository,
-	trxService transactions.Service,
+	bucketService buckets.Service,
 	trService transfer_block.Service,
 ) Service {
 	out := service{
-		adapter:    adapter,
-		repository: repository,
-		trxService: trxService,
-		trService:  trService,
+		adapter:       adapter,
+		repository:    repository,
+		bucketService: bucketService,
+		trService:     trService,
 	}
 
 	return &out
@@ -36,8 +36,8 @@ func (app *service) Save(block Block) error {
 		return nil
 	}
 
-	trx := block.Transactions()
-	err = app.trxService.SaveAll(trx)
+	buckets := block.Buckets()
+	err = app.bucketService.SaveAll(buckets)
 	if err != nil {
 		return err
 	}

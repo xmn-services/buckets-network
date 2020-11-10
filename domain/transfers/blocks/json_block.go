@@ -8,7 +8,7 @@ import (
 
 type jsonBlock struct {
 	Hash       string                `json:"hash"`
-	Trx        *hashtree.JSONCompact `json:"transactions"`
+	Buckets    *hashtree.JSONCompact `json:"buckets"`
 	Amount     uint                  `json:"amount"`
 	Additional uint                  `json:"additional"`
 	CreatedOn  time.Time             `json:"created_on"`
@@ -16,23 +16,23 @@ type jsonBlock struct {
 
 func createJSONBlockFromBlock(ins Block) *jsonBlock {
 	hash := ins.Hash().String()
-	trx := hashtree.NewAdapter().ToJSON(ins.Transactions().Compact())
+	buckets := hashtree.NewAdapter().ToJSON(ins.Buckets().Compact())
 	amount := ins.Amount()
 	additional := ins.Additional()
 	createdOn := ins.CreatedOn()
-	return createJSONBlock(hash, trx, amount, additional, createdOn)
+	return createJSONBlock(hash, buckets, amount, additional, createdOn)
 }
 
 func createJSONBlock(
 	hash string,
-	trx *hashtree.JSONCompact,
+	buckets *hashtree.JSONCompact,
 	amount uint,
 	additional uint,
 	createdOn time.Time,
 ) *jsonBlock {
 	out := jsonBlock{
 		Hash:       hash,
-		Trx:        trx,
+		Buckets:    buckets,
 		Amount:     amount,
 		Additional: additional,
 		CreatedOn:  createdOn,

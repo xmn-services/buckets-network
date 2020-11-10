@@ -23,11 +23,12 @@ func createBuilder(
 	immutableBuilder entities.ImmutableBuilder,
 ) Builder {
 	out := builder{
-		hash:         nil,
-		relativePath: "",
-		chunks:       nil,
-		amount:       0,
-		createdOn:    nil,
+		immutableBuilder: immutableBuilder,
+		hash:             nil,
+		relativePath:     "",
+		chunks:           nil,
+		amount:           0,
+		createdOn:        nil,
 	}
 
 	return &out

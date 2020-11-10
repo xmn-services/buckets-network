@@ -3,7 +3,7 @@ package links
 import (
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/blocks"
+	blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	transfer_link "github.com/xmn-services/buckets-network/domain/transfers/links"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"

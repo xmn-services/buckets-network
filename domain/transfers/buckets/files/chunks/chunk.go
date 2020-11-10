@@ -1,6 +1,7 @@
 package chunks
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/xmn-services/buckets-network/libs/entities"
@@ -11,6 +12,27 @@ type chunk struct {
 	immutable   entities.Immutable
 	sizeInBytes uint
 	data        hash.Hash
+}
+
+func createChunkFromJSON(ins *jsonChunk) (Chunk, error) {
+	hashAdapter := hash.NewAdapter()
+	hsh, err := hashAdapter.FromString(ins.Hash)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := hashAdapter.FromString(ins.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewBuilder().
+		Create().
+		WithHash(*hsh).
+		WithData(*data).
+		WithSizeInBytes(ins.SizeInBytes).
+		CreatedOn(ins.CreatedOn).
+		Now()
 }
 
 func createChunk(
@@ -45,4 +67,30 @@ func (obj *chunk) Data() hash.Hash {
 // CreatedOn returns the creation time
 func (obj *chunk) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()
+}
+
+// MarshalJSON converts the instance to JSON
+func (obj *chunk) MarshalJSON() ([]byte, error) {
+	ins := createJSONChunkFromChunk(obj)
+	return json.Marshal(ins)
+}
+
+// UnmarshalJSON converts the JSON to an instance
+func (obj *chunk) UnmarshalJSON(data []byte) error {
+	ins := new(jsonChunk)
+	err := json.Unmarshal(data, ins)
+	if err != nil {
+		return err
+	}
+
+	pr, err := createChunkFromJSON(ins)
+	if err != nil {
+		return err
+	}
+
+	insChunk := pr.(*chunk)
+	obj.immutable = insChunk.immutable
+	obj.sizeInBytes = insChunk.sizeInBytes
+	obj.data = insChunk.data
+	return nil
 }

@@ -6,19 +6,19 @@ import (
 	"testing"
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/buckets"
 	"github.com/xmn-services/buckets-network/domain/memory/genesis"
-	"github.com/xmn-services/buckets-network/domain/memory/transactions"
 	transfer_block "github.com/xmn-services/buckets-network/domain/transfers/blocks"
 	"github.com/xmn-services/buckets-network/libs/file"
 )
 
 // CreateBlockForTests creates a block for tests
-func CreateBlockForTests(gen genesis.Genesis, additional uint, trx []transactions.Transaction) Block {
+func CreateBlockForTests(gen genesis.Genesis, additional uint, buckets []buckets.Bucket) Block {
 	createdOn := time.Now().UTC()
 	ins, err := NewBuilder().Create().
 		WithGenesis(gen).
 		WithAdditional(additional).
-		WithTransactions(trx).
+		WithBuckets(buckets).
 		CreatedOn(createdOn).
 		Now()
 
@@ -31,14 +31,13 @@ func CreateBlockForTests(gen genesis.Genesis, additional uint, trx []transaction
 
 // CreateRepositoryServiceForTests creates a repository and service for tests
 func CreateRepositoryServiceForTests() (genesis.Service, Repository, Service) {
-	amountPubKeyInRing := uint(20)
 	genesisRepository, genesisService := genesis.CreateRepositoryServiceForTests()
-	trxRepository, trxService := transactions.CreateRepositoryServiceForTests(amountPubKeyInRing)
+	bucketRepository, bucketService := buckets.CreateRepositoryServiceForTests()
 	fileRepositoryService := file.CreateRepositoryServiceForTests()
 	trRepository := transfer_block.NewRepository(fileRepositoryService)
 	trService := transfer_block.NewService(fileRepositoryService)
-	repository := NewRepository(genesisRepository, trxRepository, trRepository)
-	service := NewService(repository, trxService, trService)
+	repository := NewRepository(genesisRepository, bucketRepository, trRepository)
+	service := NewService(repository, bucketService, trService)
 	return genesisService, repository, service
 }
 

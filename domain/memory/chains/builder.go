@@ -89,9 +89,9 @@ func (app *builder) Now() (Chain, error) {
 		return nil, errors.New("the head link is mandatory in order to build a Chain instance")
 	}
 
-	known := uint(len(app.root.Block().Transactions()) + len(app.head.Link().Next().Transactions()))
+	known := uint(len(app.root.Block().Buckets()) + len(app.head.Link().Next().Block().Buckets()))
 	if app.total < known {
-		str := fmt.Sprintf("there is %d transactions in the root and head blocks, therefore the total (%d) must be bigger or equal to that amount", known, app.total)
+		str := fmt.Sprintf("there is %d buckets in the root and head blocks, therefore the total (%d) must be bigger or equal to that amount", known, app.total)
 		return nil, errors.New(str)
 	}
 

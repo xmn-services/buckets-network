@@ -12,7 +12,7 @@ import (
 type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	hash             *hash.Hash
-	trx              hashtree.HashTree
+	buckets          hashtree.HashTree
 	amount           uint
 	additional       uint
 	createdOn        *time.Time
@@ -24,7 +24,7 @@ func createBuilder(
 	out := builder{
 		immutableBuilder: immutableBuilder,
 		hash:             nil,
-		trx:              nil,
+		buckets:          nil,
 		amount:           0,
 		additional:       0,
 		createdOn:        nil,
@@ -44,9 +44,9 @@ func (app *builder) WithHash(hash hash.Hash) Builder {
 	return app
 }
 
-// WithTransactions add transaction hashtree to the builder
-func (app *builder) WithTransactions(trx hashtree.HashTree) Builder {
-	app.trx = trx
+// WithBuckets add buckets hashtree to the builder
+func (app *builder) WithBuckets(buckets hashtree.HashTree) Builder {
+	app.buckets = buckets
 	return app
 }
 
@@ -74,8 +74,8 @@ func (app *builder) Now() (Block, error) {
 		return nil, errors.New("the hash is mandatory in order to build a Block instance")
 	}
 
-	if app.trx == nil {
-		return nil, errors.New("the transaction hashtree is mandatory in order to build a Block instance")
+	if app.buckets == nil {
+		return nil, errors.New("the buckets hashtree is mandatory in order to build a Block instance")
 	}
 
 	if app.amount <= 0 {
@@ -87,5 +87,5 @@ func (app *builder) Now() (Block, error) {
 		return nil, err
 	}
 
-	return createBlock(immutable, app.trx, app.amount, app.additional), nil
+	return createBlock(immutable, app.buckets, app.amount, app.additional), nil
 }

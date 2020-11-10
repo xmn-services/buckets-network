@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
+	blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
-	"github.com/xmn-services/buckets-network/domain/memory/blocks"
 )
 
 type builder struct {

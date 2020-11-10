@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/buckets"
 	"github.com/xmn-services/buckets-network/domain/memory/genesis"
-	"github.com/xmn-services/buckets-network/domain/memory/transactions"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -14,19 +14,19 @@ type block struct {
 	immutable  entities.Immutable
 	genesis    genesis.Genesis
 	additional uint
-	trx        []transactions.Transaction
+	buckets    []buckets.Bucket
 }
 
 func createBlockFromJSON(ins *JSONBlock) (Block, error) {
-	trxAdapter := transactions.NewAdapter()
-	trx := []transactions.Transaction{}
-	for _, oneJSTrx := range ins.Trx {
-		oneTrx, err := trxAdapter.ToTransaction(oneJSTrx)
+	bucketAdapter := buckets.NewAdapter()
+	buckets := []buckets.Bucket{}
+	for _, oneJSBucket := range ins.Buckets {
+		oneBucket, err := bucketAdapter.ToBucket(oneJSBucket)
 		if err != nil {
 			return nil, err
 		}
 
-		trx = append(trx, oneTrx)
+		buckets = append(buckets, oneBucket)
 	}
 
 	genAdapter := genesis.NewAdapter()
@@ -37,7 +37,7 @@ func createBlockFromJSON(ins *JSONBlock) (Block, error) {
 
 	return NewBuilder().
 		Create().
-		WithTransactions(trx).
+		WithBuckets(buckets).
 		WithGenesis(gen).
 		WithAdditional(ins.Additional).
 		CreatedOn(ins.CreatedOn).
@@ -48,13 +48,13 @@ func createBlock(
 	immutable entities.Immutable,
 	genesis genesis.Genesis,
 	additional uint,
-	trx []transactions.Transaction,
+	buckets []buckets.Bucket,
 ) Block {
 	out := block{
 		immutable:  immutable,
 		genesis:    genesis,
 		additional: additional,
-		trx:        trx,
+		buckets:    buckets,
 	}
 
 	return &out
@@ -75,9 +75,9 @@ func (obj *block) Additional() uint {
 	return obj.additional
 }
 
-// Transactions returns the transactions
-func (obj *block) Transactions() []transactions.Transaction {
-	return obj.trx
+// Buckets returns the buckets
+func (obj *block) Buckets() []buckets.Bucket {
+	return obj.buckets
 }
 
 // CreatedOn returns the creation time
@@ -108,6 +108,6 @@ func (obj *block) UnmarshalJSON(data []byte) error {
 	obj.immutable = insBlock.immutable
 	obj.genesis = insBlock.genesis
 	obj.additional = insBlock.additional
-	obj.trx = insBlock.trx
+	obj.buckets = insBlock.buckets
 	return nil
 }

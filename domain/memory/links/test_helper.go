@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/xmn-services/buckets-network/libs/file"
-	"github.com/xmn-services/buckets-network/libs/hash"
-	"github.com/xmn-services/buckets-network/domain/memory/blocks"
+	blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	"github.com/xmn-services/buckets-network/domain/memory/genesis"
 	transfer_link "github.com/xmn-services/buckets-network/domain/transfers/links"
+	"github.com/xmn-services/buckets-network/libs/file"
+	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 // CreateLinkForTests creates a link instance for tests

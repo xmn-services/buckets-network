@@ -46,6 +46,8 @@ func NewBuilder() Builder {
 // Adapter returns the bucket adapter
 type Adapter interface {
 	ToTransfer(bucket Bucket) (transfer_bucket.Bucket, error)
+	ToJSON(bucket Bucket) *JSONBucket
+	ToBucket(ins *JSONBucket) (Bucket, error)
 }
 
 // Builder represents the bucket builder
@@ -72,5 +74,6 @@ type Repository interface {
 // Service represents a bucket bucket service
 type Service interface {
 	Save(bucket Bucket) error
+	SaveAll(buckets []Bucket) error
 	Delete(bucket Bucket) error
 }

@@ -1,8 +1,8 @@
 package blocks
 
 import (
+	"github.com/xmn-services/buckets-network/domain/memory/buckets"
 	"github.com/xmn-services/buckets-network/domain/memory/genesis"
-	"github.com/xmn-services/buckets-network/domain/memory/transactions"
 	transfer_block "github.com/xmn-services/buckets-network/domain/transfers/blocks"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -10,20 +10,20 @@ import (
 type repository struct {
 	builder           Builder
 	genesisRepository genesis.Repository
-	trxRepository     transactions.Repository
+	bucketRepository  buckets.Repository
 	trRepository      transfer_block.Repository
 }
 
 func createRepository(
 	builder Builder,
 	genesisRepository genesis.Repository,
-	trxRepository transactions.Repository,
+	bucketRepository buckets.Repository,
 	trRepository transfer_block.Repository,
 ) Repository {
 	out := repository{
 		builder:           builder,
 		genesisRepository: genesisRepository,
-		trxRepository:     trxRepository,
+		bucketRepository:  bucketRepository,
 		trRepository:      trRepository,
 	}
 
@@ -42,14 +42,14 @@ func (app *repository) Retrieve(hsh hash.Hash) (Block, error) {
 		return nil, err
 	}
 
-	trxHashes := []hash.Hash{}
+	bucketHashes := []hash.Hash{}
 	amountTrx := trBlock.Amount()
-	leaves := trBlock.Transactions().Parent().BlockLeaves().Leaves()
+	leaves := trBlock.Buckets().Parent().BlockLeaves().Leaves()
 	for i := 0; i < int(amountTrx); i++ {
-		trxHashes = append(trxHashes, leaves[i].Head())
+		bucketHashes = append(bucketHashes, leaves[i].Head())
 	}
 
-	trx, err := app.trxRepository.RetrieveAll(trxHashes)
+	buckets, err := app.bucketRepository.RetrieveAll(bucketHashes)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +59,7 @@ func (app *repository) Retrieve(hsh hash.Hash) (Block, error) {
 	return app.builder.Create().
 		WithGenesis(gen).
 		WithAdditional(additional).
-		WithTransactions(trx).
+		WithBuckets(buckets).
 		CreatedOn(createdOn).
 		Now()
 }

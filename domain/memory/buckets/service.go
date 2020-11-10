@@ -50,6 +50,18 @@ func (app *service) Save(bucket Bucket) error {
 	return app.trService.Save(trBucket)
 }
 
+// SaveAll saves buckets
+func (app *service) SaveAll(buckets []Bucket) error {
+	for _, oneBucket := range buckets {
+		err := app.Save(oneBucket)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Delete deletes an bucket instance
 func (app *service) Delete(bucket Bucket) error {
 	files := bucket.Files()

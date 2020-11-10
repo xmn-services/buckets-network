@@ -44,6 +44,8 @@ func NewBuilder() Builder {
 // Adapter returns the block adapter
 type Adapter interface {
 	ToTransfer(block Block) (transfer_block_mined.Block, error)
+	ToJSON(block Block) *JSONBlock
+	ToBlock(ins *JSONBlock) (Block, error)
 }
 
 // Builder represents a mined block builder

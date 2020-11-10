@@ -3,7 +3,7 @@ package links
 import (
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/blocks"
+	blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 )
 
 // JSONLink represents a json link

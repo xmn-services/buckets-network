@@ -1,8 +1,8 @@
 package files
 
 import (
-	"github.com/xmn-services/buckets-network/libs/hashtree"
 	transfer_file "github.com/xmn-services/buckets-network/domain/transfers/buckets/files"
+	"github.com/xmn-services/buckets-network/libs/hashtree"
 )
 
 type adapter struct {
@@ -47,4 +47,14 @@ func (app *adapter) ToTransfer(file File) (transfer_file.File, error) {
 		WithAmount(amount).
 		CreatedOn(createdOn).
 		Now()
+}
+
+// ToJSON converts a file to JSON
+func (app *adapter) ToJSON(file File) *JSONFile {
+	return createJSONFileFromFile(file)
+}
+
+// ToFile converts JSON to file
+func (app *adapter) ToFile(ins *JSONFile) (File, error) {
+	return createFileFromJSON(ins)
 }

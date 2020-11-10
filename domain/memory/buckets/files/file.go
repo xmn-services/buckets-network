@@ -1,13 +1,14 @@
 package files
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
-	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 )
 
 type file struct {
@@ -15,6 +16,26 @@ type file struct {
 	relativePath string
 	chunks       []chunks.Chunk
 	mp           map[string]chunks.Chunk
+}
+
+func createFileFromJSON(ins *JSONFile) (File, error) {
+	chks := []chunks.Chunk{}
+	chkAdapter := chunks.NewAdapter()
+	for _, oneJSChunk := range ins.Chunks {
+		chk, err := chkAdapter.ToChunk(oneJSChunk)
+		if err != nil {
+			return nil, err
+		}
+
+		chks = append(chks, chk)
+	}
+
+	return NewBuilder().
+		Create().
+		WithRelativePath(ins.RelativePath).
+		WithChunks(chks).
+		CreatedOn(ins.CreatedOn).
+		Now()
 }
 
 func createFile(
@@ -62,4 +83,31 @@ func (obj *file) ChunkByHash(hash hash.Hash) (chunks.Chunk, error) {
 // CreatedOn returns the creation time
 func (obj *file) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()
+}
+
+// MarshalJSON converts the instance to JSON
+func (obj *file) MarshalJSON() ([]byte, error) {
+	ins := createJSONFileFromFile(obj)
+	return json.Marshal(ins)
+}
+
+// UnmarshalJSON converts the JSON to an instance
+func (obj *file) UnmarshalJSON(data []byte) error {
+	ins := new(JSONFile)
+	err := json.Unmarshal(data, ins)
+	if err != nil {
+		return err
+	}
+
+	pr, err := createFileFromJSON(ins)
+	if err != nil {
+		return err
+	}
+
+	insFile := pr.(*file)
+	obj.immutable = insFile.immutable
+	obj.relativePath = insFile.relativePath
+	obj.chunks = insFile.chunks
+	obj.mp = insFile.mp
+	return nil
 }

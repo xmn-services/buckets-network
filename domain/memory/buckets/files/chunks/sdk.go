@@ -36,6 +36,8 @@ func NewBuilder() Builder {
 // Adapter returns the chunk adapter
 type Adapter interface {
 	ToTransfer(chunk Chunk) (transfer_chunk.Chunk, error)
+	ToJSON(chunk Chunk) *JSONChunk
+	ToChunk(ins *JSONChunk) (Chunk, error)
 }
 
 // Builder represents the chunk builder

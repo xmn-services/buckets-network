@@ -41,3 +41,13 @@ func (app *adapter) ToTransfer(bucket Bucket) (transfer_bucket.Bucket, error) {
 	createdOn := bucket.CreatedOn()
 	return app.trBuilder.Create().WithHash(hash).WithFiles(ht).WithAmount(amount).CreatedOn(createdOn).Now()
 }
+
+// ToJSON converts bucket to JSON
+func (app *adapter) ToJSON(bucket Bucket) *JSONBucket {
+	return createJSONBucketFromBucket(bucket)
+}
+
+// ToBucket converts JSON to bucket
+func (app *adapter) ToBucket(ins *JSONBucket) (Bucket, error) {
+	return createBucketFromJSON(ins)
+}

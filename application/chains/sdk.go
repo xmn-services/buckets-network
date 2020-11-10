@@ -9,5 +9,5 @@ import (
 type Application interface {
 	Retrieve() (chains.Chain, error)
 	RetrieveAtIndex(index uint) (chains.Chain, error)
-	Upgrade(link mined_link.Link) error
+	Upgrade(newHead mined_link.Link) error
 }

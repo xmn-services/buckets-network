@@ -103,7 +103,7 @@ func (app *application) Add(absolutePath string) error {
 		return err
 	}
 
-	err = identity.Wallet().Buckets().Add(identityBucket)
+	err = identity.Wallet().New().Add(identityBucket)
 	if err != nil {
 		return err
 	}
@@ -118,10 +118,10 @@ func (app *application) Delete(absolutePath string) error {
 		return err
 	}
 
-	buckets := identity.Wallet().Buckets().All()
+	buckets := identity.Wallet().New().All()
 	for _, oneBucket := range buckets {
 		if oneBucket.AbsolutePath() == absolutePath {
-			err := identity.Wallet().Buckets().Delete(oneBucket)
+			err := identity.Wallet().New().Delete(oneBucket.Hash())
 			if err != nil {
 				return err
 			}

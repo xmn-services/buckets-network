@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/buckets"
 	"github.com/xmn-services/buckets-network/domain/memory/genesis"
-	"github.com/xmn-services/buckets-network/domain/memory/transactions"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -16,7 +16,7 @@ type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	genesis          genesis.Genesis
 	additional       uint
-	trx              []transactions.Transaction
+	buckets          []buckets.Bucket
 	createdOn        *time.Time
 }
 
@@ -29,7 +29,7 @@ func createBuilder(
 		immutableBuilder: immutableBuilder,
 		genesis:          nil,
 		additional:       0,
-		trx:              nil,
+		buckets:          nil,
 		createdOn:        nil,
 	}
 
@@ -53,9 +53,9 @@ func (app *builder) WithAdditional(additional uint) Builder {
 	return app
 }
 
-// WithTransactions add transactions to the builder
-func (app *builder) WithTransactions(trx []transactions.Transaction) Builder {
-	app.trx = trx
+// WithBuckets add buckets to the builder
+func (app *builder) WithBuckets(buckets []buckets.Bucket) Builder {
+	app.buckets = buckets
 	return app
 }
 
@@ -71,12 +71,12 @@ func (app *builder) Now() (Block, error) {
 		return nil, errors.New("the genesis instance is mandatory in order to build a Block instance")
 	}
 
-	if app.trx == nil {
-		return nil, errors.New("the transactions are mandatory in order to build a Block instance")
+	if app.buckets == nil {
+		return nil, errors.New("the []Bucket are mandatory in order to build a Block instance")
 	}
 
-	if len(app.trx) <= 0 {
-		return nil, errors.New("there must be at least 1 Tranaction instance in order to build a Block instance")
+	if len(app.buckets) <= 0 {
+		return nil, errors.New("there must be at least 1 Bucket instance in order to build a Block instance")
 	}
 
 	data := [][]byte{
@@ -84,8 +84,8 @@ func (app *builder) Now() (Block, error) {
 		[]byte(strconv.Itoa(int(app.additional))),
 	}
 
-	for _, oneTrx := range app.trx {
-		data = append(data, oneTrx.Hash().Bytes())
+	for _, oneBucket := range app.buckets {
+		data = append(data, oneBucket.Hash().Bytes())
 	}
 
 	hsh, err := app.hashAdapter.FromMultiBytes(data)
@@ -98,5 +98,5 @@ func (app *builder) Now() (Block, error) {
 		return nil, err
 	}
 
-	return createBlock(immutable, app.genesis, app.additional, app.trx), nil
+	return createBlock(immutable, app.genesis, app.additional, app.buckets), nil
 }

@@ -26,3 +26,13 @@ func (app *adapter) ToTransfer(block Block) (transfer_block_mined.Block, error) 
 	createdOn := block.CreatedOn()
 	return app.trBuilder.Create().WithHash(hsh).WithBlock(blk).WithMining(mining).CreatedOn(createdOn).Now()
 }
+
+// ToJSON converts a block to a JSON block
+func (app *adapter) ToJSON(block Block) *JSONBlock {
+	return createJSONBlockFromBlock(block)
+}
+
+// ToBlock converts a JSON block to a block
+func (app *adapter) ToBlock(ins *JSONBlock) (Block, error) {
+	return createBlockFromJSON(ins)
+}

@@ -24,25 +24,25 @@ func createAdapter(
 
 // ToTransfer converts the block to a transfer block
 func (app *adapter) ToTransfer(block Block) (transfer_block.Block, error) {
-	trx := block.Transactions()
+	buckets := block.Buckets()
 	blocks := [][]byte{}
-	for _, oneTrx := range trx {
-		blocks = append(blocks, oneTrx.Hash().Bytes())
+	for _, oneBucket := range buckets {
+		blocks = append(blocks, oneBucket.Hash().Bytes())
 	}
 
-	trxHashtree, err := app.hashTreeBuilder.Create().WithBlocks(blocks).Now()
+	bucketsHt, err := app.hashTreeBuilder.Create().WithBlocks(blocks).Now()
 	if err != nil {
 		return nil, err
 	}
 
 	hsh := block.Hash()
 	additional := block.Additional()
-	amount := uint(len(trx))
+	amount := uint(len(buckets))
 	createdOn := block.CreatedOn()
 	return app.trBuilder.Create().
 		WithHash(hsh).
 		WithAdditional(additional).
-		WithTransactions(trxHashtree).
+		WithBuckets(bucketsHt).
 		WithAmount(amount).
 		CreatedOn(createdOn).
 		Now()

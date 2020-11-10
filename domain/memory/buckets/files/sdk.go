@@ -3,11 +3,11 @@ package files
 import (
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
+	transfer_file "github.com/xmn-services/buckets-network/domain/transfers/buckets/files"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 	"github.com/xmn-services/buckets-network/libs/hashtree"
-	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
-	transfer_file "github.com/xmn-services/buckets-network/domain/transfers/buckets/files"
 )
 
 // NewService creates a new service instance
@@ -46,6 +46,8 @@ func NewBuilder() Builder {
 // Adapter returns the file adapter
 type Adapter interface {
 	ToTransfer(file File) (transfer_file.File, error)
+	ToJSON(file File) *JSONFile
+	ToFile(ins *JSONFile) (File, error)
 }
 
 // Builder represents the file builder

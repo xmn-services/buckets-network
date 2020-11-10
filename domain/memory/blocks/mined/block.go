@@ -1,6 +1,7 @@
 package mined
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/blocks"
@@ -12,6 +13,21 @@ type block struct {
 	immutable entities.Immutable
 	block     blocks.Block
 	mining    string
+}
+
+func createBlockFromJSON(ins *JSONBlock) (Block, error) {
+	blockAdapter := blocks.NewAdapter()
+	blk, err := blockAdapter.ToBlock(ins.Block)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewBuilder().
+		Create().
+		WithBlock(blk).
+		WithMining(ins.Mining).
+		CreatedOn(ins.CreatedOn).
+		Now()
 }
 
 func createBlock(
@@ -46,4 +62,30 @@ func (obj *block) Mining() string {
 // CreatedOn returns the creation time
 func (obj *block) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()
+}
+
+// MarshalJSON converts the instance to JSON
+func (obj *block) MarshalJSON() ([]byte, error) {
+	ins := createJSONBlockFromBlock(obj)
+	return json.Marshal(ins)
+}
+
+// UnmarshalJSON converts the JSON to an instance
+func (obj *block) UnmarshalJSON(data []byte) error {
+	ins := new(JSONBlock)
+	err := json.Unmarshal(data, ins)
+	if err != nil {
+		return err
+	}
+
+	pr, err := createBlockFromJSON(ins)
+	if err != nil {
+		return err
+	}
+
+	insBlock := pr.(*block)
+	obj.immutable = insBlock.immutable
+	obj.block = insBlock.block
+	obj.mining = insBlock.mining
+	return nil
 }

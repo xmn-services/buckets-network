@@ -11,7 +11,7 @@ import (
 
 type block struct {
 	immutable  entities.Immutable
-	trx        hashtree.HashTree
+	buckets    hashtree.HashTree
 	amount     uint
 	additional uint
 }
@@ -23,12 +23,12 @@ func createBlockFromJSON(ins *jsonBlock) (Block, error) {
 		return nil, err
 	}
 
-	compact, err := hashtree.NewAdapter().FromJSON(ins.Trx)
+	compact, err := hashtree.NewAdapter().FromJSON(ins.Buckets)
 	if err != nil {
 		return nil, err
 	}
 
-	trx, err := compact.Leaves().HashTree()
+	buckets, err := compact.Leaves().HashTree()
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func createBlockFromJSON(ins *jsonBlock) (Block, error) {
 	return NewBuilder().
 		Create().
 		WithHash(*hsh).
-		WithTransactions(trx).
+		WithBuckets(buckets).
 		WithAmount(ins.Amount).
 		WithAdditional(ins.Additional).
 		CreatedOn(ins.CreatedOn).
@@ -45,13 +45,13 @@ func createBlockFromJSON(ins *jsonBlock) (Block, error) {
 
 func createBlock(
 	immutable entities.Immutable,
-	trx hashtree.HashTree,
+	buckets hashtree.HashTree,
 	amount uint,
 	additional uint,
 ) Block {
 	out := block{
 		immutable:  immutable,
-		trx:        trx,
+		buckets:    buckets,
 		amount:     amount,
 		additional: additional,
 	}
@@ -64,9 +64,9 @@ func (obj *block) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// Transactions returns the transaction hashtree
-func (obj *block) Transactions() hashtree.HashTree {
-	return obj.trx
+// Buckets returns the buckets hashtree
+func (obj *block) Buckets() hashtree.HashTree {
+	return obj.buckets
 }
 
 // Amount returns the amount
@@ -105,7 +105,7 @@ func (obj *block) UnmarshalJSON(data []byte) error {
 
 	insBlock := pr.(*block)
 	obj.immutable = insBlock.immutable
-	obj.trx = insBlock.trx
+	obj.buckets = insBlock.buckets
 	obj.amount = insBlock.amount
 	obj.additional = insBlock.additional
 	return nil
