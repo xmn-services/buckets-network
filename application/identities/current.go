@@ -3,7 +3,6 @@ package identities
 import "github.com/xmn-services/buckets-network/domain/memory/identities"
 
 type current struct {
-	identityBuilder    identities.Builder
 	identityRepository identities.Repository
 	identityService    identities.Service
 	name               string
@@ -12,7 +11,6 @@ type current struct {
 }
 
 func createCurrent(
-	identityBuilder identities.Builder,
 	identityRepository identities.Repository,
 	identityService identities.Service,
 	name string,
@@ -20,7 +18,6 @@ func createCurrent(
 	seed string,
 ) Current {
 	out := current{
-		identityBuilder:    identityBuilder,
 		identityRepository: identityRepository,
 		identityService:    identityService,
 		name:               name,
@@ -40,38 +37,28 @@ func (app *current) Update(update Update) error {
 	}
 
 	// retrieve the identity:
-	seed := identity.Seed()
-	name := identity.Name()
-	root := identity.Root()
 	newPassword := app.password
-	builder := app.identityBuilder.Create().WithSeed(seed).WithName(name).WithRoot(root)
 	if update.HasSeed() {
 		uSeed := update.Seed()
-		builder.WithSeed(uSeed)
+		identity.SetSeed(uSeed)
 	}
 
 	if update.HasName() {
 		uName := update.Name()
-		builder.WithName(uName)
+		identity.SetName(uName)
 	}
 
 	if update.HasRoot() {
 		uRoot := update.Root()
-		builder.WithRoot(uRoot)
+		identity.SetRoot(uRoot)
 	}
 
 	if update.HasPassword() {
 		newPassword = update.Password()
 	}
 
-	updatedIdentity, err := builder.Now()
-	if err != nil {
-		return err
-	}
-
 	err = app.identityService.Update(
-		identity.Hash(),
-		updatedIdentity,
+		identity,
 		app.password,
 		newPassword,
 	)

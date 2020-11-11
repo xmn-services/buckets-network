@@ -83,7 +83,7 @@ func (app *queue) Start() error {
 		}
 
 		// update the identity:
-		err = app.identityService.Update(identity.Hash(), identity, app.password, app.password)
+		err = app.identityService.Update(identity, app.password, app.password)
 		if err != nil {
 			return err
 		}

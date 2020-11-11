@@ -54,14 +54,29 @@ func (obj *identity) Seed() string {
 	return obj.seed
 }
 
+// SetSeed sets a seed
+func (obj *identity) SetSeed(seed string) {
+	obj.seed = seed
+}
+
 // Name returns the name
 func (obj *identity) Name() string {
 	return obj.name
 }
 
+// SetName sets a name
+func (obj *identity) SetName(name string) {
+	obj.name = name
+}
+
 // Root returns the root
 func (obj *identity) Root() string {
 	return obj.root
+}
+
+// SetRoot sets a root
+func (obj *identity) SetRoot(root string) {
+	obj.root = root
 }
 
 // Wallet returns the wallet

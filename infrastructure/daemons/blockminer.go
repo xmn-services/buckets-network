@@ -136,7 +136,7 @@ func (app *blockMiner) Start() error {
 		}
 
 		// save the identity:
-		err = app.identityService.Update(identity.Hash(), identity, app.password, app.password)
+		err = app.identityService.Update(identity, app.password, app.password)
 		if err != nil {
 			return err
 		}

@@ -98,7 +98,6 @@ func (app *follow) Start() error {
 
 		// save the identity:
 		err = app.identityService.Update(
-			identity.Hash(),
 			identity,
 			app.password,
 			app.password,

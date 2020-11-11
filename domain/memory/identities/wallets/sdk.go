@@ -5,6 +5,7 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/buckets"
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/follows"
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/permanents"
+	"github.com/xmn-services/buckets-network/libs/entities"
 )
 
 // Factory represents a wallet factory
@@ -14,7 +15,7 @@ type Factory interface {
 
 // Wallet represents a wallet
 type Wallet interface {
-	All() permanents.Permanent
+	entities.Mutable
 	New() buckets.Buckets
 	Queue() buckets.Buckets
 	Follows() follows.Follow

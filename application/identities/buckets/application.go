@@ -108,7 +108,7 @@ func (app *application) Add(absolutePath string) error {
 		return err
 	}
 
-	return app.identityService.Update(identity.Hash(), identity, app.password, app.password)
+	return app.identityService.Update(identity, app.password, app.password)
 }
 
 // Delete deletes a bucket from the given path
@@ -130,7 +130,7 @@ func (app *application) Delete(absolutePath string) error {
 		}
 	}
 
-	return app.identityService.Update(identity.Hash(), identity, app.password, app.password)
+	return app.identityService.Update(identity, app.password, app.password)
 }
 
 // Retrieve retrieves a bucket by hash

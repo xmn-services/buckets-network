@@ -16,6 +16,7 @@ type builder struct {
 	seed           string
 	name           string
 	root           string
+	wallet         wallets.Wallet
 	createdOn      *time.Time
 	lastUpdatedOn  *time.Time
 }
@@ -32,6 +33,7 @@ func createBuilder(
 		seed:           "",
 		name:           "",
 		root:           "",
+		wallet:         nil,
 		createdOn:      nil,
 		lastUpdatedOn:  nil,
 	}
@@ -63,6 +65,12 @@ func (app *builder) WithName(name string) Builder {
 // WithRoot adds a root to the builder
 func (app *builder) WithRoot(root string) Builder {
 	app.root = root
+	return app
+}
+
+// WithWallet adds a wallet to the builder
+func (app *builder) WithWallet(wallet wallets.Wallet) Builder {
+	app.wallet = wallet
 	return app
 }
 
@@ -98,6 +106,10 @@ func (app *builder) Now() (Identity, error) {
 		[]byte(app.root),
 	}
 
+	if app.wallet != nil {
+		data = append(data, app.wallet.Hash().Bytes())
+	}
+
 	hsh, err := app.hashAdapter.FromMultiBytes(data)
 	if err != nil {
 		return nil, err
@@ -108,6 +120,9 @@ func (app *builder) Now() (Identity, error) {
 		return nil, err
 	}
 
-	wallet := app.walletFactory.Create()
-	return createIdentity(mutable, app.seed, app.name, app.root, wallet), nil
+	if app.wallet == nil {
+		app.wallet = app.walletFactory.Create()
+	}
+
+	return createIdentity(mutable, app.seed, app.name, app.root, app.wallet), nil
 }
