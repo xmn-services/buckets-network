@@ -1,6 +1,8 @@
 package buckets
 
 import (
+	"time"
+
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/buckets/bucket"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
@@ -9,6 +11,17 @@ import (
 // Factory represents a buckets factory
 type Factory interface {
 	Create() Buckets
+}
+
+// Builder represents a buckets builder
+type Builder interface {
+	Create() Builder
+	WithHash(hash hash.Hash) Builder
+	WithoutHash() Builder
+	WithBuckets(buckets []bucket.Bucket) Builder
+	CreatedOn(createdOn time.Time) Builder
+	LastUpdatedOn(lastUpdatedOn time.Time) Builder
+	Now() (Buckets, error)
 }
 
 // Buckets represents buckets

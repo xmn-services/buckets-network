@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
+	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	transfer_bucket "github.com/xmn-services/buckets-network/domain/transfers/buckets"
 	libs_file "github.com/xmn-services/buckets-network/libs/file"
+	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 // CreateBucketForTests creates a bucket for tests
@@ -20,6 +22,31 @@ func CreateBucketForTests(files []files.File) Bucket {
 	}
 
 	return ins
+}
+
+// CreateBucketForTestsWithoutParams creates a bucket for tests without params
+func CreateBucketForTestsWithoutParams() Bucket {
+	hashAdapter := hash.NewAdapter()
+	firstHash, _ := hashAdapter.FromBytes([]byte("this is the first hash"))
+	secondHash, _ := hashAdapter.FromBytes([]byte("this is the second hash"))
+
+	firstChunks := []chunks.Chunk{
+		chunks.CreateChunkForTests(uint(345234), *firstHash),
+	}
+
+	secondChunks := []chunks.Chunk{
+		chunks.CreateChunkForTests(uint(2345234), *secondHash),
+	}
+
+	firstRelativePath := "/first/is/relative/path"
+	secondRelativePath := "/second/is/relative/path"
+
+	files := []files.File{
+		files.CreateFileForTests(firstRelativePath, firstChunks),
+		files.CreateFileForTests(secondRelativePath, secondChunks),
+	}
+
+	return CreateBucketForTests(files)
 }
 
 // CreateRepositoryServiceForTests creates a repository and service for tests

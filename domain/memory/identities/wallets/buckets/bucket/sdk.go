@@ -9,12 +9,23 @@ import (
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
+// NewAdapter creates a new adapter instance
+func NewAdapter() Adapter {
+	return createAdapter()
+}
+
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
 	hashAdapter := hash.NewAdapter()
 	pkAdapter := encryption.NewAdapter()
 	immutableBuilder := entities.NewImmutableBuilder()
 	return createBuilder(hashAdapter, pkAdapter, immutableBuilder)
+}
+
+// Adapter represents the bucket adapter
+type Adapter interface {
+	ToJSON(ins Bucket) *JSONBucket
+	ToBucket(js *JSONBucket) (Bucket, error)
 }
 
 // Builder represents a bucket builder
