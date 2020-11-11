@@ -7,9 +7,13 @@ import (
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/blocks"
+	"github.com/xmn-services/buckets-network/domain/memory/buckets"
+	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
+	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	"github.com/xmn-services/buckets-network/domain/memory/genesis"
 	transfer_block_mined "github.com/xmn-services/buckets-network/domain/transfers/blocks/mined"
 	"github.com/xmn-services/buckets-network/libs/file"
+	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 // CreateBlockForTests creates a mined block instance for tests
@@ -21,6 +25,47 @@ func CreateBlockForTests(blk blocks.Block, mining string) Block {
 	}
 
 	return ins
+}
+
+// CreateBlockForTestsWithoutParams create block for tests without params
+func CreateBlockForTestsWithoutParams() (genesis.Genesis, Block) {
+	hashAdapter := hash.NewAdapter()
+	firstHash, _ := hashAdapter.FromBytes([]byte("this is the first hash"))
+	secondHash, _ := hashAdapter.FromBytes([]byte("this is the second hash"))
+
+	firstChunks := []chunks.Chunk{
+		chunks.CreateChunkForTests(uint(345234), *firstHash),
+	}
+
+	secondChunks := []chunks.Chunk{
+		chunks.CreateChunkForTests(uint(2345234), *secondHash),
+	}
+
+	firstRelativePath := "/first/is/relative/path"
+	secondRelativePath := "/second/is/relative/path"
+
+	files := []files.File{
+		files.CreateFileForTests(firstRelativePath, firstChunks),
+		files.CreateFileForTests(secondRelativePath, secondChunks),
+	}
+
+	bucketIns := buckets.CreateBucketForTests(files)
+
+	// genesis:
+	blockDiffBase := uint(1)
+	blockDiffIncreasePerTrx := float64(1.0)
+	linkDiff := uint(1)
+	genesisIns := genesis.CreateGenesisForTests(blockDiffBase, blockDiffIncreasePerTrx, linkDiff)
+
+	// block:
+	additional := uint(0)
+	blockIns := blocks.CreateBlockForTests(genesisIns, additional, []buckets.Bucket{
+		bucketIns,
+	})
+
+	// mined block:
+	mining := "sdfgfgsdf"
+	return genesisIns, CreateBlockForTests(blockIns, mining)
 }
 
 // CreateRepositoryServiceForTests creates a repository and service for tests
