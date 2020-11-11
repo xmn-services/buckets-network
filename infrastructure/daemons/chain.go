@@ -3,36 +3,29 @@ package daemons
 import (
 	"time"
 
+	"github.com/xmn-services/buckets-network/application"
 	application_chain "github.com/xmn-services/buckets-network/application/chains"
 	"github.com/xmn-services/buckets-network/application/identities/daemons"
-	application_peer "github.com/xmn-services/buckets-network/application/peers"
 	"github.com/xmn-services/buckets-network/domain/memory/chains"
-	client_chain "github.com/xmn-services/buckets-network/infrastructure/clients/chains"
-	client_link "github.com/xmn-services/buckets-network/infrastructure/clients/chains/links"
+	"github.com/xmn-services/buckets-network/infrastructure/clients"
 )
 
 type chain struct {
-	chainApp              application_chain.Application
-	peerApp               application_peer.Application
-	remoteChainAppBuilder client_chain.Builder
-	remoteLinkAppBuilder  client_link.Builder
-	waitPeriod            time.Duration
-	isStarted             bool
+	application      application.Application
+	remoteAppBuilder clients.Builder
+	waitPeriod       time.Duration
+	isStarted        bool
 }
 
 func createChain(
-	chainApp application_chain.Application,
-	peerApp application_peer.Application,
-	remoteChainAppBuilder client_chain.Builder,
-	remoteLinkAppBuilder client_link.Builder,
+	application application.Application,
+	remoteAppBuilder clients.Builder,
 	waitPeriod time.Duration,
 ) daemons.Application {
 	out := chain{
-		chainApp:              chainApp,
-		peerApp:               peerApp,
-		remoteChainAppBuilder: remoteChainAppBuilder,
-		remoteLinkAppBuilder:  remoteLinkAppBuilder,
-		waitPeriod:            waitPeriod,
+		application:      application,
+		remoteAppBuilder: remoteAppBuilder,
+		waitPeriod:       waitPeriod,
 	}
 
 	return &out
@@ -52,13 +45,13 @@ func (app *chain) Start() error {
 		}
 
 		// retrieve the local chain:
-		localChain, err := app.chainApp.Retrieve()
+		localChain, err := app.application.Sub().Chain().Retrieve()
 		if err != nil {
 			return err
 		}
 
 		// retrieve the peers:
-		localPeers, err := app.peerApp.Retrieve()
+		localPeers, err := app.application.Sub().Peers().Retrieve()
 		if err != nil {
 			return err
 		}
@@ -68,11 +61,12 @@ func (app *chain) Start() error {
 		var biggestChainApp application_chain.Application
 		allPeers := localPeers.All()
 		for _, onePeer := range allPeers {
-			remoteChainApp, err := app.remoteChainAppBuilder.Create().WithPeer(onePeer).Now()
+			remoteApp, err := app.remoteAppBuilder.Create().WithPeer(onePeer).Now()
 			if err != nil {
 				return err
 			}
 
+			remoteChainApp := remoteApp.Sub().Chain()
 			remoteChain, err := remoteChainApp.Retrieve()
 			if err != nil {
 				return err
@@ -102,7 +96,7 @@ func (app *chain) Start() error {
 			}
 
 			remoteHead := remoteChainAtIndex.Head()
-			err = app.chainApp.Upgrade(remoteHead)
+			err = app.application.Sub().Chain().Upgrade(remoteHead)
 			if err != nil {
 				return err
 			}

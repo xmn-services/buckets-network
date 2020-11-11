@@ -3,34 +3,31 @@ package daemons
 import (
 	"time"
 
+	"github.com/xmn-services/buckets-network/application"
 	"github.com/xmn-services/buckets-network/application/identities/daemons"
-	peers_app "github.com/xmn-services/buckets-network/application/peers"
 	domain_peers "github.com/xmn-services/buckets-network/domain/memory/peers"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
-	client_peer "github.com/xmn-services/buckets-network/infrastructure/clients/peers"
+	"github.com/xmn-services/buckets-network/infrastructure/clients"
 )
 
 type peers struct {
-	remoteApplicationBuilder client_peer.Builder
-	localApplication         peers_app.Application
+	remoteApplicationBuilder clients.Builder
+	localApplication         application.Application
 	peersBuilder             domain_peers.Builder
-	peersService             domain_peers.Service
 	waitPeriod               time.Duration
 	isStarted                bool
 }
 
 func createPeers(
-	remoteApplicationBuilder client_peer.Builder,
-	localApplication peers_app.Application,
+	remoteApplicationBuilder clients.Builder,
+	localApplication application.Application,
 	peersBuilder domain_peers.Builder,
-	peersService domain_peers.Service,
 	waitPeriod time.Duration,
 ) daemons.Application {
 	out := peers{
 		remoteApplicationBuilder: remoteApplicationBuilder,
 		localApplication:         localApplication,
 		peersBuilder:             peersBuilder,
-		peersService:             peersService,
 		waitPeriod:               waitPeriod,
 		isStarted:                false,
 	}
@@ -51,7 +48,7 @@ func (app *peers) Start() error {
 			continue
 		}
 
-		peers, err := app.localApplication.Retrieve()
+		peers, err := app.localApplication.Sub().Peers().Retrieve()
 		if err != nil {
 			return err
 		}
@@ -64,7 +61,7 @@ func (app *peers) Start() error {
 				return err
 			}
 
-			remotePeers, err := remoteApplication.Retrieve()
+			remotePeers, err := remoteApplication.Sub().Peers().Retrieve()
 			if err != nil {
 				return err
 			}
@@ -78,7 +75,7 @@ func (app *peers) Start() error {
 			return err
 		}
 
-		err = app.peersService.Save(updatedPeers)
+		err = app.localApplication.Sub().Peers().Save(updatedPeers)
 		if err != nil {
 			return err
 		}

@@ -3,44 +3,39 @@ package daemons
 import (
 	"time"
 
+	"github.com/xmn-services/buckets-network/application"
+	app "github.com/xmn-services/buckets-network/application"
 	"github.com/xmn-services/buckets-network/application/identities/daemons"
-	"github.com/xmn-services/buckets-network/domain/memory/identities"
-	peers_mem "github.com/xmn-services/buckets-network/domain/memory/peers"
-	client_bucket "github.com/xmn-services/buckets-network/infrastructure/clients/identities/buckets"
+	"github.com/xmn-services/buckets-network/infrastructure/clients"
 )
 
 type follow struct {
-	peersRepository        peers_mem.Repository
-	identityRepository     identities.Repository
-	identityService        identities.Service
-	remoteBucketAppBuilder client_bucket.Builder
-	waitPeriod             time.Duration
-	name                   string
-	password               string
-	seed                   string
-	isStarted              bool
+	application      app.Application
+	remoteAppBuilder clients.Builder
+	waitPeriod       time.Duration
+	name             string
+	password         string
+	seed             string
+	isStarted        bool
 }
 
 func createFollow(
-	peersRepository peers_mem.Repository,
-	identityRepository identities.Repository,
-	identityService identities.Service,
-	remoteBucketAppBuilder client_bucket.Builder,
+	application app.Application,
+	remoteAppBuilder clients.Builder,
 	waitPeriod time.Duration,
 	name string,
 	password string,
 	seed string,
+	isStarted bool,
 ) daemons.Application {
 	out := follow{
-		peersRepository:        peersRepository,
-		identityRepository:     identityRepository,
-		identityService:        identityService,
-		remoteBucketAppBuilder: remoteBucketAppBuilder,
-		waitPeriod:             waitPeriod,
-		name:                   name,
-		password:               password,
-		seed:                   seed,
-		isStarted:              false,
+		application:      application,
+		remoteAppBuilder: remoteAppBuilder,
+		waitPeriod:       waitPeriod,
+		name:             name,
+		password:         password,
+		seed:             seed,
+		isStarted:        isStarted,
 	}
 
 	return &out
@@ -60,44 +55,53 @@ func (app *follow) Start() error {
 		}
 
 		// retrieve the identity:
-		identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+		identityApp, err := app.application.Current().Authenticate(app.name, app.password, app.seed)
+		if err != nil {
+			return err
+		}
+
+		identity, err := identityApp.Current().Retrieve()
 		if err != nil {
 			return err
 		}
 
 		// retrieve the peers:
-		peers, err := app.peersRepository.Retrieve()
+		peers, err := app.application.Sub().Peers().Retrieve()
 		if err != nil {
 			return err
 		}
 
-		// build the client bucket:
-		removeBucketApp, err := app.remoteBucketAppBuilder.Create().
-			WithName(app.name).
-			WithPassword(app.password).
-			WithSeed(app.seed).
-			WithPeers(peers).
-			Now()
+		// build the remote applications:
+		allPeers := peers.All()
+		remoteApps := []application.Application{}
+		for _, onePeer := range allPeers {
+			remoteApp, err := app.remoteAppBuilder.Create().WithPeer(onePeer).Now()
+			if err != nil {
+				return err
+			}
 
-		if err != nil {
-			return err
+			remoteApps = append(remoteApps, remoteApp)
 		}
 
 		followBuckets := identity.Wallet().Follows().Requests()
 		for _, oneBucketHash := range followBuckets {
-			bucket, err := removeBucketApp.Retrieve(oneBucketHash)
-			if err != nil {
-				return err
-			}
+			for _, oneRemoteApp := range remoteApps {
+				bucket, err := oneRemoteApp.Sub().Follows().Retrieve(oneBucketHash)
+				if err != nil {
+					continue
+				}
 
-			err = identity.Wallet().Follows().Add(bucket)
-			if err != nil {
-				return err
+				err = identity.Wallet().Follows().Add(bucket)
+				if err != nil {
+					return err
+				}
+
+				break
 			}
 		}
 
 		// save the identity:
-		err = app.identityService.Update(
+		err = app.application.Current().UpdateIdentity(
 			identity,
 			app.password,
 			app.password,

@@ -8,7 +8,6 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/blocks"
 	mined_blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets"
-	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
@@ -16,7 +15,6 @@ type blockMiner struct {
 	hashAdapter       hash.Adapter
 	blockBuilder      blocks.Builder
 	minedBlockBuilder mined_blocks.Builder
-	identityService   identities.Service
 	application       app.Application
 	name              string
 	seed              string
@@ -29,7 +27,6 @@ func createBlockMiner(
 	hashAdapter hash.Adapter,
 	blockBuilder blocks.Builder,
 	minedBlockBuilder mined_blocks.Builder,
-	identityService identities.Service,
 	application app.Application,
 	name string,
 	seed string,
@@ -41,7 +38,6 @@ func createBlockMiner(
 		hashAdapter:       hashAdapter,
 		blockBuilder:      blockBuilder,
 		minedBlockBuilder: minedBlockBuilder,
-		identityService:   identityService,
 		application:       application,
 		name:              name,
 		seed:              seed,
@@ -136,7 +132,7 @@ func (app *blockMiner) Start() error {
 		}
 
 		// save the identity:
-		err = app.identityService.Update(identity, app.password, app.password)
+		err = app.application.Current().UpdateIdentity(identity, app.password, app.password)
 		if err != nil {
 			return err
 		}

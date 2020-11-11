@@ -2,6 +2,7 @@ package application
 
 import (
 	"github.com/xmn-services/buckets-network/application/chains"
+	"github.com/xmn-services/buckets-network/application/follows"
 	"github.com/xmn-services/buckets-network/application/genesis"
 	application_peers "github.com/xmn-services/buckets-network/application/peers"
 )
@@ -10,17 +11,20 @@ type subApplications struct {
 	peerApp    application_peers.Application
 	genesisApp genesis.Application
 	chainApp   chains.Application
+	followApp  follows.Application
 }
 
 func createSubApplicationa(
 	peerApp application_peers.Application,
 	genesisApp genesis.Application,
 	chainApp chains.Application,
+	followApp follows.Application,
 ) SubApplications {
 	out := subApplications{
 		peerApp:    peerApp,
 		genesisApp: genesisApp,
 		chainApp:   chainApp,
+		followApp:  followApp,
 	}
 
 	return &out
@@ -39,4 +43,9 @@ func (app *subApplications) Genesis() genesis.Application {
 // Chain returns the chain application
 func (app *subApplications) Chain() chains.Application {
 	return app.chainApp
+}
+
+// Follows returns the follow application
+func (app *subApplications) Follows() follows.Application {
+	return app.followApp
 }

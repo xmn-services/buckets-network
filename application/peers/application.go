@@ -45,6 +45,11 @@ func (app *application) SaveOnion(host string, port uint) error {
 	return app.save(builder, host, port)
 }
 
+// Save save peers
+func (app *application) Save(peers peers.Peers) error {
+	return app.peersService.Save(peers)
+}
+
 func (app *application) save(builder peer.Builder, host string, port uint) error {
 	newPeer, err := builder.WithHost(host).WithPort(port).Now()
 	if err != nil {

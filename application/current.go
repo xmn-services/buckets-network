@@ -53,3 +53,8 @@ func (app *current) Authenticate(name string, seed string, password string) (app
 		WithPassword(password).
 		Now()
 }
+
+// UpdateIdentity updates an identity
+func (app *current) UpdateIdentity(identity identities.Identity, password string, newPassword string) error {
+	return app.identityService.Update(identity, password, newPassword)
+}

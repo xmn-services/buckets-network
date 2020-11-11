@@ -5,22 +5,19 @@ import (
 
 	app "github.com/xmn-services/buckets-network/application"
 	"github.com/xmn-services/buckets-network/application/identities/daemons"
-	"github.com/xmn-services/buckets-network/domain/memory/identities"
 )
 
 type queue struct {
-	application     app.Application
-	identityService identities.Service
-	name            string
-	seed            string
-	password        string
-	waitPeriod      time.Duration
-	isStarted       bool
+	application app.Application
+	name        string
+	seed        string
+	password    string
+	waitPeriod  time.Duration
+	isStarted   bool
 }
 
 func createQueue(
 	app app.Application,
-	identityService identities.Service,
 	name string,
 	seed string,
 	password string,
@@ -28,13 +25,12 @@ func createQueue(
 	isStarted bool,
 ) daemons.Application {
 	out := queue{
-		application:     app,
-		identityService: identityService,
-		name:            name,
-		seed:            seed,
-		password:        password,
-		waitPeriod:      waitPeriod,
-		isStarted:       isStarted,
+		application: app,
+		name:        name,
+		seed:        seed,
+		password:    password,
+		waitPeriod:  waitPeriod,
+		isStarted:   isStarted,
 	}
 
 	return &out
@@ -83,7 +79,7 @@ func (app *queue) Start() error {
 		}
 
 		// update the identity:
-		err = app.identityService.Update(identity, app.password, app.password)
+		err = app.application.Current().UpdateIdentity(identity, app.password, app.password)
 		if err != nil {
 			return err
 		}

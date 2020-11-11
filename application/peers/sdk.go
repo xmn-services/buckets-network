@@ -7,4 +7,5 @@ type Application interface {
 	Retrieve() (peers.Peers, error)
 	SaveClear(host string, port uint) error
 	SaveOnion(host string, port uint) error
+	Save(peers peers.Peers) error
 }
