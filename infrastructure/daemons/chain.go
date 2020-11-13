@@ -101,8 +101,6 @@ func (app *chain) Start() error {
 				return err
 			}
 		}
-
-		return nil
 	}
 }
 

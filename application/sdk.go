@@ -6,6 +6,7 @@ import (
 	"github.com/xmn-services/buckets-network/application/genesis"
 	application_identities "github.com/xmn-services/buckets-network/application/identities"
 	application_peers "github.com/xmn-services/buckets-network/application/peers"
+	"github.com/xmn-services/buckets-network/application/storages"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 )
 
@@ -28,4 +29,5 @@ type SubApplications interface {
 	Genesis() genesis.Application
 	Chain() chains.Application
 	Follows() follows.Application
+	Storage() storages.Application
 }

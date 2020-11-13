@@ -5,6 +5,7 @@ import (
 	"github.com/xmn-services/buckets-network/application/follows"
 	"github.com/xmn-services/buckets-network/application/genesis"
 	application_peers "github.com/xmn-services/buckets-network/application/peers"
+	"github.com/xmn-services/buckets-network/application/storages"
 )
 
 type subApplications struct {
@@ -12,6 +13,7 @@ type subApplications struct {
 	genesisApp genesis.Application
 	chainApp   chains.Application
 	followApp  follows.Application
+	storageApp storages.Application
 }
 
 func createSubApplicationa(
@@ -19,12 +21,14 @@ func createSubApplicationa(
 	genesisApp genesis.Application,
 	chainApp chains.Application,
 	followApp follows.Application,
+	storageApp storages.Application,
 ) SubApplications {
 	out := subApplications{
 		peerApp:    peerApp,
 		genesisApp: genesisApp,
 		chainApp:   chainApp,
 		followApp:  followApp,
+		storageApp: storageApp,
 	}
 
 	return &out
@@ -48,4 +52,9 @@ func (app *subApplications) Chain() chains.Application {
 // Follows returns the follow application
 func (app *subApplications) Follows() follows.Application {
 	return app.followApp
+}
+
+// Storage returns the storage application
+func (app *subApplications) Storage() storages.Application {
+	return app.storageApp
 }
