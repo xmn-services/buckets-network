@@ -74,7 +74,7 @@ func (app *blockMiner) Start() error {
 		}
 
 		// retrieve the queue buckets:
-		queueBuckets := identity.Wallet().Queue().All()
+		queueBuckets := identity.Wallet().Miner().Queue().All()
 
 		// make the list of block buckets:
 		blockBuckets := []buckets.Bucket{}
@@ -83,7 +83,7 @@ func (app *blockMiner) Start() error {
 			blockBuckets = append(blockBuckets, oneQueuedBucket.Bucket())
 
 			// remove the queued bucket from the queued identity:
-			identity.Wallet().Broadcasted().Add(oneQueuedBucket)
+			identity.Wallet().Miner().Broadcasted().Add(oneQueuedBucket)
 		}
 
 		// retrieve the chain:
@@ -126,7 +126,7 @@ func (app *blockMiner) Start() error {
 		}
 
 		// add the block to the wallet:
-		err = identity.Wallet().Blocks().Add(minedBlock)
+		err = identity.Wallet().Miner().Blocks().Add(minedBlock)
 		if err != nil {
 			return err
 		}

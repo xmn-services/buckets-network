@@ -79,7 +79,7 @@ func (app *linkMiner) Start() error {
 		}
 
 		// fetch the blocks to mine:
-		blocks := identity.Wallet().Blocks().All()
+		blocks := identity.Wallet().Miner().Blocks().All()
 		for _, oneBlock := range blocks {
 			prev := chain.Head().Hash()
 			linkCreatedOn := time.Now().UTC()

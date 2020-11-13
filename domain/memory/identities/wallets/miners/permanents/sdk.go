@@ -1,9 +1,9 @@
-package buckets
+package permanents
 
 import (
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/buckets/bucket"
+	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/buckets/bucket"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -29,6 +29,5 @@ type Buckets interface {
 	entities.Mutable
 	All() []bucket.Bucket
 	Add(bucket bucket.Bucket) error
-	Delete(hash hash.Hash) error
 	Fetch(absoluteFilePath string) (bucket.Bucket, error)
 }

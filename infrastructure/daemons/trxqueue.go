@@ -7,7 +7,7 @@ import (
 	"github.com/xmn-services/buckets-network/application/identities/daemons"
 )
 
-type queue struct {
+type trxQueue struct {
 	application app.Application
 	name        string
 	seed        string
@@ -24,7 +24,7 @@ func createQueue(
 	waitPeriod time.Duration,
 	isStarted bool,
 ) daemons.Application {
-	out := queue{
+	out := trxQueue{
 		application: app,
 		name:        name,
 		seed:        seed,
@@ -37,7 +37,7 @@ func createQueue(
 }
 
 // Start starts the application
-func (app *queue) Start() error {
+func (app *trxQueue) Start() error {
 	app.isStarted = true
 
 	for {
@@ -61,18 +61,18 @@ func (app *queue) Start() error {
 		}
 
 		// retrieve the buckets that have not been added to a transaction yet:
-		buckets := identity.Wallet().New().All()
+		buckets := identity.Wallet().Miner().ToTransact().All()
 
 		// for each bucket, create a transaction:
 		for _, oneBucket := range buckets {
-			// add the transaction to the to-mine queue:
-			err = identity.Wallet().Queue().Add(oneBucket)
+			// add the transaction to the to-mine trxQueue:
+			err = identity.Wallet().Miner().Queue().Add(oneBucket)
 			if err != nil {
 				return err
 			}
 
 			// remove the bucket from the new list:
-			err := identity.Wallet().New().Delete(oneBucket.Hash())
+			err := identity.Wallet().Miner().ToTransact().Delete(oneBucket.Hash())
 			if err != nil {
 				return err
 			}
@@ -87,7 +87,7 @@ func (app *queue) Start() error {
 }
 
 // Stop stops the application
-func (app *queue) Stop() error {
+func (app *trxQueue) Stop() error {
 	app.isStarted = true
 	return nil
 }

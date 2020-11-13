@@ -10,7 +10,7 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
-	identity_buckets "github.com/xmn-services/buckets-network/domain/memory/identities/wallets/buckets/bucket"
+	identity_buckets "github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/buckets/bucket"
 	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -103,7 +103,7 @@ func (app *application) Add(absolutePath string) error {
 		return err
 	}
 
-	err = identity.Wallet().New().Add(identityBucket)
+	err = identity.Wallet().Miner().ToTransact().Add(identityBucket)
 	if err != nil {
 		return err
 	}
@@ -118,10 +118,10 @@ func (app *application) Delete(absolutePath string) error {
 		return err
 	}
 
-	buckets := identity.Wallet().New().All()
+	buckets := identity.Wallet().Miner().ToTransact().All()
 	for _, oneBucket := range buckets {
 		if oneBucket.AbsolutePath() == absolutePath {
-			err := identity.Wallet().New().Delete(oneBucket.Hash())
+			err := identity.Wallet().Miner().ToTransact().Delete(oneBucket.Hash())
 			if err != nil {
 				return err
 			}
