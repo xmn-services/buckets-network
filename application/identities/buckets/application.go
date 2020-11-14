@@ -25,7 +25,6 @@ type application struct {
 	identityBucketBuilder identity_buckets.Builder
 	identityRepository    identities.Repository
 	identityService       identities.Service
-	identityBuilder       identities.Builder
 	name                  string
 	password              string
 	seed                  string
@@ -42,7 +41,6 @@ func createApplication(
 	identityBucketBuilder identity_buckets.Builder,
 	identityRepository identities.Repository,
 	identityService identities.Service,
-	identityBuilder identities.Builder,
 	name string,
 	password string,
 	seed string,
@@ -58,7 +56,6 @@ func createApplication(
 		identityBucketBuilder: identityBucketBuilder,
 		identityRepository:    identityRepository,
 		identityService:       identityService,
-		identityBuilder:       identityBuilder,
 		name:                  name,
 		password:              password,
 		seed:                  seed,
