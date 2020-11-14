@@ -5,6 +5,7 @@ import (
 
 	app "github.com/xmn-services/buckets-network/application"
 	"github.com/xmn-services/buckets-network/application/identities/daemons"
+	"github.com/xmn-services/buckets-network/domain/memory/chains"
 	"github.com/xmn-services/buckets-network/domain/memory/links"
 	mined_links "github.com/xmn-services/buckets-network/domain/memory/links/mined"
 	"github.com/xmn-services/buckets-network/libs/hash"
@@ -14,6 +15,7 @@ type linkMiner struct {
 	hashAdapter      hash.Adapter
 	linkBuilder      links.Builder
 	minedLinkBuilder mined_links.Builder
+	chainBuilder     chains.Builder
 	application      app.Application
 	name             string
 	seed             string
@@ -26,6 +28,7 @@ func createLinkMiner(
 	hashAdapter hash.Adapter,
 	linkBuilder links.Builder,
 	minedLinkBuilder mined_links.Builder,
+	chainBuilder chains.Builder,
 	application app.Application,
 	name string,
 	seed string,
@@ -37,6 +40,7 @@ func createLinkMiner(
 		hashAdapter:      hashAdapter,
 		linkBuilder:      linkBuilder,
 		minedLinkBuilder: minedLinkBuilder,
+		chainBuilder:     chainBuilder,
 		application:      application,
 		name:             name,
 		seed:             seed,
@@ -112,8 +116,16 @@ func (app *linkMiner) Start() error {
 				return err
 			}
 
+			gen := chain.Genesis()
+			root := chain.Root()
+			total := chain.Total() + 1
+			updatedChain, err := app.chainBuilder.Create().WithGenesis(gen).WithRoot(root).WithHead(minedLink).WithTotal(total).Now()
+			if err != nil {
+				return err
+			}
+
 			// update the chain:
-			err = app.application.Sub().Chain().Upgrade(minedLink)
+			err = app.application.Sub().Chain().Update(updatedChain)
 			if err != nil {
 				return err
 			}

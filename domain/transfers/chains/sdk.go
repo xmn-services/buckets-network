@@ -9,15 +9,15 @@ import (
 )
 
 // NewService creates a new service instance
-func NewService(fileService file.Service, fileNameWithExt string) Service {
+func NewService(fileService file.Service, fileName string, extName string) Service {
 	adapter := NewAdapter()
-	return createService(adapter, fileService, fileNameWithExt)
+	return createService(adapter, fileService, fileName, extName)
 }
 
 // NewRepository creates a new repository instance
-func NewRepository(fileRepository file.Repository, fileNameWithExt string) Repository {
+func NewRepository(fileRepository file.Repository, fileName string, extName string) Repository {
 	adapter := NewAdapter()
-	return createRepository(adapter, fileRepository, fileNameWithExt)
+	return createRepository(adapter, fileRepository, fileName, extName)
 }
 
 // NewAdapter creates a new adapter instance
@@ -61,6 +61,7 @@ type Chain interface {
 // Repository represents the chain repository
 type Repository interface {
 	Retrieve() (Chain, error)
+	RetrieveAtIndex(index uint) (Chain, error)
 }
 
 // Service represents the chain service

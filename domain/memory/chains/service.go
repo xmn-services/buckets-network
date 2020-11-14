@@ -41,7 +41,7 @@ func createService(
 
 // Update updates a chain
 func (app *service) Update(original Chain, updated Chain) error {
-	// make the the genesis is the same in both chains:
+	// make sure the the genesis is the same in both chains:
 	updatedGenHash := updated.Genesis().Hash()
 	originalGenHash := original.Genesis().Hash()
 	if originalGenHash.Compare(updatedGenHash) {

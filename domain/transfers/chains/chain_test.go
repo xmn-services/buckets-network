@@ -54,10 +54,11 @@ func TestChain_Success(t *testing.T) {
 	}
 
 	// repository and service:
-	fileNameWithExt := "chain.json"
+	fileName := "chain"
+	extName := "json"
 	fileRepositoryService := file.CreateRepositoryServiceForTests()
-	repository := NewRepository(fileRepositoryService, fileNameWithExt)
-	service := NewService(fileRepositoryService, fileNameWithExt)
+	repository := NewRepository(fileRepositoryService, fileName, extName)
+	service := NewService(fileRepositoryService, fileName, extName)
 
 	err = service.Save(chain)
 	if err != nil {

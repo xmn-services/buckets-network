@@ -13,6 +13,7 @@ import (
 type chain struct {
 	application      application.Application
 	remoteAppBuilder clients.Builder
+	chainBuilder     chains.Builder
 	waitPeriod       time.Duration
 	isStarted        bool
 }
@@ -20,11 +21,13 @@ type chain struct {
 func createChain(
 	application application.Application,
 	remoteAppBuilder clients.Builder,
+	chainBuilder chains.Builder,
 	waitPeriod time.Duration,
 ) daemons.Application {
 	out := chain{
 		application:      application,
 		remoteAppBuilder: remoteAppBuilder,
+		chainBuilder:     chainBuilder,
 		waitPeriod:       waitPeriod,
 	}
 
@@ -96,7 +99,15 @@ func (app *chain) Start() error {
 			}
 
 			remoteHead := remoteChainAtIndex.Head()
-			err = app.application.Sub().Chain().Upgrade(remoteHead)
+			gen := localChain.Genesis()
+			root := localChain.Root()
+			total := localChain.Total() + 1
+			updatedChain, err := app.chainBuilder.Create().WithGenesis(gen).WithRoot(root).WithHead(remoteHead).WithTotal(total).Now()
+			if err != nil {
+				return err
+			}
+
+			err = app.application.Sub().Chain().Update(updatedChain)
 			if err != nil {
 				return err
 			}

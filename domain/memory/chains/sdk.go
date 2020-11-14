@@ -76,6 +76,7 @@ type Chain interface {
 // Repository represents the chain repository
 type Repository interface {
 	Retrieve() (Chain, error)
+	RetrieveAtIndex(index uint) (Chain, error)
 }
 
 // Service represents the chain service

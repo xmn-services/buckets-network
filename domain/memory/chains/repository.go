@@ -36,6 +36,16 @@ func createRepository(
 	return &out
 }
 
+// RetrieveAtIndex retrieves chain at index
+func (app *repository) RetrieveAtIndex(index uint) (Chain, error) {
+	trChain, err := app.trRepository.RetrieveAtIndex(index)
+	if err != nil {
+		return nil, err
+	}
+
+	return app.toChain(trChain)
+}
+
 // Retrieve retrieves a chain instance
 func (app *repository) Retrieve() (Chain, error) {
 	trChain, err := app.trRepository.Retrieve()
@@ -43,6 +53,10 @@ func (app *repository) Retrieve() (Chain, error) {
 		return nil, err
 	}
 
+	return app.toChain(trChain)
+}
+
+func (app *repository) toChain(trChain transfer_chains.Chain) (Chain, error) {
 	genHash := trChain.Genesis()
 	gen, err := app.genesisRepository.Retrieve()
 	if err != nil {
