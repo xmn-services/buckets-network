@@ -2,7 +2,7 @@ package file
 
 import (
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
-	transfer_data "github.com/xmn-services/buckets-network/domain/transfers/buckets/files/chunks/data"
+	transfer_data "github.com/xmn-services/buckets-network/domain/transfers/file"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 

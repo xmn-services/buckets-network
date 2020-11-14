@@ -1,4 +1,4 @@
-package data
+package file
 
 import (
 	"github.com/xmn-services/buckets-network/libs/file"
