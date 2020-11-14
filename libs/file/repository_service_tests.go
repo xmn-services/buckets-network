@@ -20,6 +20,16 @@ func CreateRepositoryServiceForTests() *RepositoryServiceForTests {
 	return &out
 }
 
+// Exists returns true if the file exists, false otherwise
+func (app *RepositoryServiceForTests) Exists(filePath string) bool {
+	data, err := app.Retrieve(filePath)
+	if err != nil {
+		return false
+	}
+
+	return len(data) > 0
+}
+
 // Retrieve retrieves data for path
 func (app *RepositoryServiceForTests) Retrieve(relativePath string) ([]byte, error) {
 	if dat, ok := app.data[relativePath]; ok {

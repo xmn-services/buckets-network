@@ -17,6 +17,11 @@ func createRepository(fileRepository file.Repository) Repository {
 	return &out
 }
 
+// Exists returns true if the data exists, false otherwise
+func (app *repository) Exists(hash hash.Hash) bool {
+	return app.fileRepository.Exists(hash.String())
+}
+
 // Retrieve retrieves data by hash
 func (app *repository) Retrieve(hsh hash.Hash) ([]byte, error) {
 	return app.fileRepository.Retrieve(hsh.String())

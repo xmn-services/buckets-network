@@ -1,21 +1,22 @@
 package files
 
 import (
-	"hash"
-
-	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
+	stored_file "github.com/xmn-services/buckets-network/domain/memory/file"
 	"github.com/xmn-services/buckets-network/libs/entities"
+	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
-// File represents a stored file
-type File interface {
-	entities.Immutable
-	File() files.File
-	Data() []Data
+// Factory represents a files factory
+type Factory interface {
+	Create() Files
 }
 
-// Data represents a file's data
-type Data interface {
-	Hash() hash.Hash
-	Content() []byte
+// Files represents files
+type Files interface {
+	entities.Mutable
+	All() []stored_file.File
+	Exists(hash hash.Hash) bool
+	Add(file stored_file.File) error
+	Fetch(hash hash.Hash) (stored_file.File, error)
+	Delete(hash hash.Hash) error
 }

@@ -56,6 +56,7 @@ type EncryptedFileDiskServiceBuilder interface {
 
 // Repository represents a file repository
 type Repository interface {
+	Exists(relativePath string) bool
 	Retrieve(relativePath string) ([]byte, error)
 	RetrieveAll(relativePath string) ([]string, error)
 }

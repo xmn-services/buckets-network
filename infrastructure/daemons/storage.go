@@ -107,16 +107,16 @@ func (app *storage) download(identity identities.Identity, clientApplication []a
 	for _, oneFile := range toDownloadFiles {
 		for _, oneClient := range clientApplication {
 			clientStorageApp := oneClient.Sub().Storage()
-			if !clientStorageApp.Exists(oneFile) {
+			if !clientStorageApp.IsStored(oneFile.Hash()) {
 				continue
 			}
 
-			storedFile, err := clientStorageApp.Retrieve(oneFile)
+			storedFile, err := clientStorageApp.Retrieve(oneFile.Hash())
 			if err != nil {
 				// log
 			}
 
-			err = identity.Wallet().Storages().Store(storedFile)
+			err = identity.Wallet().Storages().Stored().Add(storedFile)
 			if err != nil {
 				// log
 			}

@@ -1,9 +1,9 @@
 package files
 
 import (
-	"github.com/xmn-services/buckets-network/libs/hash"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	transfer_file "github.com/xmn-services/buckets-network/domain/transfers/buckets/files"
+	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type repository struct {

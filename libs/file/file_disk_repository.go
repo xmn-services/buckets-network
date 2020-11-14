@@ -1,7 +1,10 @@
 package file
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
@@ -17,8 +20,23 @@ func createFileDiskRepository(basePath string) Repository {
 	return &out
 }
 
+// Exists returns true if the file exists, false otherwise
+func (app *fileDiskRepository) Exists(relativePath string) bool {
+	path := filepath.Join(app.basePath, relativePath)
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return !info.IsDir()
+}
+
 // Retrieve retrieves data from file using its name
 func (app *fileDiskRepository) Retrieve(relativePath string) ([]byte, error) {
+	if !app.Exists(relativePath) {
+		str := fmt.Sprintf("the file (path: %s) does not exists", relativePath)
+		return nil, errors.New(str)
+	}
+
 	path := filepath.Join(app.basePath, relativePath)
 	encrypted, err := ioutil.ReadFile(path)
 	if err != nil {

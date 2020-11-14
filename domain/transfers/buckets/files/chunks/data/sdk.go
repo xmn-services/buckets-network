@@ -20,6 +20,7 @@ func NewRepository(fileRepository file.Repository) Repository {
 
 // Repository represents a data repository
 type Repository interface {
+	Exists(hash hash.Hash) bool
 	Retrieve(hash hash.Hash) ([]byte, error)
 }
 

@@ -18,6 +18,11 @@ func createEncryptedFileDiskRepository(encryption encryption.Encryption, reposit
 	return &out
 }
 
+// Exists returns true if the file exists, false otherwise
+func (app *encryptedFileDiskRepository) Exists(relativePath string) bool {
+	return app.repository.Exists(relativePath)
+}
+
 // Retrieve retrieves data from file using its name
 func (app *encryptedFileDiskRepository) Retrieve(relativePath string) ([]byte, error) {
 	encrypted, err := app.repository.Retrieve(relativePath)

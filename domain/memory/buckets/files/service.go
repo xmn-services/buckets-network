@@ -62,7 +62,7 @@ func (app *service) SaveAll(files []File) error {
 	return nil
 }
 
-// Delete deletes a chunk instance
+// Delete deletes a file instance
 func (app *service) Delete(file File) error {
 	trChunk, err := app.adapter.ToTransfer(file)
 	if err != nil {
