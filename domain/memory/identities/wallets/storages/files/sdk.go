@@ -17,6 +17,5 @@ type Files interface {
 	All() []stored_file.File
 	Exists(hash hash.Hash) bool
 	Add(file stored_file.File) error
-	Fetch(hash hash.Hash) (stored_file.File, error)
 	Delete(hash hash.Hash) error
 }

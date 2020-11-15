@@ -7,6 +7,11 @@ import (
 	"github.com/xmn-services/buckets-network/libs/entities"
 )
 
+// Factory represents a miner factory
+type Factory interface {
+	Create() Miner
+}
+
 // Miner represents the miner
 type Miner interface {
 	entities.Mutable

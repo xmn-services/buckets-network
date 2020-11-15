@@ -8,9 +8,33 @@ import (
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
+// NewAdapter creates a new adapter instance
+func NewAdapter() Adapter {
+	return createAdapter()
+}
+
+// NewFactory creates a new factory instance
+func NewFactory() Factory {
+	builder := NewBuilder()
+	return createFactory(builder)
+}
+
+// NewBuilder creates a new builder instance
+func NewBuilder() Builder {
+	hashAdapter := hash.NewAdapter()
+	mutableBuilder := entities.NewMutableBuilder()
+	return createBuilder(hashAdapter, mutableBuilder)
+}
+
+// Adapter represents the buckets adapter
+type Adapter interface {
+	ToJSON(ins Buckets) *JSONBuckets
+	ToBuckets(js *JSONBuckets) (Buckets, error)
+}
+
 // Factory represents a buckets factory
 type Factory interface {
-	Create() Buckets
+	Create() (Buckets, error)
 }
 
 // Builder represents a buckets builder
@@ -30,5 +54,4 @@ type Buckets interface {
 	All() []bucket.Bucket
 	Add(bucket bucket.Bucket) error
 	Delete(hash hash.Hash) error
-	Fetch(absoluteFilePath string) (bucket.Bucket, error)
 }

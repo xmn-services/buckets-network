@@ -9,5 +9,4 @@ import (
 type Application interface {
 	IsStored(file hash.Hash) bool
 	Retrieve(file hash.Hash) (stored_file.File, error)
-	Delete(file hash.Hash) error
 }
