@@ -2,9 +2,5 @@ package genesis
 
 // Application represents the genesis application
 type Application interface {
-	Init(
-		blockDifficultyBase uint,
-		blockDifficultyIncreasePerTrx float64,
-		linkDifficulty uint,
-	) error
+	Init(baseDifficulty uint, increasePerBucket float64, linkDifficulty uint) error
 }

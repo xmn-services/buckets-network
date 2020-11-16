@@ -23,13 +23,9 @@ func createApplication(
 }
 
 // Init initializes the genesis block
-func (app *application) Init(
-	blockDifficultyBase uint,
-	blockDifficultyIncreasePerBucket float64,
-	linkDifficulty uint,
-) error {
+func (app *application) Init(baseDifficulty uint, increasePerBucket float64, linkDifficulty uint) error {
 	// mine the chain:
-	chain, err := app.minerApplication.Genesis(blockDifficultyBase, blockDifficultyIncreasePerBucket, linkDifficulty)
+	chain, err := app.minerApplication.Init(baseDifficulty, increasePerBucket, linkDifficulty)
 	if err != nil {
 		return err
 	}

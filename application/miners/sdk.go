@@ -17,7 +17,7 @@ const miningBeginValue = 0
 
 // Application represents a miner application
 type Application interface {
-	Genesis(baseDifficulty uint, increasePerBucket float64, linkDifficulty uint) (chains.Chain, error)
+	Init(baseDifficulty uint, increasePerBucket float64, linkDifficulty uint) (chains.Chain, error)
 	Block(bucketHashes []string, baseDifficulty uint, increasePerBucket float64) (mined_block.Block, error)
 	Link(prevMinedBlockHasStr string, newMinedBlockHashStr string, linkDifficulty uint) (mined_link.Link, error)
 }

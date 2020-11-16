@@ -55,8 +55,8 @@ func createApplication(
 	return &out
 }
 
-// Genesis mines the genesis chain
-func (app *application) Genesis(baseDifficulty uint, increasePerBucket float64, linkDifficulty uint) (chains.Chain, error) {
+// Init mines the initial chain
+func (app *application) Init(baseDifficulty uint, increasePerBucket float64, linkDifficulty uint) (chains.Chain, error) {
 	_, err := app.genesisRepository.Retrieve()
 	if err == nil {
 		return nil, errors.New("the genesis block has already been created")
