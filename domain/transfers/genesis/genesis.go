@@ -11,7 +11,7 @@ import (
 type genesis struct {
 	immutable               entities.Immutable
 	blockDiffBase           uint
-	blockDiffIncreasePerTrx float64
+	blockDiffIncreasePerBucket float64
 	linkDiff                uint
 }
 
@@ -26,7 +26,7 @@ func createGenesisFromJSON(ins *jsonGenesis) (Genesis, error) {
 		Create().
 		WithHash(*hsh).
 		WithBlockDifficultyBase(ins.BlockDiffBase).
-		WithBlockDifficultyIncreasePerTrx(ins.BlockDiffIncreasePerTrx).
+		WithBlockDifficultyIncreasePerBucket(ins.BlockDiffIncreasePerBucket).
 		WithLinkDifficulty(ins.LinkDiff).
 		CreatedOn(ins.CreatedOn).
 		Now()
@@ -35,13 +35,13 @@ func createGenesisFromJSON(ins *jsonGenesis) (Genesis, error) {
 func createGenesis(
 	immutable entities.Immutable,
 	blockDiffBase uint,
-	blockDiffIncreasePerTrx float64,
+	blockDiffIncreasePerBucket float64,
 	linkDiff uint,
 ) Genesis {
 	out := genesis{
 		immutable:               immutable,
 		blockDiffBase:           blockDiffBase,
-		blockDiffIncreasePerTrx: blockDiffIncreasePerTrx,
+		blockDiffIncreasePerBucket: blockDiffIncreasePerBucket,
 		linkDiff:                linkDiff,
 	}
 
@@ -58,9 +58,9 @@ func (obj *genesis) BlockDifficultyBase() uint {
 	return obj.blockDiffBase
 }
 
-// BlockDifficultyIncreasePerTrx returns the block difficulty increase per trx
-func (obj *genesis) BlockDifficultyIncreasePerTrx() float64 {
-	return obj.blockDiffIncreasePerTrx
+// BlockDifficultyIncreasePerBucket returns the block difficulty increase per bucket
+func (obj *genesis) BlockDifficultyIncreasePerBucket() float64 {
+	return obj.blockDiffIncreasePerBucket
 }
 
 // LinkDifficulty returns the link difficulty
@@ -95,7 +95,7 @@ func (obj *genesis) UnmarshalJSON(data []byte) error {
 	insGenesis := pr.(*genesis)
 	obj.immutable = insGenesis.immutable
 	obj.blockDiffBase = insGenesis.blockDiffBase
-	obj.blockDiffIncreasePerTrx = insGenesis.blockDiffIncreasePerTrx
+	obj.blockDiffIncreasePerBucket = insGenesis.blockDiffIncreasePerBucket
 	obj.linkDiff = insGenesis.linkDiff
 	return nil
 }

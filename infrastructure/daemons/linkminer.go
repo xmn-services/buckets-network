@@ -5,48 +5,31 @@ import (
 
 	app "github.com/xmn-services/buckets-network/application"
 	"github.com/xmn-services/buckets-network/application/identities/daemons"
-	"github.com/xmn-services/buckets-network/domain/memory/chains"
-	"github.com/xmn-services/buckets-network/domain/memory/links"
-	mined_links "github.com/xmn-services/buckets-network/domain/memory/links/mined"
-	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type linkMiner struct {
-	hashAdapter      hash.Adapter
-	linkBuilder      links.Builder
-	minedLinkBuilder mined_links.Builder
-	chainBuilder     chains.Builder
-	application      app.Application
-	name             string
-	seed             string
-	password         string
-	waitPeriod       time.Duration
-	isStarted        bool
+	application app.Application
+	name        string
+	seed        string
+	password    string
+	waitPeriod  time.Duration
+	isStarted   bool
 }
 
 func createLinkMiner(
-	hashAdapter hash.Adapter,
-	linkBuilder links.Builder,
-	minedLinkBuilder mined_links.Builder,
-	chainBuilder chains.Builder,
 	application app.Application,
 	name string,
 	seed string,
 	password string,
 	waitPeriod time.Duration,
-	isStarted bool,
 ) daemons.Application {
 	out := linkMiner{
-		hashAdapter:      hashAdapter,
-		linkBuilder:      linkBuilder,
-		minedLinkBuilder: minedLinkBuilder,
-		chainBuilder:     chainBuilder,
-		application:      application,
-		name:             name,
-		seed:             seed,
-		password:         password,
-		waitPeriod:       waitPeriod,
-		isStarted:        isStarted,
+		application: application,
+		name:        name,
+		seed:        seed,
+		password:    password,
+		waitPeriod:  waitPeriod,
+		isStarted:   false,
 	}
 
 	return &out
@@ -85,47 +68,20 @@ func (app *linkMiner) Start() error {
 		// fetch the mined blocks to link:
 		blocks := identity.Wallet().Miner().ToLink().All()
 		for _, oneBlock := range blocks {
-			prev := chain.Head().Hash()
-			linkCreatedOn := time.Now().UTC()
-			link, err := app.linkBuilder.Create().
-				WithPreviousLink(prev).
-				WithNext(oneBlock).
-				CreatedOn(linkCreatedOn).
-				Now()
-
-			if err != nil {
-				return err
-			}
-
-			// mine:
+			// mine the link:
 			difficulty := chain.Genesis().Difficulty().Link()
-			results, err := mine(app.hashAdapter, difficulty, link.Hash())
-			if err != nil {
-				return err
-			}
+			minedLink, err := app.application.Sub().Miner().Link(
+				chain.Head().Hash().String(),
+				oneBlock.Hash().String(),
+				difficulty,
+			)
 
-			// return the mined link:
-			minedLinkCreatedOn := time.Now().UTC()
-			minedLink, err := app.minedLinkBuilder.Create().
-				WithLink(link).
-				WithMining(results).
-				CreatedOn(minedLinkCreatedOn).
-				Now()
-
-			if err != nil {
-				return err
-			}
-
-			gen := chain.Genesis()
-			root := chain.Root()
-			total := chain.Total() + 1
-			updatedChain, err := app.chainBuilder.Create().WithGenesis(gen).WithRoot(root).WithHead(minedLink).WithTotal(total).Now()
 			if err != nil {
 				return err
 			}
 
 			// update the chain:
-			err = app.application.Sub().Chain().Update(updatedChain)
+			err = app.application.Sub().Chain().Update(minedLink)
 			if err != nil {
 				return err
 			}

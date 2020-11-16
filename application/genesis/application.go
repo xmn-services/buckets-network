@@ -1,27 +1,22 @@
 package genesis
 
 import (
-	"errors"
-	"time"
-
-	"github.com/xmn-services/buckets-network/domain/memory/genesis"
+	"github.com/xmn-services/buckets-network/application/miners"
+	"github.com/xmn-services/buckets-network/domain/memory/chains"
 )
 
 type application struct {
-	genesisBuilder    genesis.Builder
-	genesisRepository genesis.Repository
-	genesisService    genesis.Service
+	minerApplication miners.Application
+	chainService     chains.Service
 }
 
 func createApplication(
-	genesisBuilder genesis.Builder,
-	genesisRepository genesis.Repository,
-	genesisService genesis.Service,
+	minerApplication miners.Application,
+	chainService chains.Service,
 ) Application {
 	out := application{
-		genesisBuilder:    genesisBuilder,
-		genesisRepository: genesisRepository,
-		genesisService:    genesisService,
+		minerApplication: minerApplication,
+		chainService:     chainService,
 	}
 
 	return &out
@@ -30,25 +25,15 @@ func createApplication(
 // Init initializes the genesis block
 func (app *application) Init(
 	blockDifficultyBase uint,
-	blockDifficultyIncreasePerTrx float64,
+	blockDifficultyIncreasePerBucket float64,
 	linkDifficulty uint,
 ) error {
-	_, err := app.genesisRepository.Retrieve()
-	if err == nil {
-		return errors.New("the genesis block has already been created")
-	}
-
-	createdOn := time.Now().UTC()
-	gen, err := app.genesisBuilder.Create().
-		WithBlockDifficultyBase(blockDifficultyBase).
-		WithBlockDifficultyIncreasePerTrx(blockDifficultyIncreasePerTrx).
-		WithLinkDifficulty(linkDifficulty).
-		CreatedOn(createdOn).
-		Now()
-
+	// mine the chain:
+	chain, err := app.minerApplication.Genesis(blockDifficultyBase, blockDifficultyIncreasePerBucket, linkDifficulty)
 	if err != nil {
 		return err
 	}
 
-	return app.genesisService.Save(gen)
+	// save the chain:
+	return app.chainService.Insert(chain)
 }

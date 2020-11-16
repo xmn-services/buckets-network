@@ -8,7 +8,7 @@ import (
 type JSONGenesis struct {
 	LinkDifficulty                uint      `json:"link_difficulty"`
 	BlockDifficultyBase           uint      `json:"block_difficulty_base"`
-	BlockDifficultyIncreasePerTrx float64   `json:"block_difficulty_increase_per_transaction"`
+	BlockDifficultyIncreasePerBucket float64   `json:"block_difficulty_increase_per_transaction"`
 	CreatedOn                     time.Time `json:"created_on"`
 }
 
@@ -17,12 +17,12 @@ func createJSONGenesisFromGenesis(gen Genesis) *JSONGenesis {
 	linkDifficulty := difficulty.Link()
 	blockDifficulty := difficulty.Block()
 	blockDifficultyBase := blockDifficulty.Base()
-	blockDifficultyIncreasePerTrx := blockDifficulty.IncreasePerTrx()
+	blockDifficultyIncreasePerBucket := blockDifficulty.IncreasePerBucket()
 	createdOn := gen.CreatedOn()
 	return createJSONGenesis(
 		linkDifficulty,
 		blockDifficultyBase,
-		blockDifficultyIncreasePerTrx,
+		blockDifficultyIncreasePerBucket,
 		createdOn,
 	)
 }
@@ -30,13 +30,13 @@ func createJSONGenesisFromGenesis(gen Genesis) *JSONGenesis {
 func createJSONGenesis(
 	linkDifficulty uint,
 	blockDifficultyBase uint,
-	blockDifficultyIncreasePerTrx float64,
+	blockDifficultyIncreasePerBucket float64,
 	createdOn time.Time,
 ) *JSONGenesis {
 	out := JSONGenesis{
 		LinkDifficulty:                linkDifficulty,
 		BlockDifficultyBase:           blockDifficultyBase,
-		BlockDifficultyIncreasePerTrx: blockDifficultyIncreasePerTrx,
+		BlockDifficultyIncreasePerBucket: blockDifficultyIncreasePerBucket,
 		CreatedOn:                     createdOn,
 	}
 

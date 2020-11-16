@@ -29,12 +29,12 @@ func (app *repository) Retrieve() (Genesis, error) {
 	}
 
 	blockDiffBase := trGen.BlockDifficultyBase()
-	blockDiffIncreasePerTrx := trGen.BlockDifficultyIncreasePerTrx()
+	blockDiffIncreasePerBucket := trGen.BlockDifficultyIncreasePerBucket()
 	linkDiff := trGen.LinkDifficulty()
 	createdOn := trGen.CreatedOn()
 	return app.builder.Create().
 		WithBlockDifficultyBase(blockDiffBase).
-		WithBlockDifficultyIncreasePerTrx(blockDiffIncreasePerTrx).
+		WithBlockDifficultyIncreasePerBucket(blockDiffIncreasePerBucket).
 		WithLinkDifficulty(linkDiff).
 		CreatedOn(createdOn).
 		Now()

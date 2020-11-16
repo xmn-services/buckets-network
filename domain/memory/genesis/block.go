@@ -22,7 +22,7 @@ func (obj *block) Base() uint {
 	return obj.base
 }
 
-// IncreasePerTrx returns the increase per trx
-func (obj *block) IncreasePerTrx() float64 {
+// IncreasePerBucket returns the increase per trx
+func (obj *block) IncreasePerBucket() float64 {
 	return obj.increase
 }

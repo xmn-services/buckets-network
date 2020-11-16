@@ -12,11 +12,11 @@ func TestGenesis_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
 	blockDiffBase := uint(45)
-	blockDiffIncreasePerTrx := float64(0.0021)
+	blockDiffIncreasePerBucket := float64(0.0021)
 	linkDiff := uint(2)
 	createdOn := time.Now().UTC()
 
-	genesis, err := NewBuilder().Create().WithHash(*hsh).WithBlockDifficultyBase(blockDiffBase).WithBlockDifficultyIncreasePerTrx(blockDiffIncreasePerTrx).WithLinkDifficulty(linkDiff).CreatedOn(createdOn).Now()
+	genesis, err := NewBuilder().Create().WithHash(*hsh).WithBlockDifficultyBase(blockDiffBase).WithBlockDifficultyIncreasePerBucket(blockDiffIncreasePerBucket).WithLinkDifficulty(linkDiff).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -32,8 +32,8 @@ func TestGenesis_Success(t *testing.T) {
 		return
 	}
 
-	if genesis.BlockDifficultyIncreasePerTrx() != blockDiffIncreasePerTrx {
-		t.Errorf("the blockDifficultyIncreasePerTrx is invalid, expected: %f, returned: %f", blockDiffIncreasePerTrx, genesis.BlockDifficultyIncreasePerTrx())
+	if genesis.BlockDifficultyIncreasePerBucket() != blockDiffIncreasePerBucket {
+		t.Errorf("the blockDifficultyIncreasePerBucket is invalid, expected: %f, returned: %f", blockDiffIncreasePerBucket, genesis.BlockDifficultyIncreasePerBucket())
 		return
 	}
 

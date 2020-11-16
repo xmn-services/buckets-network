@@ -5,45 +5,31 @@ import (
 
 	app "github.com/xmn-services/buckets-network/application"
 	"github.com/xmn-services/buckets-network/application/identities/daemons"
-	"github.com/xmn-services/buckets-network/domain/memory/blocks"
-	mined_blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
-	"github.com/xmn-services/buckets-network/domain/memory/buckets"
-	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type blockMiner struct {
-	hashAdapter       hash.Adapter
-	blockBuilder      blocks.Builder
-	minedBlockBuilder mined_blocks.Builder
-	application       app.Application
-	name              string
-	seed              string
-	password          string
-	waitPeriod        time.Duration
-	isStarted         bool
+	application app.Application
+	name        string
+	seed        string
+	password    string
+	waitPeriod  time.Duration
+	isStarted   bool
 }
 
 func createBlockMiner(
-	hashAdapter hash.Adapter,
-	blockBuilder blocks.Builder,
-	minedBlockBuilder mined_blocks.Builder,
 	application app.Application,
 	name string,
 	seed string,
 	password string,
 	waitPeriod time.Duration,
-	isStarted bool,
 ) daemons.Application {
 	out := blockMiner{
-		hashAdapter:       hashAdapter,
-		blockBuilder:      blockBuilder,
-		minedBlockBuilder: minedBlockBuilder,
-		application:       application,
-		name:              name,
-		seed:              seed,
-		password:          password,
-		waitPeriod:        waitPeriod,
-		isStarted:         isStarted,
+		application: application,
+		name:        name,
+		seed:        seed,
+		password:    password,
+		waitPeriod:  waitPeriod,
+		isStarted:   false,
 	}
 
 	return &out
@@ -77,10 +63,10 @@ func (app *blockMiner) Start() error {
 		queueBuckets := identity.Wallet().Miner().Queue().All()
 
 		// make the list of block buckets:
-		blockBuckets := []buckets.Bucket{}
+		bucketHashes := []string{}
 		for _, oneQueuedBucket := range queueBuckets {
 			// add the bucket to the block list:
-			blockBuckets = append(blockBuckets, oneQueuedBucket.Bucket())
+			bucketHashes = append(bucketHashes, oneQueuedBucket.Bucket().Hash().String())
 
 			// remove the queued bucket from the queued identity:
 			identity.Wallet().Miner().Broadcasted().Add(oneQueuedBucket)
@@ -92,34 +78,12 @@ func (app *blockMiner) Start() error {
 			return err
 		}
 
-		// calculate the difficulty:
-		difficulty := difficulty(chain, uint(len(queueBuckets)))
-
-		// build the block:
-		createdOn := time.Now().UTC()
-		gen := chain.Genesis()
-		block, err := app.blockBuilder.Create().
-			WithGenesis(gen).
-			WithBuckets(blockBuckets).
-			CreatedOn(createdOn).
-			Now()
-
-		if err != nil {
-			return err
-		}
-
-		// mine the block:
-		minedCreatedOn := time.Now().UTC()
-		results, err := mine(app.hashAdapter, difficulty, block.Hash())
-		if err != nil {
-			return err
-		}
-
-		minedBlock, err := app.minedBlockBuilder.Create().
-			WithBlock(block).
-			WithMining(results).
-			CreatedOn(minedCreatedOn).
-			Now()
+		blockDiff := chain.Genesis().Difficulty().Block()
+		minedBlock, err := app.application.Sub().Miner().Block(
+			bucketHashes,
+			blockDiff.Base(),
+			blockDiff.IncreasePerBucket(),
+		)
 
 		if err != nil {
 			return err

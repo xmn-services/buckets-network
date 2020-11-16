@@ -17,7 +17,7 @@ func createGenesisFromJSON(ins *JSONGenesis) (Genesis, error) {
 	return NewBuilder().
 		Create().
 		WithBlockDifficultyBase(ins.BlockDifficultyBase).
-		WithBlockDifficultyIncreasePerTrx(ins.BlockDifficultyIncreasePerTrx).
+		WithBlockDifficultyIncreasePerBucket(ins.BlockDifficultyIncreasePerBucket).
 		WithLinkDifficulty(ins.LinkDifficulty).
 		CreatedOn(ins.CreatedOn).
 		Now()

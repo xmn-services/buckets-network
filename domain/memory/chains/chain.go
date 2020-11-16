@@ -1,6 +1,7 @@
 package chains
 
 import (
+	"encoding/json"
 	"time"
 
 	mined_block "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
@@ -16,6 +17,34 @@ type chain struct {
 	root      mined_block.Block
 	head      mined_link.Link
 	total     uint
+}
+
+func createChainFromJSON(ins *JSONChain) (Chain, error) {
+	genesisAdapter := genesis.NewAdapter()
+	genesis, err := genesisAdapter.ToGenesis(ins.Genesis)
+	if err != nil {
+		return nil, err
+	}
+
+	blockAdapter := mined_block.NewAdapter()
+	root, err := blockAdapter.ToBlock(ins.Root)
+	if err != nil {
+		return nil, err
+	}
+
+	linkAdapter := mined_link.NewAdapter()
+	head, err := linkAdapter.ToLink(ins.Head)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewBuilder().Create().
+		WithGenesis(genesis).
+		WithRoot(root).
+		WithHead(head).
+		WithTotal(ins.Total).
+		CreatedOn(ins.CreatedOn).
+		Now()
 }
 
 func createChain(
@@ -69,4 +98,32 @@ func (obj *chain) Total() uint {
 // CreatedOn returns the creation time
 func (obj *chain) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()
+}
+
+// MarshalJSON converts the instance to JSON
+func (obj *chain) MarshalJSON() ([]byte, error) {
+	ins := createJSONChainFromChain(obj)
+	return json.Marshal(ins)
+}
+
+// UnmarshalJSON converts the JSON to an instance
+func (obj *chain) UnmarshalJSON(data []byte) error {
+	ins := new(JSONChain)
+	err := json.Unmarshal(data, ins)
+	if err != nil {
+		return err
+	}
+
+	pr, err := createChainFromJSON(ins)
+	if err != nil {
+		return err
+	}
+
+	insChain := pr.(*chain)
+	obj.immutable = insChain.immutable
+	obj.genesis = insChain.genesis
+	obj.root = insChain.root
+	obj.head = insChain.head
+	obj.total = insChain.total
+	return nil
 }

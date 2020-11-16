@@ -44,6 +44,8 @@ func NewBuilder() Builder {
 // Adapter returns the mined link adapter
 type Adapter interface {
 	ToTransfer(link Link) (transfer_mined_link.Link, error)
+	ToJSON(link Link) *JSONLink
+	ToLink(js *JSONLink) (Link, error)
 	Decode(encoded string) (Link, error)
 	Encode(link Link) (string, error)
 }

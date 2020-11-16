@@ -49,7 +49,7 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithBlockDifficultyBase(blockDiffBase uint) Builder
-	WithBlockDifficultyIncreasePerTrx(blockDiffIncreasePerTrx float64) Builder
+	WithBlockDifficultyIncreasePerBucket(blockDiffIncreasePerBucket float64) Builder
 	WithLinkDifficulty(link uint) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Genesis, error)
@@ -70,7 +70,7 @@ type Difficulty interface {
 // Block represents the block difficulty related data
 type Block interface {
 	Base() uint
-	IncreasePerTrx() float64
+	IncreasePerBucket() float64
 }
 
 // Repository repreents the genesis repository

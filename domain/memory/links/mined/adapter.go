@@ -30,6 +30,16 @@ func (app *adapter) ToTransfer(link Link) (transfer_mined_link.Link, error) {
 	return app.trBuilder.Create().WithHash(hsh).WithLink(linkHash).WithMining(mining).CreatedOn(createdOn).Now()
 }
 
+// ToJSON converts Link instance to JSON
+func (app *adapter) ToJSON(link Link) *JSONLink {
+	return createJSONLinkFromLink(link)
+}
+
+// ToLink converts a JSON to Link instance
+func (app *adapter) ToLink(js *JSONLink) (Link, error) {
+	return createLinkFromJSON(js)
+}
+
 // Decode converts encoded data to a Link instance
 func (app *adapter) Decode(encoded string) (Link, error) {
 	js, err := base64.StdEncoding.DecodeString(encoded)

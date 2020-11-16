@@ -11,11 +11,11 @@ import (
 )
 
 // CreateGenesisForTests creates a genesis instance for tests
-func CreateGenesisForTests(blockDiffBase uint, blockDiffIncreasePerTrx float64, linkDiff uint) Genesis {
+func CreateGenesisForTests(blockDiffBase uint, blockDiffIncreasePerBucket float64, linkDiff uint) Genesis {
 	createdOn := time.Now().UTC()
 	ins, err := NewBuilder().Create().
 		WithBlockDifficultyBase(blockDiffBase).
-		WithBlockDifficultyIncreasePerTrx(blockDiffIncreasePerTrx).
+		WithBlockDifficultyIncreasePerBucket(blockDiffIncreasePerBucket).
 		WithLinkDifficulty(linkDiff).
 		CreatedOn(createdOn).
 		Now()

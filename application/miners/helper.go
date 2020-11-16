@@ -1,4 +1,4 @@
-package daemons
+package miners
 
 import (
 	"bytes"
@@ -7,20 +7,17 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/xmn-services/buckets-network/domain/memory/chains"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
-// difficulty calculates the next block difficulty
-func difficulty(chain chains.Chain, amountTrx uint) uint {
-	blockDifficulty := chain.Genesis().Difficulty().Block()
-	base := float64(blockDifficulty.Base())
-	increasePerTrx := blockDifficulty.IncreasePerTrx()
+// blockDifficulty calculates the block's difficulty
+func blockDifficulty(baseDifficulty uint, increasePerBucket float64, amountBuckets uint) uint {
 
 	sum := float64(0)
-	for i := 0; i < int(amountTrx); i++ {
+	base := float64(baseDifficulty)
+	for i := 0; i < int(amountBuckets); i++ {
 		index := float64(i + 1)
-		sum += (index * increasePerTrx)
+		sum += (index * increasePerBucket)
 	}
 
 	return uint(sum + base)

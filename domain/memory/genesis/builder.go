@@ -13,7 +13,7 @@ type builder struct {
 	hashAdapter             hash.Adapter
 	immutableBuilder        entities.ImmutableBuilder
 	blockDiffBase           uint
-	blockDiffIncreasePerTrx float64
+	blockDiffIncreasePerBucket float64
 	linkDiff                uint
 	createdOn               *time.Time
 }
@@ -26,7 +26,7 @@ func createBuilder(
 		hashAdapter:             hashAdapter,
 		immutableBuilder:        immutableBuilder,
 		blockDiffBase:           0,
-		blockDiffIncreasePerTrx: 0.0,
+		blockDiffIncreasePerBucket: 0.0,
 		linkDiff:                0,
 		createdOn:               nil,
 	}
@@ -45,9 +45,9 @@ func (app *builder) WithBlockDifficultyBase(blockDiffBase uint) Builder {
 	return app
 }
 
-// WithBlockDifficultyIncreasePerTrx adds a block difficulty increasePerTrx to the builder
-func (app *builder) WithBlockDifficultyIncreasePerTrx(blockDiffIncreasePerTrx float64) Builder {
-	app.blockDiffIncreasePerTrx = blockDiffIncreasePerTrx
+// WithBlockDifficultyIncreasePerBucket adds a block difficulty increasePerBucket to the builder
+func (app *builder) WithBlockDifficultyIncreasePerBucket(blockDiffIncreasePerBucket float64) Builder {
+	app.blockDiffIncreasePerBucket = blockDiffIncreasePerBucket
 	return app
 }
 
@@ -69,8 +69,8 @@ func (app *builder) Now() (Genesis, error) {
 		return nil, errors.New("the block difficulty base must be greater than zero (0) in order to build a Genesis instance")
 	}
 
-	if app.blockDiffIncreasePerTrx <= 0.0 {
-		return nil, errors.New("the block difficulty increasePerTrx must be greater than zero (0.0) in order to build a Genesis instance")
+	if app.blockDiffIncreasePerBucket <= 0.0 {
+		return nil, errors.New("the block difficulty increasePerBucket must be greater than zero (0.0) in order to build a Genesis instance")
 	}
 
 	if app.linkDiff <= 0 {
@@ -79,7 +79,7 @@ func (app *builder) Now() (Genesis, error) {
 
 	hash, err := app.hashAdapter.FromMultiBytes([][]byte{
 		[]byte(strconv.Itoa(int(app.blockDiffBase))),
-		[]byte(strconv.FormatFloat(app.blockDiffIncreasePerTrx, 'f', 12, 64)),
+		[]byte(strconv.FormatFloat(app.blockDiffIncreasePerBucket, 'f', 12, 64)),
 		[]byte(strconv.Itoa(int(app.linkDiff))),
 	})
 
@@ -92,7 +92,7 @@ func (app *builder) Now() (Genesis, error) {
 		return nil, err
 	}
 
-	block := createBlock(app.blockDiffBase, app.blockDiffIncreasePerTrx)
+	block := createBlock(app.blockDiffBase, app.blockDiffIncreasePerBucket)
 	diff := createDifficulty(block, app.linkDiff)
 	return createGenesis(immutable, diff), nil
 }

@@ -12,7 +12,7 @@ type builder struct {
 	immutableBuilder        entities.ImmutableBuilder
 	hash                    *hash.Hash
 	blockDiffBase           uint
-	blockDiffIncreasePerTrx float64
+	blockDiffIncreasePerBucket float64
 	linkDiff                uint
 	createdOn               *time.Time
 }
@@ -24,7 +24,7 @@ func createBuilder(
 		immutableBuilder:        immutableBuilder,
 		hash:                    nil,
 		blockDiffBase:           0,
-		blockDiffIncreasePerTrx: 0,
+		blockDiffIncreasePerBucket: 0,
 		linkDiff:                0,
 		createdOn:               nil,
 	}
@@ -49,13 +49,13 @@ func (app *builder) WithBlockDifficultyBase(blockDiffBase uint) Builder {
 	return app
 }
 
-// WithBlockDifficultyIncreasePerTrx adds a block difficulty increase per trx to the builder
-func (app *builder) WithBlockDifficultyIncreasePerTrx(blockDiffIncreasePerTrx float64) Builder {
-	app.blockDiffIncreasePerTrx = blockDiffIncreasePerTrx
+// WithBlockDifficultyIncreasePerBucket adds a block difficulty increase per bucket to the builder
+func (app *builder) WithBlockDifficultyIncreasePerBucket(blockDiffIncreasePerBucket float64) Builder {
+	app.blockDiffIncreasePerBucket = blockDiffIncreasePerBucket
 	return app
 }
 
-// WithLinkDifficulty adds a link difficulty increase per trx to the builder
+// WithLinkDifficulty adds a link difficulty increase per bucket to the builder
 func (app *builder) WithLinkDifficulty(linkDiff uint) Builder {
 	app.linkDiff = linkDiff
 	return app
@@ -77,8 +77,8 @@ func (app *builder) Now() (Genesis, error) {
 		return nil, errors.New("the block difficulty base must be greater than zero (0) in order to build a Genesis instance")
 	}
 
-	if app.blockDiffIncreasePerTrx <= 0 {
-		return nil, errors.New("the block difficulty increasePerTrx must be greater than zero (0) in order to build a Genesis instance")
+	if app.blockDiffIncreasePerBucket <= 0 {
+		return nil, errors.New("the block difficulty increasePerBucket must be greater than zero (0) in order to build a Genesis instance")
 	}
 
 	if app.linkDiff <= 0 {
@@ -93,7 +93,7 @@ func (app *builder) Now() (Genesis, error) {
 	return createGenesis(
 		immutable,
 		app.blockDiffBase,
-		app.blockDiffIncreasePerTrx,
+		app.blockDiffIncreasePerBucket,
 		app.linkDiff,
 	), nil
 }

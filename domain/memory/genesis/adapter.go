@@ -24,14 +24,14 @@ func (app *adapter) ToTransfer(genesis Genesis) (transfer_genesis.Genesis, error
 	diff := genesis.Difficulty()
 	blockDiff := diff.Block()
 	blockDiffBase := blockDiff.Base()
-	blockDiffIncr := blockDiff.IncreasePerTrx()
+	blockDiffIncr := blockDiff.IncreasePerBucket()
 	linkDiff := diff.Link()
 	createdOn := genesis.CreatedOn()
 
 	return app.trBuilder.Create().
 		WithHash(hsh).
 		WithBlockDifficultyBase(blockDiffBase).
-		WithBlockDifficultyIncreasePerTrx(blockDiffIncr).
+		WithBlockDifficultyIncreasePerBucket(blockDiffIncr).
 		WithLinkDifficulty(linkDiff).
 		CreatedOn(createdOn).
 		Now()

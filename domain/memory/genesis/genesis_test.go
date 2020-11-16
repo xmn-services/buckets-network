@@ -8,9 +8,9 @@ import (
 func TestGenesis_Success(t *testing.T) {
 	// genesis:
 	blockDiffBase := uint(1)
-	blockDiffIncreasePerTrx := float64(1.0)
+	blockDiffIncreasePerBucket := float64(1.0)
 	linkDiff := uint(1)
-	genesisIns := CreateGenesisForTests(blockDiffBase, blockDiffIncreasePerTrx, linkDiff)
+	genesisIns := CreateGenesisForTests(blockDiffBase, blockDiffIncreasePerBucket, linkDiff)
 
 	// repository and service:
 	repository, service := CreateRepositoryServiceForTests()

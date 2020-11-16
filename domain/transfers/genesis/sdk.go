@@ -42,7 +42,7 @@ type Builder interface {
 	Create() Builder
 	WithHash(hash hash.Hash) Builder
 	WithBlockDifficultyBase(blockDiffBase uint) Builder
-	WithBlockDifficultyIncreasePerTrx(blockDiffIncreasePerTrx float64) Builder
+	WithBlockDifficultyIncreasePerBucket(blockDiffIncreasePerBucket float64) Builder
 	WithLinkDifficulty(link uint) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Genesis, error)
@@ -52,7 +52,7 @@ type Builder interface {
 type Genesis interface {
 	entities.Immutable
 	BlockDifficultyBase() uint
-	BlockDifficultyIncreasePerTrx() float64
+	BlockDifficultyIncreasePerBucket() float64
 	LinkDifficulty() uint
 }
 
