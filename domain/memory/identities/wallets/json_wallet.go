@@ -18,10 +18,10 @@ func createJSONWalletFromWallet(ins Wallet) *JSONWallet {
 	storageAdapter := storages.NewAdapter()
 	storage := storageAdapter.ToJSON(ins.Storage())
 
-	return createJSONStorage(miner, storage)
+	return createJSONWallet(miner, storage)
 }
 
-func createJSONStorage(
+func createJSONWallet(
 	miner *miners.JSONMiner,
 	storage *storages.JSONStorage,
 ) *JSONWallet {

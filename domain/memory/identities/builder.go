@@ -74,7 +74,12 @@ func (app *builder) Now() (Identity, error) {
 	}
 
 	if app.wallet == nil {
-		app.wallet = app.walletFactory.Create()
+		wallet, err := app.walletFactory.Create()
+		if err != nil {
+			return nil, err
+		}
+
+		app.wallet = wallet
 	}
 
 	return createIdentity(app.seed, app.name, app.root, app.wallet), nil

@@ -2,7 +2,30 @@ package identities
 
 import (
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets"
+	"github.com/xmn-services/buckets-network/libs/file"
+	"github.com/xmn-services/buckets-network/libs/hash"
 )
+
+// NewService creates a new service instance
+func NewService(basePath string, extension string) Service {
+	hashAdapter := hash.NewAdapter()
+	fileServiceBuilder := file.NewEncryptedFileDiskServiceBuilder()
+	repository := NewRepository(basePath, extension)
+	return createService(hashAdapter, fileServiceBuilder, repository, basePath, extension)
+}
+
+// NewRepository creates a new repository instance
+func NewRepository(basePath string, extension string) Repository {
+	hashAdapter := hash.NewAdapter()
+	fileRepositoryBuilder := file.NewEncryptedFileDiskRepositoryBuilder()
+	return createRepository(hashAdapter, fileRepositoryBuilder, basePath, extension)
+}
+
+// NewBuilder creates a new builder instance
+func NewBuilder() Builder {
+	walletFactory := wallets.NewFactory()
+	return createBuilder(walletFactory)
+}
 
 // Builder represents an identity builder
 type Builder interface {
