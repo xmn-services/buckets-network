@@ -131,8 +131,13 @@ func (app *application) Delete(absolutePath string) error {
 }
 
 // Retrieve retrieves a bucket by hash
-func (app *application) Retrieve(hash hash.Hash) (buckets.Bucket, error) {
-	return app.bucketRepository.Retrieve(hash)
+func (app *application) Retrieve(hashStr string) (buckets.Bucket, error) {
+	hash, err := app.hashAdapter.FromString(hashStr)
+	if err != nil {
+		return nil, err
+	}
+
+	return app.bucketRepository.Retrieve(*hash)
 }
 
 func (app *application) dirToFiles(rootPath string, relativePath string) ([]files.File, error) {

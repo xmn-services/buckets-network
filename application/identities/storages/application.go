@@ -7,6 +7,7 @@ import (
 )
 
 type application struct {
+	hashAdapter        hash.Adapter
 	identityRepository identities.Repository
 	identityService    identities.Service
 	fileService        file.Service
@@ -16,6 +17,7 @@ type application struct {
 }
 
 func createApplication(
+	hashAdapter hash.Adapter,
 	identityRepository identities.Repository,
 	identityService identities.Service,
 	fileService file.Service,
@@ -24,6 +26,7 @@ func createApplication(
 	seed string,
 ) Application {
 	out := application{
+		hashAdapter:        hashAdapter,
 		identityRepository: identityRepository,
 		identityService:    identityService,
 		fileService:        fileService,
@@ -60,7 +63,12 @@ func (app *application) Save(file file.File) error {
 }
 
 // Delete deletes a file
-func (app *application) Delete(file hash.Hash) error {
+func (app *application) Delete(fileHashStr string) error {
+	fileHash, err := app.hashAdapter.FromString(fileHashStr)
+	if err != nil {
+		return err
+	}
+
 	// retrieve the identity:
 	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
 	if err != nil {
@@ -68,13 +76,13 @@ func (app *application) Delete(file hash.Hash) error {
 	}
 
 	// delete the file:
-	err = app.fileService.Delete(file)
+	err = app.fileService.Delete(*fileHash)
 	if err != nil {
 		return err
 	}
 
 	// delete the file from the identity:
-	err = identity.Wallet().Storage().Stored().Delete(file)
+	err = identity.Wallet().Storage().Stored().Delete(*fileHash)
 	if err != nil {
 		return err
 	}

@@ -102,11 +102,11 @@ func (app *storage) download(toDownloadFiles []hash.Hash, identityApp identities
 	for _, oneFileHash := range toDownloadFiles {
 		for _, oneClient := range clientApplication {
 			clientStorageApp := oneClient.Sub().Storage()
-			if !clientStorageApp.IsStored(oneFileHash) {
+			if !clientStorageApp.IsStored(oneFileHash.String()) {
 				continue
 			}
 
-			storedFile, err := clientStorageApp.Retrieve(oneFileHash)
+			storedFile, err := clientStorageApp.Retrieve(oneFileHash.String())
 			if err != nil {
 				return err
 			}
