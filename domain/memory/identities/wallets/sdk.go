@@ -13,5 +13,5 @@ type Factory interface {
 // Wallet represents a wallet
 type Wallet interface {
 	Miner() miners.Miner
-	Storages() storages.Storages
+	Storage() storages.Storage
 }

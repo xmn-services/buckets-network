@@ -50,7 +50,7 @@ func (app *application) Save(file file.File) error {
 	}
 
 	// add the file to the identity:
-	err = identity.Wallet().Storages().Stored().Add(file.File().Hash())
+	err = identity.Wallet().Storage().Stored().Add(file.File().Hash())
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (app *application) Delete(file hash.Hash) error {
 	}
 
 	// delete the file from the identity:
-	err = identity.Wallet().Storages().Stored().Delete(file)
+	err = identity.Wallet().Storage().Stored().Delete(file)
 	if err != nil {
 		return err
 	}
