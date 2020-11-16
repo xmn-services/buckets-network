@@ -84,7 +84,7 @@ func (app *storage) Start() error {
 		}
 
 		// download the files:
-		toDownloadFiles := identity.Wallet().Storages().ToDownload().All()
+		toDownloadFiles := identity.Wallet().Storage().ToDownload().All()
 		err = app.download(toDownloadFiles, identityApp, remoteApps)
 		if err != nil {
 			return err

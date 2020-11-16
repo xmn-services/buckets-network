@@ -1,10 +1,7 @@
 package identities
 
 import (
-	"time"
-
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets"
-	"github.com/xmn-services/buckets-network/libs/entities"
 )
 
 // Builder represents an identity builder
@@ -14,14 +11,11 @@ type Builder interface {
 	WithName(name string) Builder
 	WithRoot(root string) Builder
 	WithWallet(wallet wallets.Wallet) Builder
-	CreatedOn(createdOn time.Time) Builder
-	LastUpdatedOn(lastUpdatedOn time.Time) Builder
 	Now() (Identity, error)
 }
 
 // Identity represents the identity
 type Identity interface {
-	entities.Mutable
 	Seed() string
 	SetSeed(seed string)
 	Name() string

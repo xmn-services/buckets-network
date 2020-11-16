@@ -1,6 +1,7 @@
 package files
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -86,5 +87,30 @@ func (obj *files) Delete(hash hash.Hash) error {
 	}
 
 	delete(obj.mp, keyname)
+	return nil
+}
+
+// MarshalJSON converts the instance to JSON
+func (obj *files) MarshalJSON() ([]byte, error) {
+	ins := createJSONFilesFromFiles(obj)
+	return json.Marshal(ins)
+}
+
+// UnmarshalJSON converts the JSON to an instance
+func (obj *files) UnmarshalJSON(data []byte) error {
+	ins := new(JSONFiles)
+	err := json.Unmarshal(data, ins)
+	if err != nil {
+		return err
+	}
+
+	pr, err := createFilesFromJSON(ins)
+	if err != nil {
+		return err
+	}
+
+	insFiles := pr.(*files)
+	obj.lst = insFiles.lst
+	obj.mp = insFiles.mp
 	return nil
 }

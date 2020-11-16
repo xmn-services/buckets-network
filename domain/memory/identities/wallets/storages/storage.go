@@ -71,8 +71,8 @@ func (obj *storage) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	insBucket := pr.(*storage)
-	obj.toDownload = insBucket.toDownload
-	obj.stored = insBucket.stored
+	insStorage := pr.(*storage)
+	obj.toDownload = insStorage.toDownload
+	obj.stored = insStorage.stored
 	return nil
 }
