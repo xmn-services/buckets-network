@@ -4,26 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/buckets/bucket"
-	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type buckets struct {
-	mutable entities.Mutable
-	lst     []bucket.Bucket
-	mp      map[string]bucket.Bucket
+	lst []bucket.Bucket
+	mp  map[string]bucket.Bucket
 }
 
 func createBucketsFromJSON(ins *JSONBuckets) (Buckets, error) {
-	hashAdapter := hash.NewAdapter()
-	hsh, err := hashAdapter.FromString(ins.Hash)
-	if err != nil {
-		return nil, err
-	}
-
 	buckets := []bucket.Bucket{}
 	bucketAdapter := bucket.NewAdapter()
 	for _, oneJS := range ins.Buckets {
@@ -37,30 +28,20 @@ func createBucketsFromJSON(ins *JSONBuckets) (Buckets, error) {
 
 	return NewBuilder().
 		Create().
-		WithHash(*hsh).
 		WithBuckets(buckets).
-		CreatedOn(ins.CreatedOn).
-		LastUpdatedOn(ins.LastUpdatedOn).
 		Now()
 }
 
 func crateBuckets(
-	mutable entities.Mutable,
 	lst []bucket.Bucket,
 	mp map[string]bucket.Bucket,
 ) Buckets {
 	out := buckets{
-		mutable: mutable,
-		lst:     lst,
-		mp:      mp,
+		lst: lst,
+		mp:  mp,
 	}
 
 	return &out
-}
-
-// Hash returns the hash
-func (obj *buckets) Hash() hash.Hash {
-	return obj.mutable.Hash()
 }
 
 // All return all buckets
@@ -100,16 +81,6 @@ func (obj *buckets) Delete(hash hash.Hash) error {
 	return nil
 }
 
-// CreatedOn returns the creation time
-func (obj *buckets) CreatedOn() time.Time {
-	return obj.mutable.CreatedOn()
-}
-
-// LastUpdatedOn returns the lastUpdatedOn time
-func (obj *buckets) LastUpdatedOn() time.Time {
-	return obj.mutable.LastUpdatedOn()
-}
-
 // MarshalJSON converts the instance to JSON
 func (obj *buckets) MarshalJSON() ([]byte, error) {
 	ins := createJSONBucketsFromBuckets(obj)
@@ -130,7 +101,6 @@ func (obj *buckets) UnmarshalJSON(data []byte) error {
 	}
 
 	insBucket := pr.(*buckets)
-	obj.mutable = insBucket.mutable
 	obj.lst = insBucket.lst
 	obj.mp = insBucket.mp
 	return nil

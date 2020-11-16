@@ -1,53 +1,34 @@
 package miners
 
 import (
-	"errors"
-	"time"
-
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/blocks"
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/buckets"
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/permanents"
-	"github.com/xmn-services/buckets-network/libs/entities"
-	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type builder struct {
-	hashAdapter             hash.Adapter
-	mutableBuilder          entities.MutableBuilder
 	blocksFactory           blocks.Factory
 	bucketsFactory          buckets.Factory
 	permanentBucketsFactory permanents.Factory
-	hash                    *hash.Hash
-	withoutHash             bool
 	toTransact              buckets.Buckets
 	queue                   buckets.Buckets
 	broadcasted             permanents.Buckets
 	toLink                  blocks.Blocks
-	createdOn               *time.Time
-	lastUpdatedOn           *time.Time
 }
 
 func createBuilder(
-	hashAdapter hash.Adapter,
-	mutableBuilder entities.MutableBuilder,
 	blocksFactory blocks.Factory,
 	bucketsFactory buckets.Factory,
 	permanentBucketsFactory permanents.Factory,
 ) Builder {
 	out := builder{
-		hashAdapter:             hashAdapter,
-		mutableBuilder:          mutableBuilder,
 		blocksFactory:           blocksFactory,
 		bucketsFactory:          bucketsFactory,
 		permanentBucketsFactory: permanentBucketsFactory,
-		hash:                    nil,
-		withoutHash:             false,
 		toTransact:              nil,
 		queue:                   nil,
 		broadcasted:             nil,
 		toLink:                  nil,
-		createdOn:               nil,
-		lastUpdatedOn:           nil,
 	}
 
 	return &out
@@ -56,24 +37,10 @@ func createBuilder(
 // Create initializes the builder
 func (app *builder) Create() Builder {
 	return createBuilder(
-		app.hashAdapter,
-		app.mutableBuilder,
 		app.blocksFactory,
 		app.bucketsFactory,
 		app.permanentBucketsFactory,
 	)
-}
-
-// WithHash adds an hash to the builder
-func (app *builder) WithHash(hash hash.Hash) Builder {
-	app.hash = &hash
-	return app
-}
-
-// WithoutHash flags the builder as without hash
-func (app *builder) WithoutHash() Builder {
-	app.withoutHash = true
-	return app
 }
 
 // WithToTransact adds a toTransact Buckets to the builder
@@ -97,18 +64,6 @@ func (app *builder) WithBroadcasted(broadcasted permanents.Buckets) Builder {
 // WithToLink adds a toLink Blocks to the builder
 func (app *builder) WithToLink(toLink blocks.Blocks) Builder {
 	app.toLink = toLink
-	return app
-}
-
-// CreatedOn adds a creation time to the builder
-func (app *builder) CreatedOn(createdOn time.Time) Builder {
-	app.createdOn = &createdOn
-	return app
-}
-
-// LastUpdatedOn adds a lastUpdatedOn time to the builder
-func (app *builder) LastUpdatedOn(lastUpdatedOn time.Time) Builder {
-	app.lastUpdatedOn = &lastUpdatedOn
 	return app
 }
 
@@ -150,29 +105,5 @@ func (app *builder) Now() (Miner, error) {
 		app.toLink = toLink
 	}
 
-	if app.withoutHash {
-		hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
-			app.toTransact.Hash().Bytes(),
-			app.queue.Hash().Bytes(),
-			app.broadcasted.Hash().Bytes(),
-			app.toLink.Hash().Bytes(),
-		})
-
-		if err != nil {
-			return nil, err
-		}
-
-		app.hash = hsh
-	}
-
-	if app.hash == nil {
-		return nil, errors.New("the hash is mandatory in order to build a Miner instance")
-	}
-
-	mutable, err := app.mutableBuilder.Create().WithHash(*app.hash).CreatedOn(app.createdOn).LastUpdatedOn(app.lastUpdatedOn).Now()
-	if err != nil {
-		return nil, err
-	}
-
-	return createMiner(mutable, app.toTransact, app.queue, app.broadcasted, app.toLink), nil
+	return createMiner(app.toTransact, app.queue, app.broadcasted, app.toLink), nil
 }

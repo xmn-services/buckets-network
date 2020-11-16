@@ -3,6 +3,7 @@ package blocks
 import (
 	"bytes"
 	"encoding/json"
+	"reflect"
 	"testing"
 )
 
@@ -31,7 +32,7 @@ func TestCompare(t *testing.T, first Blocks, second Blocks) {
 		return
 	}
 
-	if !first.Hash().Compare(second.Hash()) {
+	if !reflect.DeepEqual(first, second) {
 		t.Errorf("the instance conversion failed")
 		return
 	}

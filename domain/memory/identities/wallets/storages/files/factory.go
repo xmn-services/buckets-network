@@ -1,4 +1,4 @@
-package blocks
+package files
 
 type factory struct {
 	builder Builder
@@ -14,7 +14,7 @@ func createFactory(
 	return &out
 }
 
-// Create generates a new blocks instance
-func (app *factory) Create() (Blocks, error) {
+// Create create files
+func (app *factory) Create() (Files, error) {
 	return app.builder.Create().Now()
 }

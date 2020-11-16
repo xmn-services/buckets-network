@@ -3,6 +3,7 @@ package buckets
 import (
 	"bytes"
 	"encoding/json"
+	"reflect"
 	"testing"
 )
 
@@ -31,7 +32,7 @@ func TestCompare(t *testing.T, first Buckets, second Buckets) {
 		return
 	}
 
-	if !first.Hash().Compare(second.Hash()) {
+	if !reflect.DeepEqual(first, second) {
 		t.Errorf("the instance conversion failed")
 		return
 	}

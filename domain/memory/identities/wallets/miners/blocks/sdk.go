@@ -1,10 +1,7 @@
 package blocks
 
 import (
-	"time"
-
 	mined_blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
-	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
@@ -21,9 +18,7 @@ func NewFactory() Factory {
 
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
-	hashAdapter := hash.NewAdapter()
-	mutableBuilder := entities.NewMutableBuilder()
-	return createBuilder(hashAdapter, mutableBuilder)
+	return createBuilder()
 }
 
 // Adapter represents the blocks adapter
@@ -40,17 +35,12 @@ type Factory interface {
 // Builder represents a blocks builder
 type Builder interface {
 	Create() Builder
-	WithHash(hash hash.Hash) Builder
-	WithoutHash() Builder
 	WithBlocks(blocks []mined_blocks.Block) Builder
-	CreatedOn(createdOn time.Time) Builder
-	LastUpdatedOn(lastUpdatedOn time.Time) Builder
 	Now() (Blocks, error)
 }
 
 // Blocks represents a blocks
 type Blocks interface {
-	entities.Mutable
 	All() []mined_blocks.Block
 	Add(block mined_blocks.Block) error
 	Delete(hash hash.Hash) error

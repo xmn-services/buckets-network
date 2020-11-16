@@ -106,10 +106,6 @@ func (app *builder) Now() (Identity, error) {
 		[]byte(app.root),
 	}
 
-	if app.wallet != nil {
-		data = append(data, app.wallet.Hash().Bytes())
-	}
-
 	hsh, err := app.hashAdapter.FromMultiBytes(data)
 	if err != nil {
 		return nil, err

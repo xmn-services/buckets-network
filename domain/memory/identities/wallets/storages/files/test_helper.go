@@ -1,4 +1,4 @@
-package permanents
+package files
 
 import (
 	"bytes"
@@ -7,8 +7,8 @@ import (
 	"testing"
 )
 
-// TestCompare compare two buckets instances
-func TestCompare(t *testing.T, first Buckets, second Buckets) {
+// TestCompare compare two files instances
+func TestCompare(t *testing.T, first Files, second Files) {
 	js, err := json.Marshal(first)
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())

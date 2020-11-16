@@ -1,17 +1,12 @@
 package buckets
 
 import (
-	"time"
-
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/buckets/bucket"
 )
 
 // JSONBuckets represents a JSON buckets instance
 type JSONBuckets struct {
-	Hash          string               `json:"hash"`
-	Buckets       []*bucket.JSONBucket `json:"bucket"`
-	CreatedOn     time.Time            `json:"created_on"`
-	LastUpdatedOn time.Time            `json:"last_updated_on"`
+	Buckets []*bucket.JSONBucket `json:"buckets"`
 }
 
 func createJSONBucketsFromBuckets(ins Buckets) *JSONBuckets {
@@ -24,23 +19,14 @@ func createJSONBucketsFromBuckets(ins Buckets) *JSONBuckets {
 		jsonBuckets = append(jsonBuckets, jsonBucket)
 	}
 
-	hsh := ins.Hash().String()
-	createdOn := ins.CreatedOn()
-	lastUpdatedOn := ins.LastUpdatedOn()
-	return createJSONBuckets(hsh, jsonBuckets, createdOn, lastUpdatedOn)
+	return createJSONBuckets(jsonBuckets)
 }
 
 func createJSONBuckets(
-	hash string,
 	buckets []*bucket.JSONBucket,
-	createdOn time.Time,
-	lastUpdatedOn time.Time,
 ) *JSONBuckets {
 	out := JSONBuckets{
-		Hash:          hash,
-		Buckets:       buckets,
-		CreatedOn:     createdOn,
-		LastUpdatedOn: lastUpdatedOn,
+		Buckets: buckets,
 	}
 
 	return &out

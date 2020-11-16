@@ -2,17 +2,13 @@ package miners
 
 import (
 	"encoding/json"
-	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/blocks"
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/buckets"
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/permanents"
-	"github.com/xmn-services/buckets-network/libs/entities"
-	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type miner struct {
-	mutable     entities.Mutable
 	toTransact  buckets.Buckets
 	queue       buckets.Buckets
 	broadcasted permanents.Buckets
@@ -20,12 +16,6 @@ type miner struct {
 }
 
 func createMinerFromJSON(ins *JSONMiner) (Miner, error) {
-	hashAdapter := hash.NewAdapter()
-	hsh, err := hashAdapter.FromString(ins.Hash)
-	if err != nil {
-		return nil, err
-	}
-
 	bucketsAdapter := buckets.NewAdapter()
 	toTransact, err := bucketsAdapter.ToBuckets(ins.ToTransact)
 	if err != nil {
@@ -51,25 +41,20 @@ func createMinerFromJSON(ins *JSONMiner) (Miner, error) {
 
 	return NewBuilder().
 		Create().
-		WithHash(*hsh).
 		WithToTransact(toTransact).
 		WithQueue(queue).
 		WithBroadcasted(broadcasted).
 		WithToLink(toLink).
-		CreatedOn(ins.CreatedOn).
-		LastUpdatedOn(ins.LastUpdatedOn).
 		Now()
 }
 
 func createMiner(
-	mutable entities.Mutable,
 	toTransact buckets.Buckets,
 	queue buckets.Buckets,
 	broadcasted permanents.Buckets,
 	toLink blocks.Blocks,
 ) Miner {
 	out := miner{
-		mutable:     mutable,
 		toTransact:  toTransact,
 		queue:       queue,
 		broadcasted: broadcasted,
@@ -77,11 +62,6 @@ func createMiner(
 	}
 
 	return &out
-}
-
-// Hash returns the hash
-func (obj *miner) Hash() hash.Hash {
-	return obj.mutable.Hash()
 }
 
 // ToTransact returns the toTransact buckets
@@ -104,16 +84,6 @@ func (obj *miner) ToLink() blocks.Blocks {
 	return obj.toLink
 }
 
-// CreatedOn returns the creation time
-func (obj *miner) CreatedOn() time.Time {
-	return obj.mutable.CreatedOn()
-}
-
-// LastUpdatedOn returns the lastUpdatedOn time
-func (obj *miner) LastUpdatedOn() time.Time {
-	return obj.mutable.LastUpdatedOn()
-}
-
 // MarshalJSON converts the instance to JSON
 func (obj *miner) MarshalJSON() ([]byte, error) {
 	ins := createJSONMinerFromMiner(obj)
@@ -134,7 +104,6 @@ func (obj *miner) UnmarshalJSON(data []byte) error {
 	}
 
 	insMiner := pr.(*miner)
-	obj.mutable = insMiner.mutable
 	obj.toTransact = insMiner.toTransact
 	obj.queue = insMiner.queue
 	obj.broadcasted = insMiner.broadcasted

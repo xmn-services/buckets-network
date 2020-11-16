@@ -16,5 +16,5 @@ func createFactory(
 
 // Create creates a new miner instance
 func (app *factory) Create() (Miner, error) {
-	return app.builder.Create().WithoutHash().Now()
+	return app.builder.Create().Now()
 }

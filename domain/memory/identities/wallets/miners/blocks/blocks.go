@@ -4,26 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"time"
 
 	mined_blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
-	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type blocks struct {
-	mutable entities.Mutable
-	lst     []mined_blocks.Block
-	mp      map[string]mined_blocks.Block
+	lst []mined_blocks.Block
+	mp  map[string]mined_blocks.Block
 }
 
 func createBlocksFromJSON(ins *JSONBlocks) (Blocks, error) {
-	hashAdapter := hash.NewAdapter()
-	hsh, err := hashAdapter.FromString(ins.Hash)
-	if err != nil {
-		return nil, err
-	}
-
 	blocks := []mined_blocks.Block{}
 	blockAdapter := mined_blocks.NewAdapter()
 	for _, oneJS := range ins.Blocks {
@@ -37,30 +28,20 @@ func createBlocksFromJSON(ins *JSONBlocks) (Blocks, error) {
 
 	return NewBuilder().
 		Create().
-		WithHash(*hsh).
 		WithBlocks(blocks).
-		CreatedOn(ins.CreatedOn).
-		LastUpdatedOn(ins.LastUpdatedOn).
 		Now()
 }
 
 func createBlocks(
-	mutable entities.Mutable,
 	lst []mined_blocks.Block,
 	mp map[string]mined_blocks.Block,
 ) Blocks {
 	out := blocks{
-		mutable: mutable,
-		lst:     lst,
-		mp:      mp,
+		lst: lst,
+		mp:  mp,
 	}
 
 	return &out
-}
-
-// Hash returns the hash
-func (obj *blocks) Hash() hash.Hash {
-	return obj.mutable.Hash()
 }
 
 // All returns the blocks
@@ -100,16 +81,6 @@ func (obj *blocks) Delete(hash hash.Hash) error {
 	return nil
 }
 
-// CreatedOn returns the creation time
-func (obj *blocks) CreatedOn() time.Time {
-	return obj.mutable.CreatedOn()
-}
-
-// LastUpdatedOn returns the lastUpdatedOn time
-func (obj *blocks) LastUpdatedOn() time.Time {
-	return obj.mutable.LastUpdatedOn()
-}
-
 // MarshalJSON converts the instance to JSON
 func (obj *blocks) MarshalJSON() ([]byte, error) {
 	ins := createJSONBlocksFromBlocks(obj)
@@ -130,7 +101,6 @@ func (obj *blocks) UnmarshalJSON(data []byte) error {
 	}
 
 	insBlock := pr.(*blocks)
-	obj.mutable = insBlock.mutable
 	obj.lst = insBlock.lst
 	obj.mp = insBlock.mp
 	return nil
