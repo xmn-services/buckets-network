@@ -7,7 +7,7 @@ import (
 	"github.com/xmn-services/buckets-network/application/identities/daemons"
 )
 
-type trxQueue struct {
+type queue struct {
 	application app.Application
 	name        string
 	seed        string
@@ -24,7 +24,7 @@ func createQueue(
 	waitPeriod time.Duration,
 	isStarted bool,
 ) daemons.Application {
-	out := trxQueue{
+	out := queue{
 		application: app,
 		name:        name,
 		seed:        seed,
@@ -37,7 +37,7 @@ func createQueue(
 }
 
 // Start starts the application
-func (app *trxQueue) Start() error {
+func (app *queue) Start() error {
 	app.isStarted = true
 
 	for {
@@ -65,7 +65,7 @@ func (app *trxQueue) Start() error {
 
 		// for each bucket, create a transaction:
 		for _, oneBucket := range buckets {
-			// add the transaction to the to-mine trxQueue:
+			// add the transaction to the to-mine queue:
 			err = identity.Wallet().Miner().Queue().Add(oneBucket)
 			if err != nil {
 				return err
@@ -87,7 +87,7 @@ func (app *trxQueue) Start() error {
 }
 
 // Stop stops the application
-func (app *trxQueue) Stop() error {
+func (app *queue) Stop() error {
 	app.isStarted = true
 	return nil
 }
