@@ -26,6 +26,28 @@ func createService(
 	return &out
 }
 
+// Save saves a file
+func (app *service) Save(storedFile File) error {
+	// save the stored file:
+	file := storedFile.File()
+	err := app.fileService.Save(file)
+	if err != nil {
+		return err
+	}
+
+	// save the content:
+	contents := storedFile.Contents().All()
+	for _, oneContent := range contents {
+		data := oneContent.Content()
+		err = app.trDataService.Save(data)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Delete deletes a file
 func (app *service) Delete(hash hash.Hash) error {
 	storedFile, err := app.repository.Retrieve(hash)

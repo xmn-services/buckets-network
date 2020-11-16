@@ -4,9 +4,10 @@ import (
 	"time"
 
 	"github.com/xmn-services/buckets-network/application"
+	identities_app "github.com/xmn-services/buckets-network/application/identities"
 	"github.com/xmn-services/buckets-network/application/identities/daemons"
-	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	"github.com/xmn-services/buckets-network/infrastructure/clients"
+	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type storage struct {
@@ -83,13 +84,8 @@ func (app *storage) Start() error {
 		}
 
 		// download the files:
-		identity = app.download(identity, remoteApps)
-		if err != nil {
-			return err
-		}
-
-		// update the identity:
-		err = app.localApplication.Current().UpdateIdentity(identity, app.password, app.password)
+		toDownloadFiles := identity.Wallet().Storages().ToDownload().All()
+		err = app.download(toDownloadFiles, identityApp, remoteApps)
 		if err != nil {
 			return err
 		}
@@ -102,26 +98,26 @@ func (app *storage) Stop() error {
 	return nil
 }
 
-func (app *storage) download(identity identities.Identity, clientApplication []application.Application) identities.Identity {
-	toDownloadFiles := identity.Wallet().Storages().ToDownload()
-	for _, oneFile := range toDownloadFiles {
+func (app *storage) download(toDownloadFiles []hash.Hash, identityApp identities_app.Application, clientApplication []application.Application) error {
+	for _, oneFileHash := range toDownloadFiles {
 		for _, oneClient := range clientApplication {
 			clientStorageApp := oneClient.Sub().Storage()
-			if !clientStorageApp.IsStored(oneFile.Hash()) {
+			if !clientStorageApp.IsStored(oneFileHash) {
 				continue
 			}
 
-			storedFile, err := clientStorageApp.Retrieve(oneFile.Hash())
+			storedFile, err := clientStorageApp.Retrieve(oneFileHash)
 			if err != nil {
-				// log
+				return err
 			}
 
-			err = identity.Wallet().Storages().Stored().Add(storedFile)
+			// save the file:
+			err = identityApp.Sub().Storage().Save(storedFile)
 			if err != nil {
-				// log
+				return err
 			}
 		}
 	}
 
-	return identity
+	return nil
 }

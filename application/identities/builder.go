@@ -5,12 +5,14 @@ import (
 
 	"github.com/xmn-services/buckets-network/application/identities/buckets"
 	"github.com/xmn-services/buckets-network/application/identities/daemons"
+	"github.com/xmn-services/buckets-network/application/identities/storages"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 )
 
 type builder struct {
 	bucketBuilder      buckets.Builder
 	daemonBuilder      daemons.Builder
+	storageBuilder     storages.Builder
 	identityRepository identities.Repository
 	identityService    identities.Service
 	name               string
@@ -21,12 +23,14 @@ type builder struct {
 func createBuilder(
 	bucketBuilder buckets.Builder,
 	daemonBuilder daemons.Builder,
+	storageBuilder storages.Builder,
 	identityRepository identities.Repository,
 	identityService identities.Service,
 ) Builder {
 	out := builder{
 		bucketBuilder:      bucketBuilder,
 		daemonBuilder:      daemonBuilder,
+		storageBuilder:     storageBuilder,
 		identityRepository: identityRepository,
 		identityService:    identityService,
 		name:               "",
@@ -39,7 +43,13 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.bucketBuilder, app.daemonBuilder, app.identityRepository, app.identityService)
+	return createBuilder(
+		app.bucketBuilder,
+		app.daemonBuilder,
+		app.storageBuilder,
+		app.identityRepository,
+		app.identityService,
+	)
 }
 
 // WithName adds a name to the builder
@@ -84,7 +94,12 @@ func (app *builder) Now() (Application, error) {
 		return nil, err
 	}
 
-	subApps := createSubApplications(bucketApp, daemonApp)
+	storageApp, err := app.storageBuilder.Create().WithName(app.name).WithPassword(app.password).WithSeed(app.seed).Now()
+	if err != nil {
+		return nil, err
+	}
+
+	subApps := createSubApplications(bucketApp, daemonApp, storageApp)
 	currentApp := createCurrent(app.identityRepository, app.identityService, app.name, app.password, app.seed)
 	return createApplication(currentApp, subApps), nil
 }

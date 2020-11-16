@@ -27,5 +27,6 @@ type Repository interface {
 
 // Service represents a file service
 type Service interface {
+	Save(file File) error
 	Delete(hash hash.Hash) error
 }

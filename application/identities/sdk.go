@@ -3,6 +3,7 @@ package identities
 import (
 	"github.com/xmn-services/buckets-network/application/identities/buckets"
 	"github.com/xmn-services/buckets-network/application/identities/daemons"
+	"github.com/xmn-services/buckets-network/application/identities/storages"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 )
 
@@ -32,6 +33,7 @@ type Current interface {
 type SubApplications interface {
 	Bucket() buckets.Application
 	Daemon() daemons.Application
+	Storage() storages.Application
 }
 
 // UpdateBuilder represents an update builder
