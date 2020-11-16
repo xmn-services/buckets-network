@@ -126,7 +126,7 @@ func (app *blockMiner) Start() error {
 		}
 
 		// add the block to the wallet:
-		err = identity.Wallet().Miner().Blocks().Add(minedBlock)
+		err = identity.Wallet().Miner().ToLink().Add(minedBlock)
 		if err != nil {
 			return err
 		}
