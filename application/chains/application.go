@@ -1,26 +1,44 @@
 package chains
 
 import (
+	"github.com/xmn-services/buckets-network/application/miners"
 	"github.com/xmn-services/buckets-network/domain/memory/chains"
 	mined_link "github.com/xmn-services/buckets-network/domain/memory/links/mined"
 )
 
 type application struct {
-	chainRepository chains.Repository
-	chainService    chains.Service
-	chainBuilder    chains.Builder
+	minerApplication miners.Application
+	chainRepository  chains.Repository
+	chainService     chains.Service
+	chainBuilder     chains.Builder
 }
 
 func createApplication(
+	minerApplication miners.Application,
 	chainRepository chains.Repository,
 	chainService chains.Service,
+	chainBuilder chains.Builder,
 ) Application {
 	out := application{
-		chainRepository: chainRepository,
-		chainService:    chainService,
+		minerApplication: minerApplication,
+		chainRepository:  chainRepository,
+		chainService:     chainService,
+		chainBuilder:     chainBuilder,
 	}
 
 	return &out
+}
+
+// Init initializes the chain
+func (app *application) Init(baseDifficulty uint, increasePerBucket float64, linkDifficulty uint) error {
+	// mine the chain:
+	chain, err := app.minerApplication.Init(baseDifficulty, increasePerBucket, linkDifficulty)
+	if err != nil {
+		return err
+	}
+
+	// save the chain:
+	return app.chainService.Insert(chain)
 }
 
 // Retrieve retrieves the chain

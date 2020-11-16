@@ -2,7 +2,6 @@ package application
 
 import (
 	"github.com/xmn-services/buckets-network/application/chains"
-	"github.com/xmn-services/buckets-network/application/genesis"
 	application_identities "github.com/xmn-services/buckets-network/application/identities"
 	"github.com/xmn-services/buckets-network/application/miners"
 	application_peers "github.com/xmn-services/buckets-network/application/peers"
@@ -26,7 +25,6 @@ type Current interface {
 // SubApplications represents the sub applications
 type SubApplications interface {
 	Peers() application_peers.Application
-	Genesis() genesis.Application
 	Chain() chains.Application
 	Storage() storages.Application
 	Miner() miners.Application

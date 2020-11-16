@@ -7,6 +7,7 @@ import (
 
 // Application represents the chain application
 type Application interface {
+	Init(baseDifficulty uint, increasePerBucket float64, linkDifficulty uint) error
 	Retrieve() (chains.Chain, error)
 	RetrieveAtIndex(index uint) (chains.Chain, error)
 	Update(newMinedLink mined_link.Link) error
