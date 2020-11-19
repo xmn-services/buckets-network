@@ -36,10 +36,12 @@ func (app *service) Save(block Block) error {
 		return nil
 	}
 
-	buckets := block.Buckets()
-	err = app.bucketService.SaveAll(buckets)
-	if err != nil {
-		return err
+	if block.HasBuckets() {
+		buckets := block.Buckets()
+		err = app.bucketService.SaveAll(buckets)
+		if err != nil {
+			return err
+		}
 	}
 
 	trBlock, err := app.adapter.ToTransfer(block)

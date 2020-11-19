@@ -13,14 +13,15 @@ import (
 )
 
 type service struct {
-	hashAdapter    hash.Adapter
-	adapter        Adapter
-	repository     Repository
-	genesisService genesis.Service
-	blockService   mined_block.Service
-	linkRepository mined_link.Repository
-	linkService    mined_link.Service
-	trService      transfer_chains.Service
+	hashAdapter     hash.Adapter
+	adapter         Adapter
+	repository      Repository
+	genesisService  genesis.Service
+	blockRepository mined_block.Repository
+	blockService    mined_block.Service
+	linkRepository  mined_link.Repository
+	linkService     mined_link.Service
+	trService       transfer_chains.Service
 }
 
 func createService(
@@ -28,20 +29,22 @@ func createService(
 	adapter Adapter,
 	repository Repository,
 	genesisService genesis.Service,
+	blockRepository mined_block.Repository,
 	blockService mined_block.Service,
 	linkRepository mined_link.Repository,
 	linkService mined_link.Service,
 	trService transfer_chains.Service,
 ) Service {
 	out := service{
-		hashAdapter:    hashAdapter,
-		adapter:        adapter,
-		repository:     repository,
-		genesisService: genesisService,
-		blockService:   blockService,
-		linkRepository: linkRepository,
-		linkService:    linkService,
-		trService:      trService,
+		hashAdapter:     hashAdapter,
+		adapter:         adapter,
+		repository:      repository,
+		genesisService:  genesisService,
+		blockRepository: blockRepository,
+		blockService:    blockService,
+		linkRepository:  linkRepository,
+		linkService:     linkService,
+		trService:       trService,
 	}
 
 	return &out
@@ -116,7 +119,7 @@ func (app *service) save(chain Chain) error {
 		return err
 	}
 
-	return app.trService.Save(trChain)
+	return app.trService.Save(trChain, chain.Height())
 }
 
 func (app *service) verifyChain(chain Chain) error {
@@ -137,9 +140,8 @@ func (app *service) verifyChain(chain Chain) error {
 		return err
 	}
 
-	totalBucketsAmount := bucketsAmount + uint(len(root.Block().Buckets()))
-	if totalBucketsAmount != chain.Total() {
-		str := fmt.Sprintf("the chain (hash: %s) was expecting %d buckets, %d found", chain.Hash().String(), totalBucketsAmount, chain.Total())
+	if bucketsAmount != chain.Total() {
+		str := fmt.Sprintf("the chain (hash: %s) was expecting %d buckets, %d found", chain.Hash().String(), bucketsAmount, chain.Total())
 		return errors.New(str)
 	}
 
@@ -150,7 +152,7 @@ func (app *service) verifyLink(chainGen genesis.Genesis, expectedIndex uint, min
 	link := minedLink.Link()
 	block := link.Next().Block()
 	gen := link.Next().Block().Genesis()
-	if chainGen.Hash().Compare(gen.Hash()) {
+	if !chainGen.Hash().Compare(gen.Hash()) {
 		str := fmt.Sprintf("the chain has a different genesis (%s) than the mined link (hash: %s) genesis (%s) at index: %d", chainGen.Hash().String(), minedLink.Hash().String(), gen.Hash().String(), minedLink.Link().Index())
 		return 0, errors.New(str)
 	}
@@ -171,10 +173,26 @@ func (app *service) verifyLink(chainGen genesis.Genesis, expectedIndex uint, min
 		return 0, err
 	}
 
+	amount := block.Additional()
+	if block.HasBuckets() {
+		amount += uint(len(block.Buckets()))
+	}
+
 	prevLinkHash := link.PreviousLink()
 	prevLink, err := app.linkRepository.Retrieve(prevLinkHash)
 	if err != nil {
-		return 0, err
+		prevRoot, err := app.blockRepository.Retrieve(prevLinkHash)
+		if err != nil {
+			return 0, err
+		}
+
+		prevBlock := prevRoot.Block()
+		prevBlockAmount := prevBlock.Additional()
+		if prevBlock.HasBuckets() {
+			return prevBlockAmount + uint(len(prevBlock.Buckets())), nil
+		}
+
+		return prevBlockAmount + amount, nil
 	}
 
 	prevAmount, err := app.verifyLink(chainGen, expectedIndex-1, prevLink)
@@ -182,36 +200,13 @@ func (app *service) verifyLink(chainGen genesis.Genesis, expectedIndex uint, min
 		return 0, err
 	}
 
-	additional := block.Additional()
-	amount := uint(len(block.Buckets()))
-	return prevAmount + additional + amount, nil
-}
-
-func (app *service) fetchAmountBuckets(minedLink mined_link.Link) (uint, error) {
-	link := minedLink.Link()
-	block := link.Next().Block()
-	additional := block.Additional()
-	amount := uint(len(block.Buckets()))
-
-	prevMinedLinkHash := link.PreviousLink()
-	prevMinedLink, err := app.linkRepository.Retrieve(prevMinedLinkHash)
-	if err != nil {
-		return 0, err
-	}
-
-	prevMinedAmount, err := app.fetchAmountBuckets(prevMinedLink)
-	if err != nil {
-		return 0, err
-	}
-
-	return prevMinedAmount + additional + amount, nil
-
+	return  amount + prevAmount, nil
 }
 
 func (app *service) verifyBlock(chainGen genesis.Genesis, minedBlock mined_block.Block) error {
 	block := minedBlock.Block()
 	gen := block.Genesis()
-	if chainGen.Hash().Compare(gen.Hash()) {
+	if !chainGen.Hash().Compare(gen.Hash()) {
 		str := fmt.Sprintf("the chain has a different genesis (%s) than the block (hash: %s) genesis (%s)", chainGen.Hash().String(), minedBlock.Hash().String(), gen.Hash().String())
 		return errors.New(str)
 	}

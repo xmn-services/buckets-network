@@ -15,6 +15,7 @@ import (
 func NewService(
 	repository Repository,
 	genesisService genesis.Service,
+	blockRepository mined_block.Repository,
 	blockService mined_block.Service,
 	linkRepository mined_link.Repository,
 	linkService mined_link.Service,
@@ -22,7 +23,7 @@ func NewService(
 ) Service {
 	hashAdapter := hash.NewAdapter()
 	adapter := NewAdapter()
-	return createService(hashAdapter, adapter, repository, genesisService, blockService, linkRepository, linkService, trService)
+	return createService(hashAdapter, adapter, repository, genesisService, blockRepository, blockService, linkRepository, linkService, trService)
 }
 
 // NewRepository creates a new repository instance

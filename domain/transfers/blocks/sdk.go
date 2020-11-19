@@ -52,9 +52,10 @@ type Builder interface {
 // Block represents a block of transactions
 type Block interface {
 	entities.Immutable
-	Buckets() hashtree.HashTree
 	Amount() uint
 	Additional() uint
+	HasBuckets() bool
+	Buckets() hashtree.HashTree
 }
 
 // Repository represents a block repository

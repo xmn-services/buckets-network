@@ -32,6 +32,7 @@ func createRepository(
 
 // Retrieve retrieves a block by hash
 func (app *repository) Retrieve(hsh hash.Hash) (Block, error) {
+
 	trBlock, err := app.trRepository.Retrieve(hsh)
 	if err != nil {
 		return nil, err
@@ -42,24 +43,28 @@ func (app *repository) Retrieve(hsh hash.Hash) (Block, error) {
 		return nil, err
 	}
 
-	bucketHashes := []hash.Hash{}
-	amountTrx := trBlock.Amount()
-	leaves := trBlock.Buckets().Parent().BlockLeaves().Leaves()
-	for i := 0; i < int(amountTrx); i++ {
-		bucketHashes = append(bucketHashes, leaves[i].Head())
-	}
-
-	buckets, err := app.bucketRepository.RetrieveAll(bucketHashes)
-	if err != nil {
-		return nil, err
-	}
-
 	additional := trBlock.Additional()
 	createdOn := trBlock.CreatedOn()
-	return app.builder.Create().
+	builder := app.builder.Create().
 		WithGenesis(gen).
 		WithAdditional(additional).
-		WithBuckets(buckets).
-		CreatedOn(createdOn).
-		Now()
+		CreatedOn(createdOn)
+
+	if trBlock.HasBuckets() {
+		bucketHashes := []hash.Hash{}
+		amountTrx := trBlock.Amount()
+		leaves := trBlock.Buckets().Parent().BlockLeaves().Leaves()
+		for i := 0; i < int(amountTrx); i++ {
+			bucketHashes = append(bucketHashes, leaves[i].Head())
+		}
+
+		buckets, err := app.bucketRepository.RetrieveAll(bucketHashes)
+		if err != nil {
+			return nil, err
+		}
+
+		builder.WithBuckets(buckets)
+	}
+
+	return builder.Now()
 }

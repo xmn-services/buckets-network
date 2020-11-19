@@ -1,8 +1,6 @@
 package genesis
 
 import (
-	"errors"
-
 	transfer_genesis "github.com/xmn-services/buckets-network/domain/transfers/genesis"
 )
 
@@ -30,7 +28,7 @@ func createService(
 func (app *service) Save(genesis Genesis) error {
 	_, err := app.repository.Retrieve()
 	if err == nil {
-		return errors.New("there is already a Genesis instance")
+		return nil
 	}
 
 	trGenesis, err := app.adapter.ToTransfer(genesis)

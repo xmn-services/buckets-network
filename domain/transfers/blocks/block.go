@@ -23,37 +23,58 @@ func createBlockFromJSON(ins *jsonBlock) (Block, error) {
 		return nil, err
 	}
 
-	compact, err := hashtree.NewAdapter().FromJSON(ins.Buckets)
-	if err != nil {
-		return nil, err
-	}
-
-	buckets, err := compact.Leaves().HashTree()
-	if err != nil {
-		return nil, err
-	}
-
-	return NewBuilder().
+	builder := NewBuilder().
 		Create().
 		WithHash(*hsh).
-		WithBuckets(buckets).
 		WithAmount(ins.Amount).
 		WithAdditional(ins.Additional).
-		CreatedOn(ins.CreatedOn).
-		Now()
+		CreatedOn(ins.CreatedOn)
+
+	if ins.Buckets != nil {
+		compact, err := hashtree.NewAdapter().FromJSON(ins.Buckets)
+		if err != nil {
+			return nil, err
+		}
+
+		buckets, err := compact.Leaves().HashTree()
+		if err != nil {
+			return nil, err
+		}
+
+		builder.WithBuckets(buckets)
+	}
+
+	return builder.Now()
 }
 
 func createBlock(
 	immutable entities.Immutable,
-	buckets hashtree.HashTree,
 	amount uint,
 	additional uint,
 ) Block {
+	return createBlockInternally(immutable, amount, additional, nil)
+}
+
+func createBlockWithBuckets(
+	immutable entities.Immutable,
+	amount uint,
+	additional uint,
+	buckets hashtree.HashTree,
+) Block {
+	return createBlockInternally(immutable, amount, additional, buckets)
+}
+
+func createBlockInternally(
+	immutable entities.Immutable,
+	amount uint,
+	additional uint,
+	buckets hashtree.HashTree,
+) Block {
 	out := block{
 		immutable:  immutable,
-		buckets:    buckets,
 		amount:     amount,
 		additional: additional,
+		buckets:    buckets,
 	}
 
 	return &out
@@ -62,11 +83,6 @@ func createBlock(
 // Hash returns the hash
 func (obj *block) Hash() hash.Hash {
 	return obj.immutable.Hash()
-}
-
-// Buckets returns the buckets hashtree
-func (obj *block) Buckets() hashtree.HashTree {
-	return obj.buckets
 }
 
 // Amount returns the amount
@@ -82,6 +98,16 @@ func (obj *block) Additional() uint {
 // CreatedOn returns the creation time
 func (obj *block) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()
+}
+
+// HasBuckets returns true if there is buckets, false otherwise
+func (obj *block) HasBuckets() bool {
+	return obj.buckets != nil
+}
+
+// Buckets returns the buckets hashtree
+func (obj *block) Buckets() hashtree.HashTree {
+	return obj.buckets
 }
 
 // MarshalJSON converts the instance to JSON

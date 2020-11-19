@@ -66,5 +66,5 @@ type Repository interface {
 
 // Service represents the chain service
 type Service interface {
-	Save(chain Chain) error
+	Save(chain Chain, index uint) error
 }

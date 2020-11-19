@@ -60,7 +60,7 @@ func TestChain_Success(t *testing.T) {
 	repository := NewRepository(fileRepositoryService, fileName, extName)
 	service := NewService(fileRepositoryService, fileName, extName)
 
-	err = service.Save(chain)
+	err = service.Save(chain, 0)
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return

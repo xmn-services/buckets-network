@@ -40,17 +40,18 @@ func TestLink_Success(t *testing.T) {
 	blockDiffBase := uint(1)
 	blockDiffIncreasePerTrx := float64(1.0)
 	linkDiff := uint(1)
-	genesisIns := genesis.CreateGenesisForTests(blockDiffBase, blockDiffIncreasePerTrx, linkDiff)
+	miningValue := uint8(0)
+	genesisIns := genesis.CreateGenesisForTests(miningValue, blockDiffBase, blockDiffIncreasePerTrx, linkDiff)
 
 	// block:
 	additional := uint(0)
-	blockIns := mined_blocks.CreateBlockForTests(genesisIns, additional, []buckets.Bucket{
+	blockIns := blocks.CreateBlockForTests(genesisIns, additional, []buckets.Bucket{
 		bucketIns,
 	})
 
 	// mined block:
 	mining := "this is a mining"
-	minedBlockIns := mined_mined_blocks.CreateBlockForTests(blockIns, mining)
+	minedBlockIns := mined_blocks.CreateBlockForTests(blockIns, mining)
 
 	// link:
 	index := uint(5)

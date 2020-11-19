@@ -24,28 +24,33 @@ func createAdapter(
 
 // ToTransfer converts the block to a transfer block
 func (app *adapter) ToTransfer(block Block) (transfer_block.Block, error) {
-	buckets := block.Buckets()
-	blocks := [][]byte{}
-	for _, oneBucket := range buckets {
-		blocks = append(blocks, oneBucket.Hash().Bytes())
-	}
-
-	bucketsHt, err := app.hashTreeBuilder.Create().WithBlocks(blocks).Now()
-	if err != nil {
-		return nil, err
-	}
-
 	hsh := block.Hash()
 	additional := block.Additional()
-	amount := uint(len(buckets))
+	amount := uint(0)
 	createdOn := block.CreatedOn()
-	return app.trBuilder.Create().
+	builder := app.trBuilder.Create().
 		WithHash(hsh).
 		WithAdditional(additional).
-		WithBuckets(bucketsHt).
 		WithAmount(amount).
-		CreatedOn(createdOn).
-		Now()
+		CreatedOn(createdOn)
+
+	if block.HasBuckets() {
+		buckets := block.Buckets()
+		blocks := [][]byte{}
+		for _, oneBucket := range buckets {
+			blocks = append(blocks, oneBucket.Hash().Bytes())
+		}
+
+		bucketsHt, err := app.hashTreeBuilder.Create().WithBlocks(blocks).Now()
+		if err != nil {
+			return nil, err
+		}
+
+		amount := uint(len(buckets))
+		builder.WithBuckets(bucketsHt).WithAmount(amount)
+	}
+
+	return builder.Now()
 }
 
 // ToJSON converts a block to a JSON block

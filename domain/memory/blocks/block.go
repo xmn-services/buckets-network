@@ -18,33 +18,54 @@ type block struct {
 }
 
 func createBlockFromJSON(ins *JSONBlock) (Block, error) {
-	bucketAdapter := buckets.NewAdapter()
-	buckets := []buckets.Bucket{}
-	for _, oneJSBucket := range ins.Buckets {
-		oneBucket, err := bucketAdapter.ToBucket(oneJSBucket)
-		if err != nil {
-			return nil, err
-		}
-
-		buckets = append(buckets, oneBucket)
-	}
-
 	genAdapter := genesis.NewAdapter()
 	gen, err := genAdapter.ToGenesis(ins.Genesis)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewBuilder().
+	builder := NewBuilder().
 		Create().
-		WithBuckets(buckets).
 		WithGenesis(gen).
 		WithAdditional(ins.Additional).
-		CreatedOn(ins.CreatedOn).
-		Now()
+		CreatedOn(ins.CreatedOn)
+
+	if len(ins.Buckets) > 0 {
+		bucketAdapter := buckets.NewAdapter()
+		buckets := []buckets.Bucket{}
+		for _, oneJSBucket := range ins.Buckets {
+			oneBucket, err := bucketAdapter.ToBucket(oneJSBucket)
+			if err != nil {
+				return nil, err
+			}
+
+			buckets = append(buckets, oneBucket)
+		}
+
+		builder.WithBuckets(buckets)
+	}
+
+	return builder.Now()
 }
 
 func createBlock(
+	immutable entities.Immutable,
+	genesis genesis.Genesis,
+	additional uint,
+) Block {
+	return createBlockInternally(immutable, genesis, additional, nil)
+}
+
+func createBlockWithBuckets(
+	immutable entities.Immutable,
+	genesis genesis.Genesis,
+	additional uint,
+	buckets []buckets.Bucket,
+) Block {
+	return createBlockInternally(immutable, genesis, additional, buckets)
+}
+
+func createBlockInternally(
 	immutable entities.Immutable,
 	genesis genesis.Genesis,
 	additional uint,
@@ -75,14 +96,19 @@ func (obj *block) Additional() uint {
 	return obj.additional
 }
 
-// Buckets returns the buckets
-func (obj *block) Buckets() []buckets.Bucket {
-	return obj.buckets
-}
-
 // CreatedOn returns the creation time
 func (obj *block) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()
+}
+
+// HasBuckets returns true if there is buckets, false otherwise
+func (obj *block) HasBuckets() bool {
+	return obj.buckets != nil
+}
+
+// Buckets returns the buckets
+func (obj *block) Buckets() []buckets.Bucket {
+	return obj.buckets
 }
 
 // MarshalJSON converts the instance to JSON

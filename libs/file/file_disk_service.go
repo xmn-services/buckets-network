@@ -35,7 +35,7 @@ func (app *fileDiskService) Save(relativePath string, content []byte) error {
 func (app *fileDiskService) Delete(relativePath string) error {
 	path := filepath.Join(app.basePath, relativePath)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		str := fmt.Sprintf("the given relative path (%s) does not exists", relativePath)
+		str := fmt.Sprintf("the given path (%s) does not exists", path)
 		return errors.New(str)
 	}
 

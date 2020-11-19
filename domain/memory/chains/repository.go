@@ -63,7 +63,7 @@ func (app *repository) toChain(trChain transfer_chains.Chain) (Chain, error) {
 		return nil, err
 	}
 
-	if genHash.Compare(gen.Hash()) {
+	if !genHash.Compare(gen.Hash()) {
 		str := fmt.Sprintf("the stored genesis hash, in the chain's stored data is invalid (expected: %s, returned: %s)", genHash.String(), gen.Hash().String())
 		return nil, errors.New(str)
 	}

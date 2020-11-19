@@ -98,7 +98,20 @@ func (app *application) Init(miningValue uint8, baseDifficulty uint, increasePer
 	}
 
 	// build the chain:
-	return app.chainBuilder.Create().WithGenesis(gen).WithRoot(root).WithHead(head).WithTotal(0).Now()
+	rootBlock := root.Block()
+	rootBucketAmount := rootBlock.Additional()
+	if rootBlock.HasBuckets() {
+		rootBucketAmount += uint(len(rootBlock.Buckets()))
+	}
+
+	headBlockBlock := headBlock.Block()
+	headBlockAmount := headBlockBlock.Additional()
+	if headBlockBlock.HasBuckets() {
+		headBlockAmount += uint(len(headBlockBlock.Buckets()))
+	}
+
+	totalAmount := rootBucketAmount + headBlockAmount
+	return app.chainBuilder.Create().WithGenesis(gen).WithRoot(root).WithHead(head).WithTotal(totalAmount).Now()
 }
 
 // Block mines a block

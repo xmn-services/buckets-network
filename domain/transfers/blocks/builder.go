@@ -74,18 +74,14 @@ func (app *builder) Now() (Block, error) {
 		return nil, errors.New("the hash is mandatory in order to build a Block instance")
 	}
 
-	if app.buckets == nil {
-		return nil, errors.New("the buckets hashtree is mandatory in order to build a Block instance")
-	}
-
-	if app.amount <= 0 {
-		return nil, errors.New("the amount is mandatory in order to build a Block instance")
-	}
-
 	immutable, err := app.immutableBuilder.Create().WithHash(*app.hash).CreatedOn(app.createdOn).Now()
 	if err != nil {
 		return nil, err
 	}
 
-	return createBlock(immutable, app.buckets, app.amount, app.additional), nil
+	if app.buckets != nil {
+		return createBlockWithBuckets(immutable, app.amount, app.additional, app.buckets), nil
+	}
+
+	return createBlock(immutable, app.amount, app.additional), nil
 }

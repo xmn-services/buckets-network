@@ -30,9 +30,9 @@ func createService(
 }
 
 // Save saves a chain instance
-func (app *service) Save(chain Chain) error {
+func (app *service) Save(chain Chain, index uint) error {
 	currentName := fmt.Sprintf("%s.%s", app.fileName, app.extName)
-	indexName := fmt.Sprintf("%d.%s", chain.Total()-1, app.extName)
+	indexName := fmt.Sprintf("%d.%s", index, app.extName)
 	err := app.save(chain, currentName)
 	if err != nil {
 		return err

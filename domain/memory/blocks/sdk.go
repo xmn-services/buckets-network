@@ -67,6 +67,7 @@ type Block interface {
 	entities.Immutable
 	Genesis() genesis.Genesis
 	Additional() uint
+	HasBuckets() bool
 	Buckets() []buckets.Bucket
 }
 

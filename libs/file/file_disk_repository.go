@@ -32,12 +32,12 @@ func (app *fileDiskRepository) Exists(relativePath string) bool {
 
 // Retrieve retrieves data from file using its name
 func (app *fileDiskRepository) Retrieve(relativePath string) ([]byte, error) {
+	path := filepath.Join(app.basePath, relativePath)
 	if !app.Exists(relativePath) {
-		str := fmt.Sprintf("the file (path: %s) does not exists", relativePath)
+		str := fmt.Sprintf("the file (path: %s) does not exists", path)
 		return nil, errors.New(str)
 	}
 
-	path := filepath.Join(app.basePath, relativePath)
 	encrypted, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err

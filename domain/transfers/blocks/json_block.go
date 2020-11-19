@@ -16,10 +16,15 @@ type jsonBlock struct {
 
 func createJSONBlockFromBlock(ins Block) *jsonBlock {
 	hash := ins.Hash().String()
-	buckets := hashtree.NewAdapter().ToJSON(ins.Buckets().Compact())
 	amount := ins.Amount()
 	additional := ins.Additional()
 	createdOn := ins.CreatedOn()
+
+	var buckets *hashtree.JSONCompact
+	if ins.HasBuckets() {
+		buckets = hashtree.NewAdapter().ToJSON(ins.Buckets().Compact())
+	}
+
 	return createJSONBlock(hash, buckets, amount, additional, createdOn)
 }
 

@@ -99,5 +99,9 @@ func (app *builder) Now() (Block, error) {
 		return nil, err
 	}
 
-	return createBlock(immutable, app.genesis, app.additional, app.buckets), nil
+	if len(app.buckets) > 0 {
+		return createBlockWithBuckets(immutable, app.genesis, app.additional, app.buckets), nil
+	}
+
+	return createBlock(immutable, app.genesis, app.additional), nil
 }

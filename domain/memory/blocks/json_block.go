@@ -19,17 +19,19 @@ func createJSONBlockFromBlock(block Block) *JSONBlock {
 	genAdapter := genesis.NewAdapter()
 	gen := genAdapter.ToJSON(block.Genesis())
 
-	bucketAdapter := buckets.NewAdapter()
-	lst := block.Buckets()
-	buckets := []*buckets.JSONBucket{}
-	for _, oneBucket := range lst {
-		jsBucket := bucketAdapter.ToJSON(oneBucket)
-		buckets = append(buckets, jsBucket)
+	jsonBuckets := []*buckets.JSONBucket{}
+	if block.HasBuckets() {
+		bucketAdapter := buckets.NewAdapter()
+		lst := block.Buckets()
+		for _, oneBucket := range lst {
+			jsBucket := bucketAdapter.ToJSON(oneBucket)
+			jsonBuckets = append(jsonBuckets, jsBucket)
+		}
 	}
 
 	additional := block.Additional()
 	createdOn := block.CreatedOn()
-	return createJSONBlock(gen, buckets, additional, createdOn)
+	return createJSONBlock(gen, jsonBuckets, additional, createdOn)
 }
 
 func createJSONBlock(
