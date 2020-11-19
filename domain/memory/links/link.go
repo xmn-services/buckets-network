@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
+	mined_blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -12,7 +12,7 @@ import (
 type link struct {
 	immutable entities.Immutable
 	prevLink  hash.Hash
-	next      blocks.Block
+	next      mined_blocks.Block
 	index     uint
 }
 
@@ -23,7 +23,7 @@ func createLinkFromJSON(ins *JSONLink) (Link, error) {
 		return nil, err
 	}
 
-	blocksAdapter := blocks.NewAdapter()
+	blocksAdapter := mined_blocks.NewAdapter()
 	next, err := blocksAdapter.ToBlock(ins.Next)
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func createLinkFromJSON(ins *JSONLink) (Link, error) {
 func createLink(
 	immutable entities.Immutable,
 	prevLink hash.Hash,
-	next blocks.Block,
+	next mined_blocks.Block,
 	index uint,
 ) Link {
 	out := link{
@@ -64,7 +64,7 @@ func (obj *link) PreviousLink() hash.Hash {
 }
 
 // Next returns the next block
-func (obj *link) Next() blocks.Block {
+func (obj *link) Next() mined_blocks.Block {
 	return obj.next
 }
 

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
+	mined_blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -14,7 +14,7 @@ type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
 	prevLink         *hash.Hash
-	next             blocks.Block
+	next             mined_blocks.Block
 	index            uint
 	createdOn        *time.Time
 }
@@ -47,7 +47,7 @@ func (app *builder) WithPreviousLink(prevLink hash.Hash) Builder {
 }
 
 // WithNext adds a next block to the builder
-func (app *builder) WithNext(next blocks.Block) Builder {
+func (app *builder) WithNext(next mined_blocks.Block) Builder {
 	app.next = next
 	return app
 }

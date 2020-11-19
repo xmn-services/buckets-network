@@ -2,6 +2,7 @@ package miners
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/blocks"
@@ -40,6 +41,8 @@ func createApplication(
 	chainBuilder chains.Builder,
 ) Application {
 	out := application{
+
+		// save the genesis:
 		hashAdapter:          hashAdapter,
 		bucketRepository:     bucketRepository,
 		blockBuilder:         blockBuilder,
@@ -56,7 +59,7 @@ func createApplication(
 }
 
 // Init mines the initial chain
-func (app *application) Init(baseDifficulty uint, increasePerBucket float64, linkDifficulty uint) (chains.Chain, error) {
+func (app *application) Init(miningValue uint8, baseDifficulty uint, increasePerBucket float64, linkDifficulty uint, rootAdditionalBuckets uint, headAdditionalBuckets uint) (chains.Chain, error) {
 	_, err := app.genesisRepository.Retrieve()
 	if err == nil {
 		return nil, errors.New("the genesis block has already been created")
@@ -65,6 +68,7 @@ func (app *application) Init(baseDifficulty uint, increasePerBucket float64, lin
 	// create the genesis:
 	createdOn := time.Now().UTC()
 	gen, err := app.genesisBuilder.Create().
+		WithMiningValue(miningValue).
 		WithBlockDifficultyBase(baseDifficulty).
 		WithBlockDifficultyIncreasePerBucket(increasePerBucket).
 		WithLinkDifficulty(linkDifficulty).
@@ -76,13 +80,13 @@ func (app *application) Init(baseDifficulty uint, increasePerBucket float64, lin
 	}
 
 	// mine the root block:
-	root, err := app.Block([]string{}, baseDifficulty, increasePerBucket)
+	root, err := app.block(gen, []string{}, baseDifficulty, increasePerBucket, rootAdditionalBuckets)
 	if err != nil {
 		return nil, err
 	}
 
 	// mine the head block:
-	headBlock, err := app.Block([]string{}, baseDifficulty, increasePerBucket)
+	headBlock, err := app.block(gen, []string{}, baseDifficulty, increasePerBucket, headAdditionalBuckets)
 	if err != nil {
 		return nil, err
 	}
@@ -98,23 +102,14 @@ func (app *application) Init(baseDifficulty uint, increasePerBucket float64, lin
 }
 
 // Block mines a block
-func (app *application) Block(bucketHashesStr []string, baseDifficulty uint, increasePerBucket float64) (mined_block.Block, error) {
-	bucketHashes := []hash.Hash{}
-	for _, oneBucketHashStr := range bucketHashesStr {
-		bucketHash, err := app.hashAdapter.FromString(oneBucketHashStr)
-		if err != nil {
-			return nil, err
-		}
-
-		bucketHashes = append(bucketHashes, *bucketHash)
-	}
-
-	buckets, err := app.bucketRepository.RetrieveAll(bucketHashes)
+func (app *application) Block(bucketHashesStr []string, baseDifficulty uint, increasePerBucket float64, additionalBuckets uint) (mined_block.Block, error) {
+	// retrieve the genesis:
+	gen, err := app.genesisRepository.Retrieve()
 	if err != nil {
 		return nil, err
 	}
 
-	return app.mineBlock(buckets, baseDifficulty, increasePerBucket)
+	return app.block(gen, bucketHashesStr, baseDifficulty, increasePerBucket, additionalBuckets)
 }
 
 // Link mines a link
@@ -142,18 +137,49 @@ func (app *application) Link(prevMinedBlockHasStr string, newMinedBlockHashStr s
 	return app.mineLink(prevMinedBlock, newMinedBlock, linkDifficulty)
 }
 
-func (app *application) mineBlock(buckets []buckets.Bucket, baseDifficulty uint, increasePerBucket float64) (mined_block.Block, error) {
+func (app *application) block(
+	gen genesis.Genesis,
+	bucketHashesStr []string,
+	baseDifficulty uint,
+	increasePerBucket float64,
+	additionalBuckets uint,
+) (mined_block.Block, error) {
+	bucketHashes := []hash.Hash{}
+	for _, oneBucketHashStr := range bucketHashesStr {
+		bucketHash, err := app.hashAdapter.FromString(oneBucketHashStr)
+		if err != nil {
+			return nil, err
+		}
+
+		bucketHashes = append(bucketHashes, *bucketHash)
+	}
+
+	buckets, err := app.bucketRepository.RetrieveAll(bucketHashes)
+	if err != nil {
+		return nil, err
+	}
+
+	return app.mineBlock(gen, buckets, baseDifficulty, increasePerBucket, additionalBuckets)
+}
+
+func (app *application) mineBlock(
+	gen genesis.Genesis,
+	buckets []buckets.Bucket,
+	baseDifficulty uint,
+	increasePerBucket float64,
+	additionalBuckets uint,
+) (mined_block.Block, error) {
 	// calculate the difficulty:
+	amountBuckets := uint(len(buckets)) + additionalBuckets
 	difficulty := blockDifficulty(
 		baseDifficulty,
 		increasePerBucket,
-		uint(len(buckets)),
+		amountBuckets,
 	)
 
-	// retrieve the genesis:
-	gen, err := app.genesisRepository.Retrieve()
-	if err != nil {
-		return nil, err
+	if difficulty > maxDifficulty {
+		str := fmt.Sprintf("the block cannot be mined because the required difficulty (%d) to mine it is higher than the maximum difficulty (%d), try to reduce the amount of buckets (%d) in your block in order to reduce its difficulty", difficulty, maxDifficulty, amountBuckets)
+		return nil, errors.New(str)
 	}
 
 	// build the block:
@@ -161,6 +187,7 @@ func (app *application) mineBlock(buckets []buckets.Bucket, baseDifficulty uint,
 	block, err := app.blockBuilder.Create().
 		WithGenesis(gen).
 		WithBuckets(buckets).
+		WithAdditional(additionalBuckets).
 		CreatedOn(createdOn).
 		Now()
 
@@ -169,8 +196,9 @@ func (app *application) mineBlock(buckets []buckets.Bucket, baseDifficulty uint,
 	}
 
 	// mine the block:
+	miningValue := gen.MiningValue()
 	minedCreatedOn := time.Now().UTC()
-	results, err := mine(app.hashAdapter, difficulty, block.Hash())
+	results, err := mine(app.hashAdapter, miningValue, difficulty, block.Hash())
 	if err != nil {
 		return nil, err
 	}
@@ -183,6 +211,11 @@ func (app *application) mineBlock(buckets []buckets.Bucket, baseDifficulty uint,
 }
 
 func (app *application) mineLink(prevMinedBlock mined_block.Block, newMinedBlock mined_block.Block, linkDifficulty uint) (mined_link.Link, error) {
+	if linkDifficulty > maxDifficulty {
+		str := fmt.Sprintf("the requested link mining cannot be executed because the requested difficulty (%d) is higher than the maximum difficulty (%d)", maxDifficulty, linkDifficulty)
+		return nil, errors.New(str)
+	}
+
 	prev := prevMinedBlock.Hash()
 	linkCreatedOn := time.Now().UTC()
 	link, err := app.linkBuilder.Create().
@@ -196,7 +229,8 @@ func (app *application) mineLink(prevMinedBlock mined_block.Block, newMinedBlock
 	}
 
 	// mine:
-	results, err := mine(app.hashAdapter, linkDifficulty, link.Hash())
+	miningValue := prevMinedBlock.Block().Genesis().MiningValue()
+	results, err := mine(app.hashAdapter, miningValue, linkDifficulty, link.Hash())
 	if err != nil {
 		return nil, err
 	}

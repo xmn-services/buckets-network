@@ -117,13 +117,13 @@ func (app *application) Delete(absolutePath string) error {
 
 	buckets := identity.Wallet().Miner().ToTransact().All()
 	for _, oneBucket := range buckets {
-		if oneBucket.AbsolutePath() == absolutePath {
-			err := identity.Wallet().Miner().ToTransact().Delete(oneBucket.Hash())
-			if err != nil {
-				return err
-			}
-
+		if oneBucket.AbsolutePath() != absolutePath {
 			continue
+		}
+
+		err := identity.Wallet().Miner().ToTransact().Delete(oneBucket.Hash())
+		if err != nil {
+			return err
 		}
 	}
 

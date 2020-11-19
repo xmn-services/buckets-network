@@ -3,7 +3,7 @@ package links
 import (
 	"time"
 
-	blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
+	mined_blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	transfer_link "github.com/xmn-services/buckets-network/domain/transfers/links"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
@@ -12,7 +12,7 @@ import (
 // NewService creates a new service instance
 func NewService(
 	repository Repository,
-	blockService blocks.Service,
+	blockService mined_blocks.Service,
 	trService transfer_link.Service,
 ) Service {
 	adapter := NewAdapter()
@@ -21,7 +21,7 @@ func NewService(
 
 // NewRepository creates a new repository instance
 func NewRepository(
-	blockRepository blocks.Repository,
+	blockRepository mined_blocks.Repository,
 	trRepository transfer_link.Repository,
 ) Repository {
 	builder := NewBuilder()
@@ -52,7 +52,7 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithPreviousLink(prevLink hash.Hash) Builder
-	WithNext(next blocks.Block) Builder
+	WithNext(next mined_blocks.Block) Builder
 	WithIndex(index uint) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Link, error)
@@ -62,7 +62,7 @@ type Builder interface {
 type Link interface {
 	entities.Immutable
 	PreviousLink() hash.Hash
-	Next() blocks.Block
+	Next() mined_blocks.Block
 	Index() uint
 }
 

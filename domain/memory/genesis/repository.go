@@ -28,11 +28,13 @@ func (app *repository) Retrieve() (Genesis, error) {
 		return nil, err
 	}
 
+	miningValue := trGen.MiningValue()
 	blockDiffBase := trGen.BlockDifficultyBase()
 	blockDiffIncreasePerBucket := trGen.BlockDifficultyIncreasePerBucket()
 	linkDiff := trGen.LinkDifficulty()
 	createdOn := trGen.CreatedOn()
 	return app.builder.Create().
+		WithMiningValue(miningValue).
 		WithBlockDifficultyBase(blockDiffBase).
 		WithBlockDifficultyIncreasePerBucket(blockDiffIncreasePerBucket).
 		WithLinkDifficulty(linkDiff).

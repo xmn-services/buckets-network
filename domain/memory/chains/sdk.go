@@ -16,11 +16,13 @@ func NewService(
 	repository Repository,
 	genesisService genesis.Service,
 	blockService mined_block.Service,
+	linkRepository mined_link.Repository,
 	linkService mined_link.Service,
 	trService transfer_chains.Service,
 ) Service {
+	hashAdapter := hash.NewAdapter()
 	adapter := NewAdapter()
-	return createService(adapter, repository, genesisService, blockService, linkService, trService)
+	return createService(hashAdapter, adapter, repository, genesisService, blockService, linkRepository, linkService, trService)
 }
 
 // NewRepository creates a new repository instance
@@ -45,6 +47,17 @@ func NewBuilder() Builder {
 	hashAdapter := hash.NewAdapter()
 	immutableBuilder := entities.NewImmutableBuilder()
 	return createBuilder(hashAdapter, immutableBuilder)
+}
+
+// BlockDifficulty calculates the block difficulty
+func BlockDifficulty(baseDifficulty uint, increasePerBucket float64, amountBuckets uint) uint {
+	sum := float64(0)
+	base := float64(baseDifficulty)
+	for i := 0; i < int(amountBuckets); i++ {
+		sum += increasePerBucket
+	}
+
+	return uint(sum + base)
 }
 
 // Adapter returns the chain adapter

@@ -21,6 +21,7 @@ func createAdapter(
 // ToTransfer converts a genesis to a transfer genesis instance
 func (app *adapter) ToTransfer(genesis Genesis) (transfer_genesis.Genesis, error) {
 	hsh := genesis.Hash()
+	miningValue := genesis.MiningValue()
 	diff := genesis.Difficulty()
 	blockDiff := diff.Block()
 	blockDiffBase := blockDiff.Base()
@@ -30,6 +31,7 @@ func (app *adapter) ToTransfer(genesis Genesis) (transfer_genesis.Genesis, error
 
 	return app.trBuilder.Create().
 		WithHash(hsh).
+		WithMiningValue(miningValue).
 		WithBlockDifficultyBase(blockDiffBase).
 		WithBlockDifficultyIncreasePerBucket(blockDiffIncr).
 		WithLinkDifficulty(linkDiff).

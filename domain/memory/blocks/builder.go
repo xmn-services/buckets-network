@@ -72,10 +72,11 @@ func (app *builder) Now() (Block, error) {
 	}
 
 	if app.buckets == nil {
-		return nil, errors.New("the []Bucket are mandatory in order to build a Block instance")
+		app.buckets = []buckets.Bucket{}
 	}
 
-	if len(app.buckets) <= 0 {
+	totalAmount := app.additional + uint(len(app.buckets))
+	if totalAmount <= 0 {
 		return nil, errors.New("there must be at least 1 Bucket instance in order to build a Block instance")
 	}
 

@@ -1,21 +1,21 @@
 package links
 
 import (
-	blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
+	mined_blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	transfer_link "github.com/xmn-services/buckets-network/domain/transfers/links"
 )
 
 type service struct {
 	adapter      Adapter
 	repository   Repository
-	blockService blocks.Service
+	blockService mined_blocks.Service
 	trService    transfer_link.Service
 }
 
 func createService(
 	adapter Adapter,
 	repository Repository,
-	blockService blocks.Service,
+	blockService mined_blocks.Service,
 	trService transfer_link.Service,
 ) Service {
 	out := service{

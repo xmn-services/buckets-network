@@ -44,13 +44,13 @@ func TestLink_Success(t *testing.T) {
 
 	// block:
 	additional := uint(0)
-	blockIns := blocks.CreateBlockForTests(genesisIns, additional, []buckets.Bucket{
+	blockIns := mined_blocks.CreateBlockForTests(genesisIns, additional, []buckets.Bucket{
 		bucketIns,
 	})
 
 	// mined block:
 	mining := "this is a mining"
-	minedBlockIns := mined_blocks.CreateBlockForTests(blockIns, mining)
+	minedBlockIns := mined_mined_blocks.CreateBlockForTests(blockIns, mining)
 
 	// link:
 	index := uint(5)

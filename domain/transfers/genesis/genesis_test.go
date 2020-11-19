@@ -14,9 +14,10 @@ func TestGenesis_Success(t *testing.T) {
 	blockDiffBase := uint(45)
 	blockDiffIncreasePerBucket := float64(0.0021)
 	linkDiff := uint(2)
+	miningValue := uint8(0)
 	createdOn := time.Now().UTC()
 
-	genesis, err := NewBuilder().Create().WithHash(*hsh).WithBlockDifficultyBase(blockDiffBase).WithBlockDifficultyIncreasePerBucket(blockDiffIncreasePerBucket).WithLinkDifficulty(linkDiff).CreatedOn(createdOn).Now()
+	genesis, err := NewBuilder().Create().WithHash(*hsh).WithMiningValue(miningValue).WithBlockDifficultyBase(blockDiffBase).WithBlockDifficultyIncreasePerBucket(blockDiffIncreasePerBucket).WithLinkDifficulty(linkDiff).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return

@@ -30,9 +30,9 @@ func createApplication(
 }
 
 // Init initializes the chain
-func (app *application) Init(baseDifficulty uint, increasePerBucket float64, linkDifficulty uint) error {
+func (app *application) Init(miningValue uint8, baseDifficulty uint, increasePerBucket float64, linkDifficulty uint, rootAdditionalBuckets uint, headAdditionalBuckets uint) error {
 	// mine the chain:
-	chain, err := app.minerApplication.Init(baseDifficulty, increasePerBucket, linkDifficulty)
+	chain, err := app.minerApplication.Init(miningValue, baseDifficulty, increasePerBucket, linkDifficulty, rootAdditionalBuckets, headAdditionalBuckets)
 	if err != nil {
 		return err
 	}

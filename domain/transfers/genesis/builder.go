@@ -9,24 +9,26 @@ import (
 )
 
 type builder struct {
-	immutableBuilder        entities.ImmutableBuilder
-	hash                    *hash.Hash
-	blockDiffBase           uint
+	immutableBuilder           entities.ImmutableBuilder
+	hash                       *hash.Hash
+	miningValue                uint8
+	blockDiffBase              uint
 	blockDiffIncreasePerBucket float64
-	linkDiff                uint
-	createdOn               *time.Time
+	linkDiff                   uint
+	createdOn                  *time.Time
 }
 
 func createBuilder(
 	immutableBuilder entities.ImmutableBuilder,
 ) Builder {
 	out := builder{
-		immutableBuilder:        immutableBuilder,
-		hash:                    nil,
-		blockDiffBase:           0,
+		immutableBuilder:           immutableBuilder,
+		hash:                       nil,
+		miningValue:                uint8(0),
+		blockDiffBase:              0,
 		blockDiffIncreasePerBucket: 0,
-		linkDiff:                0,
-		createdOn:               nil,
+		linkDiff:                   0,
+		createdOn:                  nil,
 	}
 
 	return &out
@@ -40,6 +42,12 @@ func (app *builder) Create() Builder {
 // WithHash adds an hash to the builder
 func (app *builder) WithHash(hash hash.Hash) Builder {
 	app.hash = &hash
+	return app
+}
+
+// WithMiningValue adds a mining value to the builder
+func (app *builder) WithMiningValue(miningValue uint8) Builder {
+	app.miningValue = miningValue
 	return app
 }
 
@@ -85,6 +93,10 @@ func (app *builder) Now() (Genesis, error) {
 		return nil, errors.New("the link difficulty must be greater than zero (0) in order to build a Genesis instance")
 	}
 
+	if app.miningValue > 9 {
+		return nil, errors.New("the miningValue must be a number between 0 and 9")
+	}
+
 	immutable, err := app.immutableBuilder.Create().WithHash(*app.hash).CreatedOn(app.createdOn).Now()
 	if err != nil {
 		return nil, err
@@ -92,6 +104,7 @@ func (app *builder) Now() (Genesis, error) {
 
 	return createGenesis(
 		immutable,
+		app.miningValue,
 		app.blockDiffBase,
 		app.blockDiffIncreasePerBucket,
 		app.linkDiff,

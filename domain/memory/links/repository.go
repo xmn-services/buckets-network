@@ -1,20 +1,20 @@
 package links
 
 import (
-	blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
+	mined_blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	transfer_link "github.com/xmn-services/buckets-network/domain/transfers/links"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type repository struct {
 	builder         Builder
-	blockRepository blocks.Repository
+	blockRepository mined_blocks.Repository
 	trRepository    transfer_link.Repository
 }
 
 func createRepository(
 	builder Builder,
-	blockRepository blocks.Repository,
+	blockRepository mined_blocks.Repository,
 	trRepository transfer_link.Repository,
 ) Repository {
 	out := repository{

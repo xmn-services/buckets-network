@@ -9,10 +9,11 @@ import (
 )
 
 type genesis struct {
-	immutable               entities.Immutable
-	blockDiffBase           uint
+	immutable                  entities.Immutable
+	miningValue                uint8
+	blockDiffBase              uint
 	blockDiffIncreasePerBucket float64
-	linkDiff                uint
+	linkDiff                   uint
 }
 
 func createGenesisFromJSON(ins *jsonGenesis) (Genesis, error) {
@@ -25,6 +26,7 @@ func createGenesisFromJSON(ins *jsonGenesis) (Genesis, error) {
 	return NewBuilder().
 		Create().
 		WithHash(*hsh).
+		WithMiningValue(ins.MiningValue).
 		WithBlockDifficultyBase(ins.BlockDiffBase).
 		WithBlockDifficultyIncreasePerBucket(ins.BlockDiffIncreasePerBucket).
 		WithLinkDifficulty(ins.LinkDiff).
@@ -34,15 +36,17 @@ func createGenesisFromJSON(ins *jsonGenesis) (Genesis, error) {
 
 func createGenesis(
 	immutable entities.Immutable,
+	miningValue uint8,
 	blockDiffBase uint,
 	blockDiffIncreasePerBucket float64,
 	linkDiff uint,
 ) Genesis {
 	out := genesis{
-		immutable:               immutable,
-		blockDiffBase:           blockDiffBase,
+		immutable:                  immutable,
+		miningValue:                miningValue,
+		blockDiffBase:              blockDiffBase,
 		blockDiffIncreasePerBucket: blockDiffIncreasePerBucket,
-		linkDiff:                linkDiff,
+		linkDiff:                   linkDiff,
 	}
 
 	return &out
@@ -51,6 +55,11 @@ func createGenesis(
 // Hash returns the hash
 func (obj *genesis) Hash() hash.Hash {
 	return obj.immutable.Hash()
+}
+
+// MiningValue returns the mining value
+func (obj *genesis) MiningValue() uint8 {
+	return obj.miningValue
 }
 
 // BlockDifficultyBase returns the block difficulty base
@@ -94,6 +103,7 @@ func (obj *genesis) UnmarshalJSON(data []byte) error {
 
 	insGenesis := pr.(*genesis)
 	obj.immutable = insGenesis.immutable
+	obj.miningValue = insGenesis.miningValue
 	obj.blockDiffBase = insGenesis.blockDiffBase
 	obj.blockDiffIncreasePerBucket = insGenesis.blockDiffIncreasePerBucket
 	obj.linkDiff = insGenesis.linkDiff

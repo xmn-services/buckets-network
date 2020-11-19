@@ -10,12 +10,13 @@ import (
 )
 
 type builder struct {
-	hashAdapter             hash.Adapter
-	immutableBuilder        entities.ImmutableBuilder
-	blockDiffBase           uint
+	hashAdapter                hash.Adapter
+	immutableBuilder           entities.ImmutableBuilder
+	miningValue                uint8
+	blockDiffBase              uint
 	blockDiffIncreasePerBucket float64
-	linkDiff                uint
-	createdOn               *time.Time
+	linkDiff                   uint
+	createdOn                  *time.Time
 }
 
 func createBuilder(
@@ -23,12 +24,13 @@ func createBuilder(
 	immutableBuilder entities.ImmutableBuilder,
 ) Builder {
 	out := builder{
-		hashAdapter:             hashAdapter,
-		immutableBuilder:        immutableBuilder,
-		blockDiffBase:           0,
+		hashAdapter:                hashAdapter,
+		immutableBuilder:           immutableBuilder,
+		miningValue:                uint8(10),
+		blockDiffBase:              0,
 		blockDiffIncreasePerBucket: 0.0,
-		linkDiff:                0,
-		createdOn:               nil,
+		linkDiff:                   0,
+		createdOn:                  nil,
 	}
 
 	return &out
@@ -37,6 +39,12 @@ func createBuilder(
 // Create initializes the builder
 func (app *builder) Create() Builder {
 	return createBuilder(app.hashAdapter, app.immutableBuilder)
+}
+
+// WithMiningValue adds a mining value to the builder
+func (app *builder) WithMiningValue(miningValue uint8) Builder {
+	app.miningValue = miningValue
+	return app
 }
 
 // WithBlockDifficultyBase adds a block difficulty base to the builder
@@ -77,6 +85,10 @@ func (app *builder) Now() (Genesis, error) {
 		return nil, errors.New("the link difficulty must be greater than zero (0.0) in order to build a Genesis instance")
 	}
 
+	if app.miningValue > 9 {
+		return nil, errors.New("the miningValue must be a number between 0 and 9")
+	}
+
 	hash, err := app.hashAdapter.FromMultiBytes([][]byte{
 		[]byte(strconv.Itoa(int(app.blockDiffBase))),
 		[]byte(strconv.FormatFloat(app.blockDiffIncreasePerBucket, 'f', 12, 64)),
@@ -94,5 +106,5 @@ func (app *builder) Now() (Genesis, error) {
 
 	block := createBlock(app.blockDiffBase, app.blockDiffIncreasePerBucket)
 	diff := createDifficulty(block, app.linkDiff)
-	return createGenesis(immutable, diff), nil
+	return createGenesis(immutable, app.miningValue, diff), nil
 }

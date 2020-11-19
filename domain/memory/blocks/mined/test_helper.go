@@ -55,7 +55,8 @@ func CreateBlockForTestsWithoutParams() (genesis.Genesis, Block) {
 	blockDiffBase := uint(1)
 	blockDiffIncreasePerTrx := float64(1.0)
 	linkDiff := uint(1)
-	genesisIns := genesis.CreateGenesisForTests(blockDiffBase, blockDiffIncreasePerTrx, linkDiff)
+	miningValue := uint8(0)
+	genesisIns := genesis.CreateGenesisForTests(miningValue, blockDiffBase, blockDiffIncreasePerTrx, linkDiff)
 
 	// block:
 	additional := uint(0)

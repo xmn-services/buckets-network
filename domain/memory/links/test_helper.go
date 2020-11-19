@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
+	mined_blocks "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	"github.com/xmn-services/buckets-network/domain/memory/genesis"
 	transfer_link "github.com/xmn-services/buckets-network/domain/transfers/links"
 	"github.com/xmn-services/buckets-network/libs/file"
@@ -14,7 +14,7 @@ import (
 )
 
 // CreateLinkForTests creates a link instance for tests
-func CreateLinkForTests(prevLink hash.Hash, next blocks.Block, index uint) Link {
+func CreateLinkForTests(prevLink hash.Hash, next mined_blocks.Block, index uint) Link {
 	createdOn := time.Now().UTC()
 	ins, err := NewBuilder().Create().WithPreviousLink(prevLink).WithNext(next).WithIndex(index).CreatedOn(createdOn).Now()
 	if err != nil {
@@ -26,7 +26,7 @@ func CreateLinkForTests(prevLink hash.Hash, next blocks.Block, index uint) Link 
 
 // CreateRepositoryServiceForTests creates a repository and service for tests
 func CreateRepositoryServiceForTests() (genesis.Service, Repository, Service) {
-	genService, blockRepository, blockService := blocks.CreateRepositoryServiceForTests()
+	genService, blockRepository, blockService := mined_blocks.CreateRepositoryServiceForTests()
 	fileRepositoryService := file.CreateRepositoryServiceForTests()
 	trRepository := transfer_link.NewRepository(fileRepositoryService)
 	trService := transfer_link.NewService(fileRepositoryService)

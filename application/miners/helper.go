@@ -1,56 +1,43 @@
 package miners
 
 import (
-	"bytes"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 // blockDifficulty calculates the block's difficulty
 func blockDifficulty(baseDifficulty uint, increasePerBucket float64, amountBuckets uint) uint {
-
 	sum := float64(0)
 	base := float64(baseDifficulty)
 	for i := 0; i < int(amountBuckets); i++ {
-		index := float64(i + 1)
-		sum += (index * increasePerBucket)
+		sum += increasePerBucket
 	}
 
 	return uint(sum + base)
 }
 
 // prefix returns the prefix based on the difficulty
-func prefix(difficulty uint) ([]byte, error) {
-	// calculate the requested data:
-	var data = []interface{}{}
+func prefix(miningValue uint8, difficulty uint) (string, error) {
+	output := ""
 	for i := 0; i < int(difficulty); i++ {
-		data = append(data, int8(miningBeginValue))
+		output = fmt.Sprintf("%s%d", output, miningValue)
 	}
 
-	// create the begin bytes buffer:
-	buf := new(bytes.Buffer)
-	for _, v := range data {
-		err := binary.Write(buf, binary.LittleEndian, v)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// create the requested prefix:
-	return buf.Bytes(), nil
+	return output, nil
 }
 
 func mine(
 	hashAdapter hash.Adapter,
+	miningValue uint8,
 	difficulty uint,
 	hsh hash.Hash,
 ) (string, error) {
 	// create the requested prefix:
-	requestedPrefix, err := prefix(difficulty)
+	requestedPrefix, err := prefix(miningValue, difficulty)
 	if err != nil {
 		return "", err
 	}
@@ -59,51 +46,37 @@ func mine(
 	return mineRecursively(
 		hashAdapter,
 		requestedPrefix,
-		hsh.Bytes(),
+		hsh,
 		"",
 	)
 }
 
 func mineRecursively(
 	hashAdapter hash.Adapter,
-	requestedPrefix []byte,
-	baseData []byte,
-	baseTries string,
+	requestedPrefix string,
+	hsh hash.Hash,
+	baseStr string,
 ) (string, error) {
-	baseWithTries := [][]byte{
-		baseData,
-	}
-
-	if baseTries != "" {
-		baseWithTries = append(baseWithTries, []byte(baseTries))
-	}
-
+	str := ""
 	for i := uint(0); i <= maxMiningValue; i++ {
-		try := baseWithTries
-		try = append(try, []byte(strconv.Itoa(int(i))))
-		res, err := hashAdapter.FromMultiBytes(try)
+		str = fmt.Sprintf("%s%s", baseStr, []byte(strconv.Itoa(int(i))))
+		res, err := hashAdapter.FromBytes([]byte(str))
 		if err != nil {
 			return "", err
 		}
 
-		if bytes.HasPrefix(res.Bytes(), requestedPrefix) {
-			baseTries = fmt.Sprintf("%s%d", baseTries, i)
-			return baseTries, nil
+		if strings.HasPrefix(res.String(), requestedPrefix) {
+			return str, nil
 		}
-
 	}
 
-	// none of the tries work, so try with an additionral base try:
-	for i := uint(0); i < maxMiningTries; i++ {
-		additional := fmt.Sprintf("%s%d", baseTries, i)
-		results, err := mineRecursively(hashAdapter, requestedPrefix, baseData, additional)
+	for i := 0; i < maxMiningTries; i++ {
+		results, err := mineRecursively(hashAdapter, requestedPrefix, hsh, str)
 		if err != nil {
-			return "", err
+			continue
 		}
 
-		if results != "" {
-			return results, nil
-		}
+		return results, nil
 	}
 
 	return "", errors.New("the mining was impossible")

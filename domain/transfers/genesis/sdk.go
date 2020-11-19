@@ -41,6 +41,7 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithHash(hash hash.Hash) Builder
+	WithMiningValue(miningValue uint8) Builder
 	WithBlockDifficultyBase(blockDiffBase uint) Builder
 	WithBlockDifficultyIncreasePerBucket(blockDiffIncreasePerBucket float64) Builder
 	WithLinkDifficulty(link uint) Builder
@@ -51,6 +52,7 @@ type Builder interface {
 // Genesis represents the genesis
 type Genesis interface {
 	entities.Immutable
+	MiningValue() uint8
 	BlockDifficultyBase() uint
 	BlockDifficultyIncreasePerBucket() float64
 	LinkDifficulty() uint
