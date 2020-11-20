@@ -1,4 +1,4 @@
-package filedisks
+package bundles
 
 import (
 	"path/filepath"
