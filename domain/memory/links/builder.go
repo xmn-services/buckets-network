@@ -13,7 +13,7 @@ import (
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
-	prevLink         *hash.Hash
+	prev             *hash.Hash
 	next             mined_blocks.Block
 	index            uint
 	createdOn        *time.Time
@@ -26,7 +26,7 @@ func createBuilder(
 	out := builder{
 		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
-		prevLink:         nil,
+		prev:             nil,
 		next:             nil,
 		index:            0,
 		createdOn:        nil,
@@ -40,9 +40,9 @@ func (app *builder) Create() Builder {
 	return createBuilder(app.hashAdapter, app.immutableBuilder)
 }
 
-// WithPreviousLink adds a previous link hash to the builder
-func (app *builder) WithPreviousLink(prevLink hash.Hash) Builder {
-	app.prevLink = &prevLink
+// WithPrevious adds a previous hash to the builder
+func (app *builder) WithPrevious(prev hash.Hash) Builder {
+	app.prev = &prev
 	return app
 }
 
@@ -66,8 +66,8 @@ func (app *builder) CreatedOn(createdOn time.Time) Builder {
 
 // Now builds a new Link instance
 func (app *builder) Now() (Link, error) {
-	if app.prevLink == nil {
-		return nil, errors.New("the previousLink hash is mandatory in order to build a Link instance")
+	if app.prev == nil {
+		return nil, errors.New("the previous hash is mandatory in order to build a Link instance")
 	}
 
 	if app.next == nil {
@@ -75,7 +75,7 @@ func (app *builder) Now() (Link, error) {
 	}
 
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
-		app.prevLink.Bytes(),
+		app.prev.Bytes(),
 		app.next.Hash().Bytes(),
 		[]byte(strconv.Itoa(int(app.index))),
 	})
@@ -89,5 +89,5 @@ func (app *builder) Now() (Link, error) {
 		return nil, err
 	}
 
-	return createLink(immutable, *app.prevLink, app.next, app.index), nil
+	return createLink(immutable, *app.prev, app.next, app.index), nil
 }

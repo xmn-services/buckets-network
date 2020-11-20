@@ -9,10 +9,10 @@ import (
 )
 
 type link struct {
-	immutable    entities.Immutable
-	previousLink hash.Hash
-	next         hash.Hash
-	index        uint
+	immutable entities.Immutable
+	prev      hash.Hash
+	next      hash.Hash
+	index     uint
 }
 
 func createLinkFromJSON(ins *jsonLink) (Link, error) {
@@ -22,7 +22,7 @@ func createLinkFromJSON(ins *jsonLink) (Link, error) {
 		return nil, err
 	}
 
-	previousLink, err := hashAdapter.FromString(ins.PreviousLink)
+	prev, err := hashAdapter.FromString(ins.Previous)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func createLinkFromJSON(ins *jsonLink) (Link, error) {
 	return NewBuilder().
 		Create().
 		WithHash(*hsh).
-		WithPreviousLink(*previousLink).
+		WithPrevious(*prev).
 		WithNext(*next).
 		WithIndex(ins.Index).
 		CreatedOn(ins.CreatedOn).
@@ -44,15 +44,15 @@ func createLinkFromJSON(ins *jsonLink) (Link, error) {
 
 func createLink(
 	immutable entities.Immutable,
-	previousLink hash.Hash,
+	prev hash.Hash,
 	next hash.Hash,
 	index uint,
 ) Link {
 	out := link{
-		immutable:    immutable,
-		previousLink: previousLink,
-		next:         next,
-		index:        index,
+		immutable: immutable,
+		prev:      prev,
+		next:      next,
+		index:     index,
 	}
 
 	return &out
@@ -63,9 +63,9 @@ func (obj *link) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// PreviousLink returns the previousLink hash
-func (obj *link) PreviousLink() hash.Hash {
-	return obj.previousLink
+// Previous returns the previous hash
+func (obj *link) Previous() hash.Hash {
+	return obj.prev
 }
 
 // Next returns the next hash
@@ -104,7 +104,7 @@ func (obj *link) UnmarshalJSON(data []byte) error {
 
 	insLink := pr.(*link)
 	obj.immutable = insLink.immutable
-	obj.previousLink = insLink.previousLink
+	obj.prev = insLink.prev
 	obj.next = insLink.next
 	obj.index = insLink.index
 	return nil

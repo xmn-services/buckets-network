@@ -21,13 +21,13 @@ func createAdapter(
 // ToTransfer converts a link to a transfer link instance
 func (app *adapter) ToTransfer(link Link) (transfer_link.Link, error) {
 	hsh := link.Hash()
-	prevLink := link.PreviousLink()
+	prev := link.Previous()
 	next := link.Next().Hash()
 	index := link.Index()
 	createdOn := link.CreatedOn()
 	return app.trBuilder.Create().
 		WithHash(hsh).
-		WithPreviousLink(prevLink).
+		WithPrevious(prev).
 		WithNext(next).
 		WithIndex(index).
 		CreatedOn(createdOn).

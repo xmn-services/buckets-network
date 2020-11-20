@@ -11,7 +11,7 @@ func TestInit_Success(t *testing.T) {
 	baseDifficulty := uint(1)
 	increasePerBucket := float64(0.05)
 	linkDifficulty := uint(2)
-	rootAdditionalBuckets := uint(40)
+	rootAdditionalBuckets := uint(120)
 	headAdditionalBuckets := uint(20)
 
 	basePath := "./test_files"
@@ -32,6 +32,7 @@ func TestInit_Success(t *testing.T) {
 
 	retRootChain, err := app.Retrieve()
 	if err != nil {
+		retRootChain.Root().Mining()
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
 	}

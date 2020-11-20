@@ -168,7 +168,7 @@ func (app *service) verifyLink(chainGen genesis.Genesis, expectedIndex uint, min
 	linkhash := minedLink.Hash()
 
 	// verify the mining:
-	err := app.verifyMining(miningValue, diff, linkMining, linkhash)
+	err := app.verifyMining(link.Hash(), miningValue, diff, linkMining, linkhash)
 	if err != nil {
 		return 0, err
 	}
@@ -178,10 +178,10 @@ func (app *service) verifyLink(chainGen genesis.Genesis, expectedIndex uint, min
 		amount += uint(len(block.Buckets()))
 	}
 
-	prevLinkHash := link.PreviousLink()
-	prevLink, err := app.linkRepository.Retrieve(prevLinkHash)
+	prevHash := link.Previous()
+	prev, err := app.linkRepository.Retrieve(prevHash)
 	if err != nil {
-		prevRoot, err := app.blockRepository.Retrieve(prevLinkHash)
+		prevRoot, err := app.blockRepository.Retrieve(prevHash)
 		if err != nil {
 			return 0, err
 		}
@@ -195,12 +195,12 @@ func (app *service) verifyLink(chainGen genesis.Genesis, expectedIndex uint, min
 		return prevBlockAmount + amount, nil
 	}
 
-	prevAmount, err := app.verifyLink(chainGen, expectedIndex-1, prevLink)
+	prevAmount, err := app.verifyLink(chainGen, expectedIndex-1, prev)
 	if err != nil {
 		return 0, err
 	}
 
-	return  amount + prevAmount, nil
+	return amount + prevAmount, nil
 }
 
 func (app *service) verifyBlock(chainGen genesis.Genesis, minedBlock mined_block.Block) error {
@@ -224,7 +224,7 @@ func (app *service) verifyBlock(chainGen genesis.Genesis, minedBlock mined_block
 	diff := BlockDifficulty(blockBaseDifficulty, blockIncreaseDifficultyPerBucket, amountBuckets)
 
 	// verify the mining:
-	err := app.verifyMining(miningValue, diff, blockMining, blockHash)
+	err := app.verifyMining(block.Hash(), miningValue, diff, blockMining, blockHash)
 	if err != nil {
 		return err
 	}
@@ -232,8 +232,12 @@ func (app *service) verifyBlock(chainGen genesis.Genesis, minedBlock mined_block
 	return nil
 }
 
-func (app *service) verifyMining(miningValue uint8, difficulty uint, mining string, hash hash.Hash) error {
-	miningHash, err := app.hashAdapter.FromBytes([]byte(mining))
+func (app *service) verifyMining(hsh hash.Hash, miningValue uint8, difficulty uint, mining string, hash hash.Hash) error {
+	miningHash, err := app.hashAdapter.FromMultiBytes([][]byte{
+		[]byte(mining),
+		hsh.Bytes(),
+	})
+
 	if err != nil {
 		return err
 	}

@@ -41,7 +41,7 @@ type Adapter interface {
 type Builder interface {
 	Create() Builder
 	WithHash(hash hash.Hash) Builder
-	WithPreviousLink(prevLink hash.Hash) Builder
+	WithPrevious(prev hash.Hash) Builder
 	WithNext(next hash.Hash) Builder
 	WithIndex(index uint) Builder
 	CreatedOn(createdOn time.Time) Builder
@@ -51,7 +51,7 @@ type Builder interface {
 // Link represents a block link
 type Link interface {
 	entities.Immutable
-	PreviousLink() hash.Hash
+	Previous() hash.Hash
 	Next() hash.Hash
 	Index() uint
 }

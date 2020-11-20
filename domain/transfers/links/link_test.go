@@ -11,12 +11,12 @@ import (
 func TestLink_Success(t *testing.T) {
 	hashAdapter := hash.NewAdapter()
 	hsh, _ := hashAdapter.FromBytes([]byte("to build the hash..."))
-	previousLink, _ := hashAdapter.FromBytes([]byte("to build the previous link hash..."))
+	prev, _ := hashAdapter.FromBytes([]byte("to build the previous link hash..."))
 	next, _ := hashAdapter.FromBytes([]byte("to build the next hash..."))
 	index := uint(32)
 	createdOn := time.Now().UTC()
 
-	link, err := NewBuilder().Create().WithHash(*hsh).WithPreviousLink(*previousLink).WithNext(*next).WithIndex(index).CreatedOn(createdOn).Now()
+	link, err := NewBuilder().Create().WithHash(*hsh).WithPrevious(*prev).WithNext(*next).WithIndex(index).CreatedOn(createdOn).Now()
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -27,8 +27,8 @@ func TestLink_Success(t *testing.T) {
 		return
 	}
 
-	if !link.PreviousLink().Compare(*previousLink) {
-		t.Errorf("the previousLink hash is invalid")
+	if !link.Previous().Compare(*prev) {
+		t.Errorf("the previous hash is invalid")
 		return
 	}
 

@@ -11,7 +11,7 @@ import (
 type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	hash             *hash.Hash
-	previousLink     *hash.Hash
+	prev             *hash.Hash
 	next             *hash.Hash
 	index            uint
 	createdOn        *time.Time
@@ -23,7 +23,7 @@ func createBuilder(
 	out := builder{
 		immutableBuilder: immutableBuilder,
 		hash:             nil,
-		previousLink:     nil,
+		prev:             nil,
 		next:             nil,
 		index:            0,
 		createdOn:        nil,
@@ -43,9 +43,9 @@ func (app *builder) WithHash(hash hash.Hash) Builder {
 	return app
 }
 
-// WithPreviousLink adds a previousLink hash to the builder
-func (app *builder) WithPreviousLink(prevLink hash.Hash) Builder {
-	app.previousLink = &prevLink
+// WithPrevious adds a previous mined block (root) or link hash to the builder
+func (app *builder) WithPrevious(prev hash.Hash) Builder {
+	app.prev = &prev
 	return app
 }
 
@@ -73,8 +73,8 @@ func (app *builder) Now() (Link, error) {
 		return nil, errors.New("the hash is mandatory in order to build a Link instance")
 	}
 
-	if app.previousLink == nil {
-		return nil, errors.New("the previousLink hash is mandatory in order to build a Link instance")
+	if app.prev == nil {
+		return nil, errors.New("the previous hash is mandatory in order to build a Link instance")
 	}
 
 	if app.next == nil {
@@ -86,5 +86,5 @@ func (app *builder) Now() (Link, error) {
 		return nil, err
 	}
 
-	return createLink(immutable, *app.previousLink, *app.next, app.index), nil
+	return createLink(immutable, *app.prev, *app.next, app.index), nil
 }

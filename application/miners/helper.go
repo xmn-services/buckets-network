@@ -60,7 +60,11 @@ func mineRecursively(
 	str := ""
 	for i := uint(0); i <= maxMiningValue; i++ {
 		str = fmt.Sprintf("%s%s", baseStr, []byte(strconv.Itoa(int(i))))
-		res, err := hashAdapter.FromBytes([]byte(str))
+		res, err := hashAdapter.FromMultiBytes([][]byte{
+			[]byte(str),
+			hsh.Bytes(),
+		})
+
 		if err != nil {
 			return "", err
 		}

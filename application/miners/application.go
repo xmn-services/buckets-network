@@ -232,7 +232,7 @@ func (app *application) mineLink(prevMinedBlock mined_block.Block, newMinedBlock
 	prev := prevMinedBlock.Hash()
 	linkCreatedOn := time.Now().UTC()
 	link, err := app.linkBuilder.Create().
-		WithPreviousLink(prev).
+		WithPrevious(prev).
 		WithNext(newMinedBlock).
 		CreatedOn(linkCreatedOn).
 		Now()

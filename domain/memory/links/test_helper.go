@@ -14,9 +14,9 @@ import (
 )
 
 // CreateLinkForTests creates a link instance for tests
-func CreateLinkForTests(prevLink hash.Hash, next mined_blocks.Block, index uint) Link {
+func CreateLinkForTests(prev hash.Hash, next mined_blocks.Block, index uint) Link {
 	createdOn := time.Now().UTC()
-	ins, err := NewBuilder().Create().WithPreviousLink(prevLink).WithNext(next).WithIndex(index).CreatedOn(createdOn).Now()
+	ins, err := NewBuilder().Create().WithPrevious(prev).WithNext(next).WithIndex(index).CreatedOn(createdOn).Now()
 	if err != nil {
 		panic(err)
 	}

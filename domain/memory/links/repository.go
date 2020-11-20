@@ -39,12 +39,12 @@ func (app *repository) Retrieve(hsh hash.Hash) (Link, error) {
 		return nil, err
 	}
 
-	prevLink := trLink.PreviousLink()
+	prev := trLink.Previous()
 	index := trLink.Index()
 	createdOn := trLink.CreatedOn()
 	return app.builder.Create().
 		WithNext(next).
-		WithPreviousLink(prevLink).
+		WithPrevious(prev).
 		WithIndex(index).
 		CreatedOn(createdOn).
 		Now()
