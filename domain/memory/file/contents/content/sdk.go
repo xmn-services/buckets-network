@@ -4,6 +4,12 @@ import (
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
+// NewBuilder creates a new builder instance
+func NewBuilder() Builder {
+	hashAdapter := hash.NewAdapter()
+	return createBuilder(hashAdapter)
+}
+
 // Builder represents a content builder
 type Builder interface {
 	Create() Builder

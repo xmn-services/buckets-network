@@ -5,6 +5,12 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/file/contents/content"
 )
 
+// NewBuilder creates a new builder instance
+func NewBuilder() Builder {
+	contentBuilder := content.NewBuilder()
+	return createBuilder(contentBuilder)
+}
+
 // Builder represents a contents builder
 type Builder interface {
 	Create() Builder

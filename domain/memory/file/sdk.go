@@ -3,8 +3,33 @@ package file
 import (
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
 	"github.com/xmn-services/buckets-network/domain/memory/file/contents"
+	transfer_data "github.com/xmn-services/buckets-network/domain/transfers/file"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
+
+// NewService creates a new service instance
+func NewService(
+	repository Repository,
+	fileService files.Service,
+	trDataService transfer_data.Service,
+) Service {
+	return createService(repository, fileService, trDataService)
+}
+
+// NewRepository creates a new repository instance
+func NewRepository(
+	fileRepository files.Repository,
+	trDataRepository transfer_data.Repository,
+) Repository {
+	builder := NewBuilder()
+	return createRepository(fileRepository, trDataRepository, builder)
+}
+
+// NewBuilder creates a new builder instance
+func NewBuilder() Builder {
+	contentsBuilder := contents.NewBuilder()
+	return createBuilder(contentsBuilder)
+}
 
 // Builder represents a file builder
 type Builder interface {

@@ -2,7 +2,29 @@ package peers
 
 import (
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
+	"github.com/xmn-services/buckets-network/libs/file"
 )
+
+// NewService creates a new service
+func NewService(
+	fileService file.Service,
+	fileNameWithExt string,
+) Service {
+	return createService(fileService, fileNameWithExt)
+}
+
+// NewRepository creates a new repository
+func NewRepository(
+	fileRepository file.Repository,
+	fileNameWithExt string,
+) Repository {
+	return createRepository(fileRepository, fileNameWithExt)
+}
+
+// NewBuilder creates a new builder instance
+func NewBuilder() Builder {
+	return createBuilder()
+}
 
 // Builder represents peers builder
 type Builder interface {
@@ -18,6 +40,7 @@ type Peers interface {
 
 // Repository represents a peers repository
 type Repository interface {
+	Exists() bool
 	Retrieve() (Peers, error)
 }
 

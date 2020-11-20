@@ -48,3 +48,54 @@ func TestInit_Success(t *testing.T) {
 		return
 	}
 }
+
+func TestPeer_isClear_Success(t *testing.T) {
+	firstHost := "78.98.32.34"
+	firstPort := uint(8080)
+
+	secondHost := "sdsdgfg"
+	secondPort := uint(443)
+
+	basePath := "./test_files"
+	fileNameWithExt := "peers.json"
+	defer func() {
+		os.RemoveAll(basePath)
+	}()
+
+	peerApp := NewPeerApplication(basePath, fileNameWithExt)
+	err := peerApp.SaveClear(firstHost, firstPort)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	firstRetPeers, err := peerApp.Retrieve()
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	firstAmount := len(firstRetPeers.All())
+	if firstAmount != 1 {
+		t.Errorf("%d peers were expected, %d returned", firstAmount, len(firstRetPeers.All()))
+		return
+	}
+
+	err = peerApp.SaveOnion(secondHost, secondPort)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	secondRetPeers, err := peerApp.Retrieve()
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	secondAmount := len(secondRetPeers.All())
+	if secondAmount != 2 {
+		t.Errorf("%d peers were expected, %d returned", secondAmount, len(secondRetPeers.All()))
+		return
+	}
+}

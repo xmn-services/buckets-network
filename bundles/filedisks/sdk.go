@@ -3,23 +3,31 @@ package filedisks
 import (
 	"path/filepath"
 
-	application_chains "github.com/xmn-services/buckets-network/application/chains"
-	application_miner "github.com/xmn-services/buckets-network/application/miners"
+	application_chains "github.com/xmn-services/buckets-network/application/commands/chains"
+	application_identity_buckets "github.com/xmn-services/buckets-network/application/commands/identities/buckets"
+	application_identity_storages "github.com/xmn-services/buckets-network/application/commands/identities/storages"
+	application_miner "github.com/xmn-services/buckets-network/application/commands/miners"
+	application_peers "github.com/xmn-services/buckets-network/application/commands/peers"
+	"github.com/xmn-services/buckets-network/application/commands/storages"
 	"github.com/xmn-services/buckets-network/domain/memory/blocks"
 	mined_block "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets"
 	bucket_files "github.com/xmn-services/buckets-network/domain/memory/buckets/files"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	"github.com/xmn-services/buckets-network/domain/memory/chains"
+	"github.com/xmn-services/buckets-network/domain/memory/file"
 	"github.com/xmn-services/buckets-network/domain/memory/genesis"
+	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	"github.com/xmn-services/buckets-network/domain/memory/links"
 	mined_link "github.com/xmn-services/buckets-network/domain/memory/links/mined"
+	"github.com/xmn-services/buckets-network/domain/memory/peers"
 	transfer_block "github.com/xmn-services/buckets-network/domain/transfers/blocks"
 	transfer_block_mined "github.com/xmn-services/buckets-network/domain/transfers/blocks/mined"
 	transfer_bucket "github.com/xmn-services/buckets-network/domain/transfers/buckets"
 	transfer_file "github.com/xmn-services/buckets-network/domain/transfers/buckets/files"
 	transfer_chunk "github.com/xmn-services/buckets-network/domain/transfers/buckets/files/chunks"
 	transfer_chains "github.com/xmn-services/buckets-network/domain/transfers/chains"
+	transfer_data "github.com/xmn-services/buckets-network/domain/transfers/file"
 	transfer_genesis "github.com/xmn-services/buckets-network/domain/transfers/genesis"
 	transfer_link "github.com/xmn-services/buckets-network/domain/transfers/links"
 	transfer_mined_link "github.com/xmn-services/buckets-network/domain/transfers/links/mined"
@@ -27,7 +35,7 @@ import (
 )
 
 const chunksDirName = "chunks"
-const bucketFilesDirName = "files"
+const bucketFilesDirName = "bucket_files"
 const bucketsDirName = "buckets"
 const genesisDirName = "genesis"
 const blocksDirName = "blocks"
@@ -35,6 +43,57 @@ const minedBlocksDirName = "mined_blocks"
 const linksDirName = "links"
 const minedLinksDirName = "mined_links"
 const chainsDirName = "chains"
+const peersDirName = "peers"
+const filesDirName = "files"
+
+// NewIdentityStorageApplicationBuilder creates a new identity storage application builder
+func NewIdentityStorageApplicationBuilder(
+	basePath string,
+	extension string,
+) application_identity_storages.Builder {
+	identityRepository := identities.NewRepository(basePath, extension)
+	identityService := identities.NewService(basePath, extension)
+	fileService := NewFileService(basePath)
+	return application_identity_storages.NewBuilder(identityRepository, identityService, fileService)
+}
+
+// NewIdentityBucketApplicationBuilder creates a new identity bucket application builder
+func NewIdentityBucketApplicationBuilder(
+	basePath string,
+	extension string,
+	chunkSizeInBytes uint,
+	encPKBitrate int,
+) application_identity_buckets.Builder {
+	bucketRepository := NewBucketRepository(basePath)
+	identityRepository := identities.NewRepository(basePath, extension)
+	identityService := identities.NewService(basePath, extension)
+	return application_identity_buckets.NewBuilder(
+		bucketRepository,
+		identityRepository,
+		identityService,
+		chunkSizeInBytes,
+		encPKBitrate,
+	)
+
+}
+
+// NewStorageApplication represents the storage application
+func NewStorageApplication(
+	basePath string,
+) storages.Application {
+	fileRepository := NewFileRepository(basePath)
+	return storages.NewApplication(fileRepository)
+}
+
+// NewPeerApplication creates a new peer application
+func NewPeerApplication(
+	basePath string,
+	fileNameWithExt string,
+) application_peers.Application {
+	repository := NewPeerRepository(basePath, fileNameWithExt)
+	service := NewPeerService(basePath, fileNameWithExt)
+	return application_peers.NewApplication(repository, service)
+}
 
 // NewChainApplication returns a new chain application
 func NewChainApplication(
@@ -66,6 +125,53 @@ func NewMinerApplication(
 	genesisRepository := NewGenesisRepository(basePath, genesisFileNameWithExt)
 	minedBlockRepository := NewMinedBlockRepository(basePath, genesisRepository)
 	return application_miner.NewApplication(bucketRepository, minedBlockRepository, genesisRepository)
+}
+
+// NewFileRepository creates a new file repository
+func NewFileRepository(
+	basePath string,
+) file.Repository {
+	path := filepath.Join(basePath, filesDirName)
+	fileRepository := libs_file.NewFileDiskRepository(path)
+
+	bucketFileRepository := NewBucketFileRepository(basePath)
+	trFileRepository := transfer_data.NewRepository(fileRepository)
+	return file.NewRepository(bucketFileRepository, trFileRepository)
+}
+
+// NewFileService creates a new file service
+func NewFileService(
+	basePath string,
+) file.Service {
+	path := filepath.Join(basePath, filesDirName)
+	fileService := libs_file.NewFileDiskService(path)
+
+	repository := NewFileRepository(basePath)
+	bucketFileService := NewBucketFileService(basePath)
+	trDataService := transfer_data.NewService(fileService)
+	return file.NewService(repository, bucketFileService, trDataService)
+}
+
+// NewPeerRepository creates a new peer repository
+func NewPeerRepository(
+	basePath string,
+	fileNameWithExt string,
+) peers.Repository {
+	path := filepath.Join(basePath, peersDirName)
+	fileRepository := libs_file.NewFileDiskRepository(path)
+
+	return peers.NewRepository(fileRepository, fileNameWithExt)
+}
+
+// NewPeerService creates a new peer service
+func NewPeerService(
+	basePath string,
+	fileNameWithExt string,
+) peers.Service {
+	path := filepath.Join(basePath, peersDirName)
+	fileService := libs_file.NewFileDiskService(path)
+
+	return peers.NewService(fileService, fileNameWithExt)
 }
 
 // NewChunkRepository creates a new chunks repository
