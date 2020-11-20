@@ -11,7 +11,6 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/chains"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	"github.com/xmn-services/buckets-network/domain/memory/peers"
-	domain_peer "github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
 
 // NewBuilder creates a new builder instance
@@ -25,7 +24,7 @@ func NewBuilder(
 	identityRepository identities.Repository,
 	identityService identities.Service,
 	chainService chains.Service,
-	clientBuilder ClientBuilder,
+	clientBuilder commands.ClientBuilder,
 ) Builder {
 	chainBuilder := chains.NewBuilder()
 	peersBuilder := peers.NewBuilder()
@@ -53,13 +52,6 @@ type Builder interface {
 	WithSeed(seed string) Builder
 	WithAdditionalBucketsPerBlock(additionalBuckets uint) Builder
 	Now() (Application, error)
-}
-
-// ClientBuilder represents a client builder
-type ClientBuilder interface {
-	Create() ClientBuilder
-	WithPeer(peer domain_peer.Peer) ClientBuilder
-	Now() (commands.Application, error)
 }
 
 // Application represents the sync application

@@ -3,6 +3,7 @@ package syncs
 import (
 	"errors"
 
+	"github.com/xmn-services/buckets-network/application/commands"
 	application_chain "github.com/xmn-services/buckets-network/application/commands/chains"
 	application_identity_buckets "github.com/xmn-services/buckets-network/application/commands/identities/buckets"
 	application_identity_storages "github.com/xmn-services/buckets-network/application/commands/identities/storages"
@@ -23,7 +24,7 @@ type builder struct {
 	identityStorageApp        application_identity_storages.Application
 	identityRepository        identities.Repository
 	identityService           identities.Service
-	clientBuilder             ClientBuilder
+	clientBuilder             commands.ClientBuilder
 	chainBuilder              chains.Builder
 	chainService              chains.Service
 	peersBuilder              peers.Builder
@@ -42,7 +43,7 @@ func createBuilder(
 	identityStorageApp application_identity_storages.Application,
 	identityRepository identities.Repository,
 	identityService identities.Service,
-	clientBuilder ClientBuilder,
+	clientBuilder commands.ClientBuilder,
 	chainBuilder chains.Builder,
 	chainService chains.Service,
 	peersBuilder peers.Builder,

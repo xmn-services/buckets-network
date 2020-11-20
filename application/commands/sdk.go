@@ -7,6 +7,7 @@ import (
 	application_peers "github.com/xmn-services/buckets-network/application/commands/peers"
 	"github.com/xmn-services/buckets-network/application/commands/storages"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
+	domain_peer "github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
 
 // NewApplication creates a new application instance
@@ -23,6 +24,13 @@ func NewApplication(
 	current := createCurrent(identityAppBuilder, identityBuilder, identityRepository, identityService)
 	subApps := createSubApplicationa(peerApp, chainApp, storageApp, minerApp)
 	return createApplication(current, subApps)
+}
+
+// ClientBuilder represents a client builder
+type ClientBuilder interface {
+	Create() ClientBuilder
+	WithPeer(peer domain_peer.Peer) ClientBuilder
+	Now() (Application, error)
 }
 
 // Application represents the application

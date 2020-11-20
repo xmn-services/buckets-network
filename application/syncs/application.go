@@ -25,7 +25,7 @@ type application struct {
 	identityStorageApp        application_identity_storages.Application
 	identityRepository        identities.Repository
 	identityService           identities.Service
-	clientBuilder             ClientBuilder
+	clientBuilder             commands.ClientBuilder
 	chainBuilder              chains.Builder
 	chainService              chains.Service
 	peersBuilder              peers.Builder
@@ -44,7 +44,7 @@ func createApplication(
 	identityStorageApp application_identity_storages.Application,
 	identityRepository identities.Repository,
 	identityService identities.Service,
-	clientBuilder ClientBuilder,
+	clientBuilder commands.ClientBuilder,
 	chainBuilder chains.Builder,
 	chainService chains.Service,
 	peersBuilder peers.Builder,
