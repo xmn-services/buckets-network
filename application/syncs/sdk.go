@@ -1,9 +1,49 @@
 package syncs
 
 import (
-	app "github.com/xmn-services/buckets-network/application/commands"
+	"github.com/xmn-services/buckets-network/application/commands"
+	application_chain "github.com/xmn-services/buckets-network/application/commands/chains"
+	application_identity_buckets "github.com/xmn-services/buckets-network/application/commands/identities/buckets"
+	application_identity_storages "github.com/xmn-services/buckets-network/application/commands/identities/storages"
+	application_storages "github.com/xmn-services/buckets-network/application/commands/identities/storages"
+	application_miners "github.com/xmn-services/buckets-network/application/commands/miners"
+	application_peers "github.com/xmn-services/buckets-network/application/commands/peers"
+	"github.com/xmn-services/buckets-network/domain/memory/chains"
+	"github.com/xmn-services/buckets-network/domain/memory/identities"
+	"github.com/xmn-services/buckets-network/domain/memory/peers"
 	domain_peer "github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
+
+// NewBuilder creates a new builder instance
+func NewBuilder(
+	chainApp application_chain.Application,
+	minerApp application_miners.Application,
+	peersApp application_peers.Application,
+	storageApp application_storages.Application,
+	identityBucketApp application_identity_buckets.Application,
+	identityStorageApp application_identity_storages.Application,
+	identityRepository identities.Repository,
+	identityService identities.Service,
+	clientBuilder ClientBuilder,
+	chainService chains.Service,
+) Builder {
+	chainBuilder := chains.NewBuilder()
+	peersBuilder := peers.NewBuilder()
+	return createBuilder(
+		chainApp,
+		minerApp,
+		peersApp,
+		storageApp,
+		identityBucketApp,
+		identityStorageApp,
+		identityRepository,
+		identityService,
+		clientBuilder,
+		chainBuilder,
+		chainService,
+		peersBuilder,
+	)
+}
 
 // Builder represents a sync application builder
 type Builder interface {
@@ -11,6 +51,7 @@ type Builder interface {
 	WithName(name string) Builder
 	WithPassword(password string) Builder
 	WithSeed(seed string) Builder
+	WithAdditionalBucketsPerBlock(additionalBuckets uint) Builder
 	Now() (Application, error)
 }
 
@@ -18,7 +59,7 @@ type Builder interface {
 type ClientBuilder interface {
 	Create() ClientBuilder
 	WithPeer(peer domain_peer.Peer) ClientBuilder
-	Now() (app.Application, error)
+	Now() (commands.Application, error)
 }
 
 // Application represents the sync application

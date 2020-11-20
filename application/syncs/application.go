@@ -1,7 +1,7 @@
 package syncs
 
 import (
-	appli "github.com/xmn-services/buckets-network/application/commands"
+	"github.com/xmn-services/buckets-network/application/commands"
 	application_chain "github.com/xmn-services/buckets-network/application/commands/chains"
 	application_identity_buckets "github.com/xmn-services/buckets-network/application/commands/identities/buckets"
 	application_identity_storages "github.com/xmn-services/buckets-network/application/commands/identities/storages"
@@ -186,7 +186,7 @@ func (app *application) Storage() error {
 
 	// build the remote applications:
 	allPeers := peers.All()
-	remoteApps := []appli.Application{}
+	remoteApps := []commands.Application{}
 	for _, onePeer := range allPeers {
 		remoteApp, err := app.clientBuilder.Create().WithPeer(onePeer).Now()
 		if err != nil {
@@ -315,7 +315,7 @@ func (app *application) updateChain(chain chains.Chain, newMinedLink mined_links
 	return app.chainService.Update(chain, updatedChain)
 }
 
-func (app *application) download(toDownloadFiles []hash.Hash, clientApplication []appli.Application) error {
+func (app *application) download(toDownloadFiles []hash.Hash, clientApplication []commands.Application) error {
 	for _, oneFileHash := range toDownloadFiles {
 		for _, oneClient := range clientApplication {
 			clientStorageApp := oneClient.Sub().Storage()
