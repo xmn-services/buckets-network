@@ -24,8 +24,8 @@ func NewBuilder(
 	identityStorageApp application_identity_storages.Application,
 	identityRepository identities.Repository,
 	identityService identities.Service,
-	clientBuilder ClientBuilder,
 	chainService chains.Service,
+	clientBuilder ClientBuilder,
 ) Builder {
 	chainBuilder := chains.NewBuilder()
 	peersBuilder := peers.NewBuilder()

@@ -3,7 +3,9 @@ package bundles
 import (
 	"path/filepath"
 
+	"github.com/xmn-services/buckets-network/application/commands"
 	application_chains "github.com/xmn-services/buckets-network/application/commands/chains"
+	application_identity "github.com/xmn-services/buckets-network/application/commands/identities"
 	application_identity_buckets "github.com/xmn-services/buckets-network/application/commands/identities/buckets"
 	application_identity_storages "github.com/xmn-services/buckets-network/application/commands/identities/storages"
 	application_miner "github.com/xmn-services/buckets-network/application/commands/miners"
@@ -45,6 +47,55 @@ const minedLinksDirName = "mined_links"
 const chainsDirName = "chains"
 const peersDirName = "peers"
 const filesDirName = "files"
+
+// NewCommandApplication creates a new command application
+func NewCommandApplication(
+	basePath string,
+	peerFileNameWithExt string,
+	genesisFileNameWithExt string,
+	chainFileName string,
+	chainFileExt string,
+	identityExt string,
+	chunkSizeInBytes uint,
+	encPKBitrate int,
+) commands.Application {
+	peerApp := NewPeerApplication(basePath, peerFileNameWithExt)
+	chainApp := NewChainApplication(basePath, genesisFileNameWithExt, chainFileName, chainFileExt)
+	storageApp := NewStorageApplication(basePath)
+	minerApp := NewMinerApplication(basePath, genesisFileNameWithExt)
+	identityAppBuilder := NewIdentityApplicationBuilder(basePath, identityExt, chunkSizeInBytes, encPKBitrate)
+	identityRepository := identities.NewRepository(basePath, identityExt)
+	identityService := identities.NewService(basePath, identityExt)
+
+	return commands.NewApplication(
+		peerApp,
+		chainApp,
+		storageApp,
+		minerApp,
+		identityAppBuilder,
+		identityRepository,
+		identityService,
+	)
+}
+
+// NewIdentityApplicationBuilder creates a new identity application builder
+func NewIdentityApplicationBuilder(
+	basePath string,
+	extension string,
+	chunkSizeInBytes uint,
+	encPKBitrate int,
+) application_identity.Builder {
+	bucketAppBuilder := NewIdentityBucketApplicationBuilder(basePath, extension, chunkSizeInBytes, encPKBitrate)
+	storageAppBuilder := NewIdentityStorageApplicationBuilder(basePath, extension)
+	identityRepository := identities.NewRepository(basePath, extension)
+	identityService := identities.NewService(basePath, extension)
+	return application_identity.NewBuilder(
+		bucketAppBuilder,
+		storageAppBuilder,
+		identityRepository,
+		identityService,
+	)
+}
 
 // NewIdentityStorageApplicationBuilder creates a new identity storage application builder
 func NewIdentityStorageApplicationBuilder(
