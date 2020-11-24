@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -19,6 +20,7 @@ import (
 	"github.com/xmn-services/buckets-network/application/servers/authenticates"
 	init_chains "github.com/xmn-services/buckets-network/application/servers/chains"
 	"github.com/xmn-services/buckets-network/domain/memory/file"
+	"github.com/xmn-services/buckets-network/domain/memory/file/contents/content"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
 
@@ -29,9 +31,11 @@ type application struct {
 	updateIdentityAdapter identities_app.UpdateAdapter
 	peerAdapter           peer.Adapter
 	fileAdapter           file.Adapter
+	contentBuilder        content.Builder
 	router                *mux.Router
 	server                *http.Server
 	authApps              map[string]identities_app.Application
+	maxUploadFileSize     int64
 	waitPeriod            time.Duration
 	port                  uint
 }
@@ -43,7 +47,9 @@ func createApplication(
 	updateIdentityAdapter identities_app.UpdateAdapter,
 	peerAdapter peer.Adapter,
 	fileAdapter file.Adapter,
+	contentBuilder content.Builder,
 	router *mux.Router,
+	maxUploadFileSize int64,
 	waitPeriod time.Duration,
 	port uint,
 ) servers.Application {
@@ -54,9 +60,11 @@ func createApplication(
 		updateIdentityAdapter: updateIdentityAdapter,
 		peerAdapter:           peerAdapter,
 		fileAdapter:           fileAdapter,
+		contentBuilder:        contentBuilder,
 		router:                router,
 		server:                nil,
 		authApps:              map[string]identities_app.Application{},
+		maxUploadFileSize:     maxUploadFileSize,
 		waitPeriod:            waitPeriod,
 		port:                  port,
 	}
@@ -90,7 +98,7 @@ func createApplication(
 	identityRouter.HandleFunc("/buckets/{hash:[0-9a-f]+}", out.retrieveIdentityBucketByHash).Methods(http.MethodGet, http.MethodOptions)
 	identityRouter.HandleFunc("/buckets/{hash:[0-9a-f]+}", out.deleteIdentityBucketByHash).Methods(http.MethodDelete, http.MethodOptions)
 
-	identityRouter.HandleFunc("/storages", out.saveStoredFile).Methods(http.MethodPost, http.MethodOptions)
+	identityRouter.HandleFunc("/storages/{hash:[0-9a-f]+}", out.saveStoredFile).Methods(http.MethodPost, http.MethodOptions)
 	identityRouter.HandleFunc("/storages/{hash:[0-9a-f]+}", out.deleteStoredFileByHash).Methods(http.MethodDelete, http.MethodOptions)
 
 	// identity middleware:
@@ -664,25 +672,62 @@ func (app *application) saveStoredFile(w http.ResponseWriter, r *http.Request) {
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
-		err := r.ParseForm()
-		if err != nil {
-			renderError(w, err, []byte(internalErrorOutput))
+		vars := mux.Vars(r)
+		if fileHashStr, ok := vars["hash"]; ok {
+			err := r.ParseMultipartForm(app.maxUploadFileSize)
+			if err != nil {
+				renderError(w, err, []byte(internalErrorOutput))
+				return
+			}
+
+			uploadedChk, _, err := r.FormFile("chunk")
+			if err != nil {
+				renderError(w, err, []byte(internalErrorOutput))
+				return
+			}
+			defer uploadedChk.Close()
+
+			fileBytes, err := ioutil.ReadAll(uploadedChk)
+			if err != nil {
+				renderError(w, err, []byte(internalErrorOutput))
+				return
+			}
+
+			// retrieve the file:
+			file, err := app.cmdApp.Sub().Storage().Retrieve(fileHashStr)
+			if err != nil {
+				renderError(w, err, []byte(internalErrorOutput))
+				return
+			}
+
+			// build the content:
+			content, err := app.contentBuilder.Create().WithContent(fileBytes).Now()
+			if err != nil {
+				renderError(w, err, []byte(internalErrorOutput))
+				return
+			}
+
+			// add the content to the file:
+			err = file.Contents().Add(content)
+			if err != nil {
+				renderError(w, err, []byte(internalErrorOutput))
+				return
+			}
+
+			// save the file:
+			err = appIdentity.Sub().Storage().Save(file)
+			if err != nil {
+				renderError(w, err, []byte(internalErrorOutput))
+				return
+			}
+
+			// success:
+			renderSuccess(w, []byte(successPostOutput))
 			return
 		}
 
-		storedFile, err := app.fileAdapter.URLValuesToFile(r.Form)
-		if err != nil {
-			renderError(w, err, []byte(internalErrorOutput))
-			return
-		}
-
-		err = appIdentity.Sub().Storage().Save(storedFile)
-		if err != nil {
-			renderError(w, err, []byte(internalErrorOutput))
-			return
-		}
-
-		renderSuccess(w, []byte(successPostOutput))
+		err := errors.New(missingHashErrorOutput)
+		renderError(w, err, []byte(internalErrorOutput))
 		return
 	}
 
@@ -710,6 +755,7 @@ func (app *application) deleteStoredFileByHash(w http.ResponseWriter, r *http.Re
 
 		err := errors.New(missingHashErrorOutput)
 		renderError(w, err, []byte(internalErrorOutput))
+		return
 	}
 
 	str := fmt.Sprintf(authErrorOutput, token)
