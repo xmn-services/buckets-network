@@ -1,4 +1,4 @@
-package servers
+package restapis
 
 import (
 	"context"
@@ -19,7 +19,6 @@ import (
 	"github.com/xmn-services/buckets-network/application/servers"
 	"github.com/xmn-services/buckets-network/application/servers/authenticates"
 	init_chains "github.com/xmn-services/buckets-network/application/servers/chains"
-	"github.com/xmn-services/buckets-network/domain/memory/file"
 	"github.com/xmn-services/buckets-network/domain/memory/file/contents/content"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
@@ -30,7 +29,6 @@ type application struct {
 	authenticateAdapter   authenticates.Adapter
 	updateIdentityAdapter identities_app.UpdateAdapter
 	peerAdapter           peer.Adapter
-	fileAdapter           file.Adapter
 	contentBuilder        content.Builder
 	router                *mux.Router
 	server                *http.Server
@@ -46,7 +44,6 @@ func createApplication(
 	authenticateAdapter authenticates.Adapter,
 	updateIdentityAdapter identities_app.UpdateAdapter,
 	peerAdapter peer.Adapter,
-	fileAdapter file.Adapter,
 	contentBuilder content.Builder,
 	router *mux.Router,
 	maxUploadFileSize int64,
@@ -59,7 +56,6 @@ func createApplication(
 		authenticateAdapter:   authenticateAdapter,
 		updateIdentityAdapter: updateIdentityAdapter,
 		peerAdapter:           peerAdapter,
-		fileAdapter:           fileAdapter,
 		contentBuilder:        contentBuilder,
 		router:                router,
 		server:                nil,
@@ -126,13 +122,16 @@ func (app *application) Start() error {
 	}()
 
 	c := make(chan os.Signal, 1)
-	// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
-	// SIGKILL, SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
 	signal.Notify(c, os.Interrupt)
+	go func() {
+		app.Stop()
+	}()
 
-	// Block until we receive our signal.
-	<-c
+	return nil
+}
 
+// Stop stops the application
+func (app *application) Stop() error {
 	// Create a deadline to wait for.
 	ctx, cancel := context.WithTimeout(context.Background(), app.waitPeriod)
 	defer cancel()
@@ -144,7 +143,6 @@ func (app *application) Start() error {
 	// to finalize based on context cancellation.
 	log.Println("shutting down")
 	os.Exit(0)
-
 	return nil
 }
 

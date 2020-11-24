@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func TestInit_Success(t *testing.T) {
@@ -20,21 +21,13 @@ func TestInit_Success(t *testing.T) {
 		os.RemoveAll(basePath)
 	}()
 
-	peerFileNameWithExt := "peers.json"
-	genesisFileNameWithExt := "genesis.json"
-	chainFileName := "root"
-	chainFileExt := "json"
-	identityExt := "identity"
-	chunkSizeInBytes := uint(1024 * 1024)
-	encPKBitrate := 4096
-
 	// identity:
 	name := "roger"
 	password := "this-is-roger-pass"
 	seed := "this is the seed of roger"
 	rootDir := filepath.Join(basePath, "roger")
 
-	app := NewCommandApplication(basePath, peerFileNameWithExt, genesisFileNameWithExt, chainFileName, chainFileExt, identityExt, chunkSizeInBytes, encPKBitrate)
+	app := CreateCommandApplicationForTests()
 	err := app.Current().NewIdentity(name, password, seed, rootDir)
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
@@ -127,6 +120,23 @@ func TestPeer_isClear_Success(t *testing.T) {
 	secondAmount := len(secondRetPeers.All())
 	if secondAmount != 2 {
 		t.Errorf("%d peers were expected, %d returned", secondAmount, len(secondRetPeers.All()))
+		return
+	}
+}
+
+func TestRestAPI_Success(t *testing.T) {
+	port := uint(80)
+	waitPeriod := time.Duration(15 * time.Second)
+	maxUploadFileSize := int64(1024 * 1024 * 10)
+	cmdApp := CreateCommandApplicationForTests()
+	serverApp := NewRestAPIServer(cmdApp, maxUploadFileSize, waitPeriod, port)
+	err := serverApp.Start()
+	defer func() {
+		serverApp.Stop()
+	}()
+
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
 	}
 }

@@ -2,7 +2,9 @@ package bundles
 
 import (
 	"path/filepath"
+	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/xmn-services/buckets-network/application/commands"
 	application_chains "github.com/xmn-services/buckets-network/application/commands/chains"
 	application_identity "github.com/xmn-services/buckets-network/application/commands/identities"
@@ -12,6 +14,7 @@ import (
 	application_identity_storages "github.com/xmn-services/buckets-network/application/commands/identities/storages"
 	application_peers "github.com/xmn-services/buckets-network/application/commands/peers"
 	"github.com/xmn-services/buckets-network/application/commands/storages"
+	"github.com/xmn-services/buckets-network/application/servers"
 	"github.com/xmn-services/buckets-network/domain/memory/blocks"
 	mined_block "github.com/xmn-services/buckets-network/domain/memory/blocks/mined"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets"
@@ -34,6 +37,7 @@ import (
 	transfer_genesis "github.com/xmn-services/buckets-network/domain/transfers/genesis"
 	transfer_link "github.com/xmn-services/buckets-network/domain/transfers/links"
 	transfer_mined_link "github.com/xmn-services/buckets-network/domain/transfers/links/mined"
+	"github.com/xmn-services/buckets-network/infrastructure/servers/restapis"
 	libs_file "github.com/xmn-services/buckets-network/libs/file"
 )
 
@@ -48,6 +52,23 @@ const minedLinksDirName = "mined_links"
 const chainsDirName = "chains"
 const peersDirName = "peers"
 const filesDirName = "files"
+
+// NewRestAPIServer creates a new rest api server
+func NewRestAPIServer(
+	cmdApp commands.Application,
+	maxUploadFileSize int64,
+	waitPeriod time.Duration,
+	port uint,
+) servers.Application {
+	router := mux.NewRouter()
+	return restapis.NewApplication(
+		cmdApp,
+		router,
+		maxUploadFileSize,
+		waitPeriod,
+		port,
+	)
+}
 
 // NewCommandApplication creates a new command application
 func NewCommandApplication(
