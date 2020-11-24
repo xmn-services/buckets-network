@@ -37,7 +37,7 @@ import (
 	transfer_genesis "github.com/xmn-services/buckets-network/domain/transfers/genesis"
 	transfer_link "github.com/xmn-services/buckets-network/domain/transfers/links"
 	transfer_mined_link "github.com/xmn-services/buckets-network/domain/transfers/links/mined"
-	"github.com/xmn-services/buckets-network/infrastructure/servers/restapis"
+	restapis_server "github.com/xmn-services/buckets-network/infrastructure/restapis/servers"
 	libs_file "github.com/xmn-services/buckets-network/libs/file"
 )
 
@@ -61,7 +61,7 @@ func NewRestAPIServer(
 	port uint,
 ) servers.Application {
 	router := mux.NewRouter()
-	return restapis.NewApplication(
+	return restapis_server.NewApplication(
 		cmdApp,
 		router,
 		maxUploadFileSize,

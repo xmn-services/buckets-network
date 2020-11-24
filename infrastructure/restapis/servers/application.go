@@ -1,4 +1,4 @@
-package restapis
+package servers
 
 import (
 	"context"
