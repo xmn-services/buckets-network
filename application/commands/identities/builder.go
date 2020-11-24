@@ -4,13 +4,17 @@ import (
 	"errors"
 
 	"github.com/xmn-services/buckets-network/application/commands/identities/buckets"
+	"github.com/xmn-services/buckets-network/application/commands/identities/chains"
+	"github.com/xmn-services/buckets-network/application/commands/identities/miners"
 	"github.com/xmn-services/buckets-network/application/commands/identities/storages"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 )
 
 type builder struct {
+	minerApp           miners.Application
 	bucketBuilder      buckets.Builder
 	storageBuilder     storages.Builder
+	chainBuilder       chains.Builder
 	identityRepository identities.Repository
 	identityService    identities.Service
 	name               string
@@ -19,14 +23,18 @@ type builder struct {
 }
 
 func createBuilder(
+	minerApp miners.Application,
 	bucketBuilder buckets.Builder,
 	storageBuilder storages.Builder,
+	chainBuilder chains.Builder,
 	identityRepository identities.Repository,
 	identityService identities.Service,
 ) Builder {
 	out := builder{
+		minerApp:           minerApp,
 		bucketBuilder:      bucketBuilder,
 		storageBuilder:     storageBuilder,
+		chainBuilder:       chainBuilder,
 		identityRepository: identityRepository,
 		identityService:    identityService,
 		name:               "",
@@ -40,8 +48,10 @@ func createBuilder(
 // Create initializes the builder
 func (app *builder) Create() Builder {
 	return createBuilder(
+		app.minerApp,
 		app.bucketBuilder,
 		app.storageBuilder,
+		app.chainBuilder,
 		app.identityRepository,
 		app.identityService,
 	)
@@ -89,7 +99,12 @@ func (app *builder) Now() (Application, error) {
 		return nil, err
 	}
 
-	subApps := createSubApplications(bucketApp, storageApp)
+	chainApp, err := app.chainBuilder.Create().WithName(app.name).WithPassword(app.password).WithSeed(app.seed).Now()
+	if err != nil {
+		return nil, err
+	}
+
+	subApps := createSubApplications(bucketApp, storageApp, chainApp, app.minerApp)
 	currentApp := createCurrent(app.identityRepository, app.identityService, app.name, app.password, app.seed)
 	return createApplication(currentApp, subApps), nil
 }

@@ -1,6 +1,8 @@
 package file
 
 import (
+	"net/url"
+
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
 	"github.com/xmn-services/buckets-network/domain/memory/file/contents"
 	transfer_data "github.com/xmn-services/buckets-network/domain/transfers/file"
@@ -29,6 +31,11 @@ func NewRepository(
 func NewBuilder() Builder {
 	contentsBuilder := contents.NewBuilder()
 	return createBuilder(contentsBuilder)
+}
+
+// Adapter represents a file adapter
+type Adapter interface {
+	URLValuesToFile(values url.Values) (File, error)
 }
 
 // Builder represents a file builder

@@ -1,24 +1,38 @@
 package identities
 
 import (
+	"net/url"
+
 	"github.com/xmn-services/buckets-network/application/commands/identities/buckets"
+	"github.com/xmn-services/buckets-network/application/commands/identities/chains"
+	"github.com/xmn-services/buckets-network/application/commands/identities/miners"
 	"github.com/xmn-services/buckets-network/application/commands/identities/storages"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 )
 
 // NewBuilder creates a new builder instance
 func NewBuilder(
+	minerApp miners.Application,
 	bucketBuilder buckets.Builder,
 	storageBuilder storages.Builder,
+	chainBuilder chains.Builder,
 	identityRepository identities.Repository,
 	identityService identities.Service,
 ) Builder {
 	return createBuilder(
+		minerApp,
 		bucketBuilder,
 		storageBuilder,
+		chainBuilder,
 		identityRepository,
 		identityService,
 	)
+}
+
+// NewUpdateAdapter creates a new update adapter instance
+func NewUpdateAdapter() UpdateAdapter {
+	builder := NewUpdateBuilder()
+	return createUpdateAdapter(builder)
 }
 
 // NewUpdateBuilder creates a new update builder instance
@@ -52,6 +66,14 @@ type Current interface {
 type SubApplications interface {
 	Bucket() buckets.Application
 	Storage() storages.Application
+	Chain() chains.Application
+	Miner() miners.Application
+}
+
+// UpdateAdapter represents an update adapter
+type UpdateAdapter interface {
+	URLValuesToUpdate(values url.Values) (Update, error)
+	UpdateToURLValues(update Update) url.Values
 }
 
 // UpdateBuilder represents an update builder

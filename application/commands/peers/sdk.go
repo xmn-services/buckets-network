@@ -23,7 +23,7 @@ func NewApplication(
 // Application represents the peer application
 type Application interface {
 	Retrieve() (peers.Peers, error)
+	Save(peer peer.Peer) error
 	SaveClear(host string, port uint) error
 	SaveOnion(host string, port uint) error
-	Save(peers peers.Peers) error
 }

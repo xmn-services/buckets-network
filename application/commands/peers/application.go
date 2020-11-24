@@ -45,9 +45,9 @@ func (app *application) SaveOnion(host string, port uint) error {
 	return app.save(builder, host, port)
 }
 
-// Save save peers
-func (app *application) Save(peers peers.Peers) error {
-	return app.peersService.Save(peers)
+// Save save a peer
+func (app *application) Save(peer peer.Peer) error {
+	return app.savePeer(peer)
 }
 
 func (app *application) save(builder peer.Builder, host string, port uint) error {
@@ -56,6 +56,10 @@ func (app *application) save(builder peer.Builder, host string, port uint) error
 		return err
 	}
 
+	return app.savePeer(newPeer)
+}
+
+func (app *application) savePeer(newPeer peer.Peer) error {
 	if !app.peersRepository.Exists() {
 		lst := []peer.Peer{
 			newPeer,

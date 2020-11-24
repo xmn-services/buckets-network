@@ -7,8 +7,9 @@ import (
 	application_chains "github.com/xmn-services/buckets-network/application/commands/chains"
 	application_identity "github.com/xmn-services/buckets-network/application/commands/identities"
 	application_identity_buckets "github.com/xmn-services/buckets-network/application/commands/identities/buckets"
+	application_identity_chains "github.com/xmn-services/buckets-network/application/commands/identities/chains"
+	application_identity_miners "github.com/xmn-services/buckets-network/application/commands/identities/miners"
 	application_identity_storages "github.com/xmn-services/buckets-network/application/commands/identities/storages"
-	application_miner "github.com/xmn-services/buckets-network/application/commands/miners"
 	application_peers "github.com/xmn-services/buckets-network/application/commands/peers"
 	"github.com/xmn-services/buckets-network/application/commands/storages"
 	"github.com/xmn-services/buckets-network/domain/memory/blocks"
@@ -62,16 +63,13 @@ func NewCommandApplication(
 	peerApp := NewPeerApplication(basePath, peerFileNameWithExt)
 	chainApp := NewChainApplication(basePath, genesisFileNameWithExt, chainFileName, chainFileExt)
 	storageApp := NewStorageApplication(basePath)
-	minerApp := NewMinerApplication(basePath, genesisFileNameWithExt)
-	identityAppBuilder := NewIdentityApplicationBuilder(basePath, identityExt, chunkSizeInBytes, encPKBitrate)
+	identityAppBuilder := NewIdentityApplicationBuilder(basePath, identityExt, chainFileName, chainFileExt, genesisFileNameWithExt, chunkSizeInBytes, encPKBitrate)
 	identityRepository := identities.NewRepository(basePath, identityExt)
 	identityService := identities.NewService(basePath, identityExt)
-
 	return commands.NewApplication(
 		peerApp,
 		chainApp,
 		storageApp,
-		minerApp,
 		identityAppBuilder,
 		identityRepository,
 		identityService,
@@ -82,18 +80,69 @@ func NewCommandApplication(
 func NewIdentityApplicationBuilder(
 	basePath string,
 	extension string,
+	chainFileName string,
+	chainFileExt string,
+	genesisFileNameWithExt string,
 	chunkSizeInBytes uint,
 	encPKBitrate int,
 ) application_identity.Builder {
+	minerApp := NewIdentityMinerApplication(basePath, genesisFileNameWithExt)
 	bucketAppBuilder := NewIdentityBucketApplicationBuilder(basePath, extension, chunkSizeInBytes, encPKBitrate)
 	storageAppBuilder := NewIdentityStorageApplicationBuilder(basePath, extension)
+	chainBuilder := NewIdentityChainApplicationBuilder(basePath, extension, chainFileName, chainFileExt, genesisFileNameWithExt)
 	identityRepository := identities.NewRepository(basePath, extension)
 	identityService := identities.NewService(basePath, extension)
 	return application_identity.NewBuilder(
+		minerApp,
 		bucketAppBuilder,
 		storageAppBuilder,
+		chainBuilder,
 		identityRepository,
 		identityService,
+	)
+}
+
+// NewIdentityChainApplicationBuilder represents a new identity chain application builder
+func NewIdentityChainApplicationBuilder(
+	basePath string,
+	extension string,
+	chainFileName string,
+	chainFileExt string,
+	genesisFileNameWithExt string,
+) application_identity_chains.Builder {
+	minerApplication := NewIdentityMinerApplication(basePath, genesisFileNameWithExt)
+	identityRepository := identities.NewRepository(basePath, extension)
+	identityService := identities.NewService(basePath, extension)
+	genesisRepository := NewGenesisRepository(basePath, genesisFileNameWithExt)
+	genesisService := NewGenesisService(basePath, genesisFileNameWithExt)
+	blockService := NewBlockService(basePath, genesisRepository, genesisService)
+	linkService := NewLinkService(basePath, genesisRepository, genesisService)
+	chainRepository := NewChainRepository(basePath, chainFileName, chainFileExt, genesisRepository)
+	chainService := NewChainService(basePath, chainFileName, chainFileExt, genesisRepository, genesisService)
+	return application_identity_chains.NewBuilder(
+		minerApplication,
+		identityRepository,
+		identityService,
+		genesisRepository,
+		genesisService,
+		blockService,
+		linkService,
+		chainRepository,
+		chainService,
+	)
+}
+
+// NewIdentityMinerApplication creates a new identity miner application
+func NewIdentityMinerApplication(
+	basePath string,
+	genesisFileNameWithExt string,
+) application_identity_miners.Application {
+	genesisRepository := NewGenesisRepository(basePath, genesisFileNameWithExt)
+	blockRepository := NewBlockRepository(basePath, genesisRepository)
+	linkRepository := NewLinkRepository(basePath, genesisRepository)
+	return application_identity_miners.NewApplication(
+		blockRepository,
+		linkRepository,
 	)
 }
 
@@ -153,29 +202,9 @@ func NewChainApplication(
 	chainFileName string,
 	chainFileExt string,
 ) application_chains.Application {
-	minerApp := NewMinerApplication(
-		basePath,
-		genesisFileNameWithExt,
-	)
-
 	genesisRepository := NewGenesisRepository(basePath, genesisFileNameWithExt)
-	genesisService := NewGenesisService(basePath, genesisFileNameWithExt)
-
 	chainRepository := NewChainRepository(basePath, chainFileName, chainFileExt, genesisRepository)
-	chainService := NewChainService(basePath, chainFileName, chainFileExt, genesisRepository, genesisService)
-
-	return application_chains.NewApplication(minerApp, chainRepository, chainService)
-}
-
-// NewMinerApplication creates a new miner application
-func NewMinerApplication(
-	basePath string,
-	genesisFileNameWithExt string,
-) application_miner.Application {
-	bucketRepository := NewBucketRepository(basePath)
-	genesisRepository := NewGenesisRepository(basePath, genesisFileNameWithExt)
-	minedBlockRepository := NewMinedBlockRepository(basePath, genesisRepository)
-	return application_miner.NewApplication(bucketRepository, minedBlockRepository, genesisRepository)
+	return application_chains.NewApplication(chainRepository)
 }
 
 // NewFileRepository creates a new file repository

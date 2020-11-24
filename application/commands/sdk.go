@@ -3,7 +3,6 @@ package commands
 import (
 	"github.com/xmn-services/buckets-network/application/commands/chains"
 	application_identities "github.com/xmn-services/buckets-network/application/commands/identities"
-	"github.com/xmn-services/buckets-network/application/commands/miners"
 	application_peers "github.com/xmn-services/buckets-network/application/commands/peers"
 	"github.com/xmn-services/buckets-network/application/commands/storages"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
@@ -15,14 +14,13 @@ func NewApplication(
 	peerApp application_peers.Application,
 	chainApp chains.Application,
 	storageApp storages.Application,
-	minerApp miners.Application,
 	identityAppBuilder application_identities.Builder,
 	identityRepository identities.Repository,
 	identityService identities.Service,
 ) Application {
 	identityBuilder := identities.NewBuilder()
 	current := createCurrent(identityAppBuilder, identityBuilder, identityRepository, identityService)
-	subApps := createSubApplicationa(peerApp, chainApp, storageApp, minerApp)
+	subApps := createSubApplicationa(peerApp, chainApp, storageApp)
 	return createApplication(current, subApps)
 }
 
@@ -51,5 +49,4 @@ type SubApplications interface {
 	Peers() application_peers.Application
 	Chain() chains.Application
 	Storage() storages.Application
-	Miner() miners.Application
 }

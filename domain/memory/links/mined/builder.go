@@ -4,9 +4,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/links"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
-	"github.com/xmn-services/buckets-network/domain/memory/links"
 )
 
 type builder struct {
@@ -59,6 +59,10 @@ func (app *builder) CreatedOn(createdOn time.Time) Builder {
 func (app *builder) Now() (Link, error) {
 	if app.link == nil {
 		return nil, errors.New("the link is mandatory in order to build a mined Link instance")
+	}
+
+	if app.mining == "" {
+		return nil, errors.New("the mining is mandatory in order to build a mined Link instance")
 	}
 
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{

@@ -1,6 +1,8 @@
 package buckets
 
 import (
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"math"
 	"path/filepath"
@@ -109,22 +111,20 @@ func (app *application) Add(absolutePath string) error {
 }
 
 // Delete deletes a bucket from the given path
-func (app *application) Delete(absolutePath string) error {
+func (app *application) Delete(hashStr string) error {
 	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
 	if err != nil {
 		return err
 	}
 
-	buckets := identity.Wallet().Miner().ToTransact().All()
-	for _, oneBucket := range buckets {
-		if oneBucket.AbsolutePath() != absolutePath {
-			continue
-		}
+	hash, err := app.hashAdapter.FromString(hashStr)
+	if err != nil {
+		return err
+	}
 
-		err := identity.Wallet().Miner().ToTransact().Delete(oneBucket.Hash())
-		if err != nil {
-			return err
-		}
+	err = identity.Wallet().Miner().ToTransact().Delete(*hash)
+	if err != nil {
+		return err
 	}
 
 	return app.identityService.Update(identity, app.password, app.password)
@@ -137,7 +137,28 @@ func (app *application) Retrieve(hashStr string) (buckets.Bucket, error) {
 		return nil, err
 	}
 
+	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	if err != nil {
+		return nil, err
+	}
+
+	if !identity.Wallet().Storage().Stored().Exists(*hash) {
+		str := fmt.Sprintf("the bucket (hash: %s) does not exists", hash.String())
+		return nil, errors.New(str)
+	}
+
 	return app.bucketRepository.Retrieve(*hash)
+}
+
+// RetrieveAll retrieves all the buckets
+func (app *application) RetrieveAll() ([]buckets.Bucket, error) {
+	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	if err != nil {
+		return nil, err
+	}
+
+	bucketHashes := identity.Wallet().Storage().Stored().All()
+	return app.bucketRepository.RetrieveAll(bucketHashes)
 }
 
 func (app *application) dirToFiles(rootPath string, relativePath string) ([]files.File, error) {

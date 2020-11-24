@@ -61,6 +61,10 @@ func (app *builder) Now() (Block, error) {
 		return nil, errors.New("the block is mandatory in order to build a mined Block instance")
 	}
 
+	if app.mining == "" {
+		return nil, errors.New("the mining is mandatory in order to build a mined Block instance")
+	}
+
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
 		app.block.Hash().Bytes(),
 		[]byte(app.mining),

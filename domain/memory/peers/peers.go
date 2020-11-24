@@ -2,8 +2,6 @@ package peers
 
 import (
 	"encoding/json"
-	"net/url"
-	"strconv"
 
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
@@ -14,29 +12,9 @@ type peers struct {
 
 func createPeersFromStrings(lst []string) (Peers, error) {
 	peers := []peer.Peer{}
-	peerBuilder := peer.NewBuilder()
+	peerAdapter := peer.NewAdapter()
 	for _, oneURLStr := range lst {
-		url, err := url.Parse(oneURLStr)
-		if err != nil {
-			return nil, err
-		}
-
-		port, err := strconv.Atoi(url.Port())
-		if err != nil {
-			return nil, err
-		}
-
-		builder := peerBuilder.Create().WithHost(url.Hostname()).WithPort(uint(port))
-		switch url.Scheme {
-		case "https":
-			builder.IsClear()
-			break
-		case "onion":
-			builder.IsOnion()
-			break
-		}
-
-		peer, err := builder.Now()
+		peer, err := peerAdapter.StringToPeer(oneURLStr)
 		if err != nil {
 			return nil, err
 		}

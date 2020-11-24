@@ -42,6 +42,7 @@ type Builder interface {
 // Buckets represents buckets
 type Buckets interface {
 	All() []bucket.Bucket
+	Fetch(hash hash.Hash) (bucket.Bucket, error)
 	Add(bucket bucket.Bucket) error
 	Delete(hash hash.Hash) error
 }

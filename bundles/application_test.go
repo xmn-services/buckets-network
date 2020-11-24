@@ -2,6 +2,7 @@ package bundles
 
 import (
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -15,29 +16,59 @@ func TestInit_Success(t *testing.T) {
 	headAdditionalBuckets := uint(20)
 
 	basePath := "./test_files"
-	genesisFileNameWithExt := "genesis.json"
 	defer func() {
 		os.RemoveAll(basePath)
 	}()
 
+	peerFileNameWithExt := "peers.json"
+	genesisFileNameWithExt := "genesis.json"
 	chainFileName := "root"
 	chainFileExt := "json"
+	identityExt := "identity"
+	chunkSizeInBytes := uint(1024 * 1024)
+	encPKBitrate := 4096
 
-	app := NewChainApplication(basePath, genesisFileNameWithExt, chainFileName, chainFileExt)
-	err := app.Init(miningValue, baseDifficulty, increasePerBucket, linkDifficulty, rootAdditionalBuckets, headAdditionalBuckets)
+	// identity:
+	name := "roger"
+	password := "this-is-roger-pass"
+	seed := "this is the seed of roger"
+	rootDir := filepath.Join(basePath, "roger")
+
+	app := NewCommandApplication(basePath, peerFileNameWithExt, genesisFileNameWithExt, chainFileName, chainFileExt, identityExt, chunkSizeInBytes, encPKBitrate)
+	err := app.Current().NewIdentity(name, password, seed, rootDir)
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
 	}
 
-	retRootChain, err := app.Retrieve()
+	identityApp, err := app.Current().Authenticate(name, password, seed)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	err = identityApp.Sub().Chain().Init(
+		miningValue,
+		baseDifficulty,
+		increasePerBucket,
+		linkDifficulty,
+		rootAdditionalBuckets,
+		headAdditionalBuckets,
+	)
+
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	retRootChain, err := app.Sub().Chain().Retrieve()
 	if err != nil {
 		retRootChain.Root().Mining()
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
 	}
 
-	retRootAtIndex, err := app.RetrieveAtIndex(0)
+	retRootAtIndex, err := app.Sub().Chain().RetrieveAtIndex(0)
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return

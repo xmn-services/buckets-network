@@ -35,6 +35,24 @@ func TestPeer_withClear_Success(t *testing.T) {
 		t.Errorf("the peer string is invalid, expected: %s, returned %s", str, peer.String())
 		return
 	}
+
+	adapter := NewAdapter()
+	urlValues, err := adapter.PeerToURLValues(peer)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	retPeer, err := adapter.URLValuesToPeer(urlValues)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	if retPeer.String() != str {
+		t.Errorf("the peer string is invalid, expected: %s, returned %s", str, retPeer.String())
+		return
+	}
 }
 
 func TestPeer_withOnion_Success(t *testing.T) {
@@ -65,6 +83,24 @@ func TestPeer_withOnion_Success(t *testing.T) {
 	str := fmt.Sprintf("onion://%s:%d", host, port)
 	if peer.String() != str {
 		t.Errorf("the peer string is invalid, expected: %s, returned %s", str, peer.String())
+		return
+	}
+
+	adapter := NewAdapter()
+	urlValues, err := adapter.PeerToURLValues(peer)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	retPeer, err := adapter.URLValuesToPeer(urlValues)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	if retPeer.String() != str {
+		t.Errorf("the peer string is invalid, expected: %s, returned %s", str, retPeer.String())
 		return
 	}
 }

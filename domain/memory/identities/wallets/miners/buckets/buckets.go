@@ -49,6 +49,17 @@ func (obj *buckets) All() []bucket.Bucket {
 	return obj.lst
 }
 
+// Fetch fetches a bucket by hash
+func (obj *buckets) Fetch(hash hash.Hash) (bucket.Bucket, error) {
+	keyname := hash.String()
+	if bucket, ok := obj.mp[keyname]; ok {
+		return bucket, nil
+	}
+
+	str := fmt.Sprintf("the bucket (hash: %s) does not exists", keyname)
+	return nil, errors.New(str)
+}
+
 // Add adds a bucket to the list
 func (obj *buckets) Add(bucket bucket.Bucket) error {
 	keyname := bucket.Hash().String()
