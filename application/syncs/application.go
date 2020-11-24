@@ -3,13 +3,8 @@ package syncs
 import (
 	"github.com/xmn-services/buckets-network/application/commands"
 	application_chain "github.com/xmn-services/buckets-network/application/commands/chains"
-	application_identity_buckets "github.com/xmn-services/buckets-network/application/commands/identities/buckets"
-	application_identity_storages "github.com/xmn-services/buckets-network/application/commands/identities/storages"
-	application_storages "github.com/xmn-services/buckets-network/application/commands/identities/storages"
-	application_miners "github.com/xmn-services/buckets-network/application/commands/miners"
-	application_peers "github.com/xmn-services/buckets-network/application/commands/peers"
+	application_identity "github.com/xmn-services/buckets-network/application/commands/identities"
 	"github.com/xmn-services/buckets-network/domain/memory/chains"
-	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	mined_links "github.com/xmn-services/buckets-network/domain/memory/links/mined"
 	"github.com/xmn-services/buckets-network/domain/memory/peers"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
@@ -17,14 +12,7 @@ import (
 )
 
 type application struct {
-	chainApp                  application_chain.Application
-	minerApp                  application_miners.Application
-	peersApp                  application_peers.Application
-	storageApp                application_storages.Application
-	identityBucketApp         application_identity_buckets.Application
-	identityStorageApp        application_identity_storages.Application
-	identityRepository        identities.Repository
-	identityService           identities.Service
+	appli                     commands.Application
 	clientBuilder             commands.ClientBuilder
 	chainBuilder              chains.Builder
 	chainService              chains.Service
@@ -36,14 +24,7 @@ type application struct {
 }
 
 func createApplication(
-	chainApp application_chain.Application,
-	minerApp application_miners.Application,
-	peersApp application_peers.Application,
-	storageApp application_storages.Application,
-	identityBucketApp application_identity_buckets.Application,
-	identityStorageApp application_identity_storages.Application,
-	identityRepository identities.Repository,
-	identityService identities.Service,
+	appli commands.Application,
 	clientBuilder commands.ClientBuilder,
 	chainBuilder chains.Builder,
 	chainService chains.Service,
@@ -54,14 +35,7 @@ func createApplication(
 	additionalBucketsPerBlock uint,
 ) Application {
 	out := application{
-		chainApp:                  chainApp,
-		minerApp:                  minerApp,
-		peersApp:                  peersApp,
-		storageApp:                storageApp,
-		identityBucketApp:         identityBucketApp,
-		identityStorageApp:        identityStorageApp,
-		identityRepository:        identityRepository,
-		identityService:           identityService,
+		appli:                     appli,
 		clientBuilder:             clientBuilder,
 		chainBuilder:              chainBuilder,
 		chainService:              chainService,
@@ -77,14 +51,32 @@ func createApplication(
 
 // Chain syncs the chain
 func (app *application) Chain() error {
+	// authenticate:
+	identityApp, err := app.appli.Current().Authenticate(app.name, app.seed, app.password)
+	if err != nil {
+		return err
+	}
+
+	// mine the next block:
+	err = identityApp.Sub().Chain().Block(app.additionalBucketsPerBlock)
+	if err != nil {
+		return err
+	}
+
+	// mine the next link:
+	err = identityApp.Sub().Chain().Link(app.additionalBucketsPerBlock)
+	if err != nil {
+		return err
+	}
+
 	// retrieve the local chain:
-	localChain, err := app.chainApp.Retrieve()
+	localChain, err := app.appli.Sub().Chain().Retrieve()
 	if err != nil {
 		return err
 	}
 
 	// retrieve the peers:
-	localPeers, err := app.peersApp.Retrieve()
+	localPeers, err := app.appli.Sub().Peers().Retrieve()
 	if err != nil {
 		return err
 	}
@@ -140,7 +132,7 @@ func (app *application) Chain() error {
 
 // Peers syncs the peers
 func (app *application) Peers() error {
-	peers, err := app.peersApp.Retrieve()
+	peers, err := app.appli.Sub().Peers().Retrieve()
 	if err != nil {
 		return err
 	}
@@ -167,19 +159,32 @@ func (app *application) Peers() error {
 		return err
 	}
 
-	return app.peersApp.Save(updatedPeers)
+	updatedPeersList := updatedPeers.All()
+	for _, onePeer := range updatedPeersList {
+		err = app.appli.Sub().Peers().Save(onePeer)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Storage syncs the storage
 func (app *application) Storage() error {
+	identityApp, err := app.appli.Current().Authenticate(app.name, app.seed, app.password)
+	if err != nil {
+		return err
+	}
+
 	// retrieve the identity:
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	identity, err := identityApp.Current().Retrieve()
 	if err != nil {
 		return err
 	}
 
 	// retrieve the peers:
-	peers, err := app.peersApp.Retrieve()
+	peers, err := app.appli.Sub().Peers().Retrieve()
 	if err != nil {
 		return err
 	}
@@ -198,109 +203,13 @@ func (app *application) Storage() error {
 
 	// download the files:
 	toDownloadFiles := identity.Wallet().Storage().ToDownload().All()
-	err = app.download(toDownloadFiles, remoteApps)
+	err = app.download(identityApp, toDownloadFiles, remoteApps)
 	if err != nil {
 		return err
 	}
 
 	// save the identity:
-	return app.identityService.Update(identity, app.password, app.password)
-}
-
-// Miners syncs the miners
-func (app *application) Miners() error {
-	err := app.MinerBlock()
-	if err != nil {
-		return err
-	}
-
-	return app.MinerLink()
-}
-
-// MinerBlock syncs the block miner
-func (app *application) MinerBlock() error {
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
-	if err != nil {
-		return err
-	}
-
-	// retrieve the queue buckets:
-	queueBuckets := identity.Wallet().Miner().Queue().All()
-
-	// make the list of block buckets:
-	bucketHashes := []string{}
-	for _, oneQueuedBucket := range queueBuckets {
-		// add the bucket to the block list:
-		bucketHashes = append(bucketHashes, oneQueuedBucket.Bucket().Hash().String())
-
-		// remove the queued bucket from the queued identity:
-		identity.Wallet().Miner().Broadcasted().Add(oneQueuedBucket)
-	}
-
-	// retrieve the chain:
-	chain, err := app.chainApp.Retrieve()
-	if err != nil {
-		return err
-	}
-
-	blockDiff := chain.Genesis().Difficulty().Block()
-	minedBlock, err := app.minerApp.Block(
-		bucketHashes,
-		blockDiff.Base(),
-		blockDiff.IncreasePerBucket(),
-		app.additionalBucketsPerBlock,
-	)
-
-	if err != nil {
-		return err
-	}
-
-	// add the block to the wallet:
-	err = identity.Wallet().Miner().ToLink().Add(minedBlock)
-	if err != nil {
-		return err
-	}
-
-	// save the identity:
-	return app.identityService.Update(identity, app.password, app.password)
-}
-
-// MinerLink syncs the link miner
-func (app *application) MinerLink() error {
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
-	if err != nil {
-		return err
-	}
-
-	// retrieve the chain:
-	chain, err := app.chainApp.Retrieve()
-	if err != nil {
-		return err
-	}
-
-	// fetch the mined blocks to link:
-	blocks := identity.Wallet().Miner().ToLink().All()
-	for _, oneBlock := range blocks {
-		// mine the link:
-		difficulty := chain.Genesis().Difficulty().Link()
-		newMinedLink, err := app.minerApp.Link(
-			chain.Head().Hash().String(),
-			oneBlock.Hash().String(),
-			difficulty,
-		)
-
-		if err != nil {
-			return err
-		}
-
-		err = app.updateChain(chain, newMinedLink)
-		if err != nil {
-			return err
-		}
-	}
-
-	// save the identity:
-	return app.identityService.Update(identity, app.password, app.password)
+	return app.appli.Current().UpdateIdentity(identity, app.password, app.password)
 }
 
 func (app *application) updateChain(chain chains.Chain, newMinedLink mined_links.Link) error {
@@ -315,7 +224,11 @@ func (app *application) updateChain(chain chains.Chain, newMinedLink mined_links
 	return app.chainService.Update(chain, updatedChain)
 }
 
-func (app *application) download(toDownloadFiles []hash.Hash, clientApplication []commands.Application) error {
+func (app *application) download(
+	identityApp application_identity.Application,
+	toDownloadFiles []hash.Hash,
+	clientApplication []commands.Application,
+) error {
 	for _, oneFileHash := range toDownloadFiles {
 		for _, oneClient := range clientApplication {
 			clientStorageApp := oneClient.Sub().Storage()
@@ -329,7 +242,7 @@ func (app *application) download(toDownloadFiles []hash.Hash, clientApplication 
 			}
 
 			// save the file:
-			err = app.storageApp.Save(storedFile)
+			err = identityApp.Sub().Storage().Save(storedFile)
 			if err != nil {
 				return err
 			}

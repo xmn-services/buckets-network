@@ -50,12 +50,6 @@ func (app *application) Start() error {
 			// log
 		}
 
-		// mine the block and links:
-		err = app.syncApp.Miners()
-		if err != nil {
-			// log
-		}
-
 		// download needed buckets:
 		err = app.syncApp.Storage()
 		if err != nil {

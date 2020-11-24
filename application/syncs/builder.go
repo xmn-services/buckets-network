@@ -4,26 +4,12 @@ import (
 	"errors"
 
 	"github.com/xmn-services/buckets-network/application/commands"
-	application_chain "github.com/xmn-services/buckets-network/application/commands/chains"
-	application_identity_buckets "github.com/xmn-services/buckets-network/application/commands/identities/buckets"
-	application_identity_storages "github.com/xmn-services/buckets-network/application/commands/identities/storages"
-	application_storages "github.com/xmn-services/buckets-network/application/commands/identities/storages"
-	application_miners "github.com/xmn-services/buckets-network/application/commands/miners"
-	application_peers "github.com/xmn-services/buckets-network/application/commands/peers"
 	"github.com/xmn-services/buckets-network/domain/memory/chains"
-	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	"github.com/xmn-services/buckets-network/domain/memory/peers"
 )
 
 type builder struct {
-	chainApp                  application_chain.Application
-	minerApp                  application_miners.Application
-	peersApp                  application_peers.Application
-	storageApp                application_storages.Application
-	identityBucketApp         application_identity_buckets.Application
-	identityStorageApp        application_identity_storages.Application
-	identityRepository        identities.Repository
-	identityService           identities.Service
+	appli                     commands.Application
 	clientBuilder             commands.ClientBuilder
 	chainBuilder              chains.Builder
 	chainService              chains.Service
@@ -35,28 +21,14 @@ type builder struct {
 }
 
 func createBuilder(
-	chainApp application_chain.Application,
-	minerApp application_miners.Application,
-	peersApp application_peers.Application,
-	storageApp application_storages.Application,
-	identityBucketApp application_identity_buckets.Application,
-	identityStorageApp application_identity_storages.Application,
-	identityRepository identities.Repository,
-	identityService identities.Service,
+	appli commands.Application,
 	clientBuilder commands.ClientBuilder,
 	chainBuilder chains.Builder,
 	chainService chains.Service,
 	peersBuilder peers.Builder,
 ) Builder {
 	out := builder{
-		chainApp:                  chainApp,
-		minerApp:                  minerApp,
-		peersApp:                  peersApp,
-		storageApp:                storageApp,
-		identityBucketApp:         identityBucketApp,
-		identityStorageApp:        identityStorageApp,
-		identityRepository:        identityRepository,
-		identityService:           identityService,
+		appli:                     appli,
 		clientBuilder:             clientBuilder,
 		chainBuilder:              chainBuilder,
 		chainService:              chainService,
@@ -73,14 +45,7 @@ func createBuilder(
 // Create initializes the builder
 func (app *builder) Create() Builder {
 	return createBuilder(
-		app.chainApp,
-		app.minerApp,
-		app.peersApp,
-		app.storageApp,
-		app.identityBucketApp,
-		app.identityStorageApp,
-		app.identityRepository,
-		app.identityService,
+		app.appli,
 		app.clientBuilder,
 		app.chainBuilder,
 		app.chainService,
@@ -127,14 +92,7 @@ func (app *builder) Now() (Application, error) {
 	}
 
 	return createApplication(
-		app.chainApp,
-		app.minerApp,
-		app.peersApp,
-		app.storageApp,
-		app.identityBucketApp,
-		app.identityStorageApp,
-		app.identityRepository,
-		app.identityService,
+		app.appli,
 		app.clientBuilder,
 		app.chainBuilder,
 		app.chainService,
