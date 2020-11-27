@@ -7,9 +7,6 @@ import (
 	"github.com/xmn-services/buckets-network/application/commands"
 	identities_app "github.com/xmn-services/buckets-network/application/commands/identities"
 	"github.com/xmn-services/buckets-network/application/servers"
-	"github.com/xmn-services/buckets-network/application/servers/authenticates"
-	init_chains "github.com/xmn-services/buckets-network/application/servers/chains"
-	"github.com/xmn-services/buckets-network/application/servers/identities"
 	"github.com/xmn-services/buckets-network/domain/memory/file/contents/content"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
@@ -36,18 +33,12 @@ func NewApplication(
 	waitPeriod time.Duration,
 	port uint,
 ) servers.Application {
-	initChainAdapter := init_chains.NewAdapter()
-	authenticateAdapter := authenticates.NewAdapter()
-	updateIdentityAdapter := identities_app.NewUpdateAdapter()
-	identityAdapter := identities.NewAdapter()
+	updateIdentityBuilder := identities_app.NewUpdateBuilder()
 	peerAdapter := peer.NewAdapter()
 	contentBuilder := content.NewBuilder()
 	return createApplication(
 		cmdApp,
-		initChainAdapter,
-		authenticateAdapter,
-		updateIdentityAdapter,
-		identityAdapter,
+		updateIdentityBuilder,
 		peerAdapter,
 		contentBuilder,
 		router,

@@ -29,12 +29,6 @@ func NewBuilder(
 	)
 }
 
-// NewUpdateAdapter creates a new update adapter instance
-func NewUpdateAdapter() UpdateAdapter {
-	builder := NewUpdateBuilder()
-	return createUpdateAdapter(builder)
-}
-
 // NewUpdateBuilder creates a new update builder instance
 func NewUpdateBuilder() UpdateBuilder {
 	return createUpdateBuilder()

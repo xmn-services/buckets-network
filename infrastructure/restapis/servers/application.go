@@ -17,19 +17,14 @@ import (
 	"github.com/xmn-services/buckets-network/application/commands"
 	identities_app "github.com/xmn-services/buckets-network/application/commands/identities"
 	"github.com/xmn-services/buckets-network/application/servers"
-	"github.com/xmn-services/buckets-network/application/servers/authenticates"
-	init_chains "github.com/xmn-services/buckets-network/application/servers/chains"
-	"github.com/xmn-services/buckets-network/application/servers/identities"
 	"github.com/xmn-services/buckets-network/domain/memory/file/contents/content"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
+	"github.com/xmn-services/buckets-network/infrastructure/restapis/shared"
 )
 
 type application struct {
 	cmdApp                commands.Application
-	initChainAdapter      init_chains.Adapter
-	authenticateAdapter   authenticates.Adapter
-	updateIdentityAdapter identities_app.UpdateAdapter
-	identityAdapter       identities.Adapter
+	updateIdentityBuilder identities_app.UpdateBuilder
 	peerAdapter           peer.Adapter
 	contentBuilder        content.Builder
 	router                *mux.Router
@@ -42,10 +37,7 @@ type application struct {
 
 func createApplication(
 	cmdApp commands.Application,
-	initChainAdapter init_chains.Adapter,
-	authenticateAdapter authenticates.Adapter,
-	updateIdentityAdapter identities_app.UpdateAdapter,
-	identityAdapter identities.Adapter,
+	updateIdentityBuilder identities_app.UpdateBuilder,
 	peerAdapter peer.Adapter,
 	contentBuilder content.Builder,
 	router *mux.Router,
@@ -55,10 +47,7 @@ func createApplication(
 ) servers.Application {
 	out := application{
 		cmdApp:                cmdApp,
-		initChainAdapter:      initChainAdapter,
-		authenticateAdapter:   authenticateAdapter,
-		updateIdentityAdapter: updateIdentityAdapter,
-		identityAdapter:       identityAdapter,
+		updateIdentityBuilder: updateIdentityBuilder,
 		peerAdapter:           peerAdapter,
 		contentBuilder:        contentBuilder,
 		router:                router,
@@ -154,16 +143,16 @@ func (app *application) Stop() error {
 func (app *application) authenticateMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		token := r.Header.Get(tokenHeadKeyname)
-		auth, err := app.authenticateAdapter.Base64ToAuthenticate(token)
+		auth, err := shared.Base64ToAuthenticate(token)
 		if err != nil {
 			renderError(w, err, []byte(internalErrorOutput))
 			return
 		}
 
 		authApp, err := app.cmdApp.Current().Authenticate(
-			auth.Name(),
-			auth.Seed(),
-			auth.Password(),
+			auth.Name,
+			auth.Seed,
+			auth.Password,
 		)
 
 		if err != nil {
@@ -186,18 +175,17 @@ func (app *application) newIdentity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	identity, err := app.identityAdapter.URLValuesToIdentity(r.Form)
+	identity, err := shared.URLValuesToIdentity(r.Form)
 	if err != nil {
 		renderError(w, err, []byte(internalErrorOutput))
 		return
 	}
 
-	auth := identity.Authenticate()
 	err = app.cmdApp.Current().NewIdentity(
-		auth.Name(),
-		auth.Password(),
-		auth.Seed(),
-		identity.Root(),
+		identity.Authenticate.Name,
+		identity.Authenticate.Password,
+		identity.Authenticate.Seed,
+		identity.Root,
 	)
 
 	if err != nil {
@@ -386,19 +374,19 @@ func (app *application) initIdentityChain(w http.ResponseWriter, r *http.Request
 			return
 		}
 
-		initChain, err := app.initChainAdapter.URLValuesToChain(r.Form)
+		initChain, err := shared.URLValuesToInitChain(r.Form)
 		if err != nil {
 			renderError(w, err, []byte(internalErrorOutput))
 			return
 		}
 
 		err = appIdentity.Sub().Chain().Init(
-			initChain.MiningValue(),
-			initChain.BaseDifficulty(),
-			initChain.IncreasePerBucket(),
-			initChain.LinkDifficulty(),
-			initChain.RootAdditionalBuckets(),
-			initChain.HeadAdditionalBuckets(),
+			initChain.MiningValue,
+			initChain.BaseDifficulty,
+			initChain.IncreasePerBucket,
+			initChain.LinkDifficulty,
+			initChain.RootAdditionalBuckets,
+			initChain.HeadAdditionalBuckets,
 		)
 
 		if err != nil {
@@ -553,7 +541,30 @@ func (app *application) updateIdentity(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		updateIdentity, err := app.updateIdentityAdapter.URLValuesToUpdate(r.Form)
+		identity, err := shared.URLValuesToIdentity(r.Form)
+		if err != nil {
+			renderError(w, err, []byte(internalErrorOutput))
+			return
+		}
+
+		updateIdentityBuilder := app.updateIdentityBuilder.Create()
+		if identity.Authenticate.Seed != "" {
+			updateIdentityBuilder.WithSeed(identity.Authenticate.Seed)
+		}
+
+		if identity.Authenticate.Name != "" {
+			updateIdentityBuilder.WithName(identity.Authenticate.Name)
+		}
+
+		if identity.Authenticate.Password != "" {
+			updateIdentityBuilder.WithPassword(identity.Authenticate.Password)
+		}
+
+		if identity.Root != "" {
+			updateIdentityBuilder.WithRoot(identity.Root)
+		}
+
+		updateIdentity, err := updateIdentityBuilder.Now()
 		if err != nil {
 			renderError(w, err, []byte(internalErrorOutput))
 			return
