@@ -21,7 +21,7 @@ func NewBuilder() Builder {
 // Adapter represents a peer adapter
 type Adapter interface {
 	URLValuesToPeer(values url.Values) (Peer, error)
-	PeerToURLValues(peer Peer) (url.Values, error)
+	PeerToURLValues(peer Peer) url.Values
 	StringToPeer(str string) (Peer, error)
 }
 

@@ -27,6 +27,11 @@ func NewBuilder() Builder {
 	return createBuilder(walletFactory)
 }
 
+// Adapter represents a json adapter
+type Adapter interface {
+	JSONToIdentity(js []byte) (Identity, error)
+}
+
 // Builder represents an identity builder
 type Builder interface {
 	Create() Builder

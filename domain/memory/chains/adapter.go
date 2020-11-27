@@ -1,6 +1,8 @@
 package chains
 
 import (
+	"encoding/json"
+
 	transfer_chains "github.com/xmn-services/buckets-network/domain/transfers/chains"
 )
 
@@ -16,6 +18,17 @@ func createAdapter(
 	}
 
 	return &out
+}
+
+// JSONToChain converts a json to Chain instance
+func (app *adapter) JSONToChain(js []byte) (Chain, error) {
+	ins := new(chain)
+	err := json.Unmarshal(js, ins)
+	if err != nil {
+		return nil, err
+	}
+
+	return ins, nil
 }
 
 // ToTransfer converts a chain to a transfer chain instance

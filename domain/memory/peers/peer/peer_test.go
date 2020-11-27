@@ -37,12 +37,7 @@ func TestPeer_withClear_Success(t *testing.T) {
 	}
 
 	adapter := NewAdapter()
-	urlValues, err := adapter.PeerToURLValues(peer)
-	if err != nil {
-		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
-		return
-	}
-
+	urlValues := adapter.PeerToURLValues(peer)
 	retPeer, err := adapter.URLValuesToPeer(urlValues)
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
@@ -87,12 +82,7 @@ func TestPeer_withOnion_Success(t *testing.T) {
 	}
 
 	adapter := NewAdapter()
-	urlValues, err := adapter.PeerToURLValues(peer)
-	if err != nil {
-		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
-		return
-	}
-
+	urlValues := adapter.PeerToURLValues(peer)
 	retPeer, err := adapter.URLValuesToPeer(urlValues)
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())

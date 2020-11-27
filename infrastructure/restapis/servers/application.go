@@ -19,6 +19,7 @@ import (
 	"github.com/xmn-services/buckets-network/application/servers"
 	"github.com/xmn-services/buckets-network/application/servers/authenticates"
 	init_chains "github.com/xmn-services/buckets-network/application/servers/chains"
+	"github.com/xmn-services/buckets-network/application/servers/identities"
 	"github.com/xmn-services/buckets-network/domain/memory/file/contents/content"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
@@ -28,6 +29,7 @@ type application struct {
 	initChainAdapter      init_chains.Adapter
 	authenticateAdapter   authenticates.Adapter
 	updateIdentityAdapter identities_app.UpdateAdapter
+	identityAdapter       identities.Adapter
 	peerAdapter           peer.Adapter
 	contentBuilder        content.Builder
 	router                *mux.Router
@@ -43,6 +45,7 @@ func createApplication(
 	initChainAdapter init_chains.Adapter,
 	authenticateAdapter authenticates.Adapter,
 	updateIdentityAdapter identities_app.UpdateAdapter,
+	identityAdapter identities.Adapter,
 	peerAdapter peer.Adapter,
 	contentBuilder content.Builder,
 	router *mux.Router,
@@ -55,6 +58,7 @@ func createApplication(
 		initChainAdapter:      initChainAdapter,
 		authenticateAdapter:   authenticateAdapter,
 		updateIdentityAdapter: updateIdentityAdapter,
+		identityAdapter:       identityAdapter,
 		peerAdapter:           peerAdapter,
 		contentBuilder:        contentBuilder,
 		router:                router,
@@ -77,6 +81,7 @@ func createApplication(
 
 	// identities:
 	identityRouter := out.router.PathPrefix("/identities").Subrouter()
+	identityRouter.HandleFunc("/", out.newIdentity).Methods(http.MethodPost, http.MethodOptions)
 	identityRouter.HandleFunc("/", out.retrieveIdentity).Methods(http.MethodGet, http.MethodOptions)
 	identityRouter.HandleFunc("/", out.updateIdentity).Methods(http.MethodPut, http.MethodOptions)
 	identityRouter.HandleFunc("/", out.deleteIdentity).Methods(http.MethodDelete, http.MethodOptions)
@@ -172,6 +177,35 @@ func (app *application) authenticateMiddleWare(next http.Handler) http.Handler {
 		// Call the next handler, which can be another middleware in the chain, or the final handler.
 		next.ServeHTTP(w, r)
 	})
+}
+
+func (app *application) newIdentity(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		renderError(w, err, []byte(internalErrorOutput))
+		return
+	}
+
+	identity, err := app.identityAdapter.URLValuesToIdentity(r.Form)
+	if err != nil {
+		renderError(w, err, []byte(internalErrorOutput))
+		return
+	}
+
+	auth := identity.Authenticate()
+	err = app.cmdApp.Current().NewIdentity(
+		auth.Name(),
+		auth.Password(),
+		auth.Seed(),
+		identity.Root(),
+	)
+
+	if err != nil {
+		renderError(w, err, []byte(internalErrorOutput))
+		return
+	}
+
+	renderSuccess(w, []byte(successPostOutput))
 }
 
 func (app *application) retrievePeers(w http.ResponseWriter, r *http.Request) {

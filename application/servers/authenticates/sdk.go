@@ -1,5 +1,7 @@
 package authenticates
 
+import "net/url"
+
 // NewAdapter creates a new adapter instance
 func NewAdapter() Adapter {
 	builder := NewBuilder()
@@ -13,7 +15,9 @@ func NewBuilder() Builder {
 
 // Adapter represents the authenticate adapter
 type Adapter interface {
+	URLValuesToAuthenticate(urlValues url.Values) (Authenticate, error)
 	Base64ToAuthenticate(encoded string) (Authenticate, error)
+	AuthenticateToURLValues(auth Authenticate) url.Values
 	AuthenticateToBase64(auth Authenticate) (string, error)
 }
 

@@ -26,6 +26,11 @@ func NewBuilder() Builder {
 	return createBuilder()
 }
 
+// Adapter represents a peers adapter
+type Adapter interface {
+	JSONToPeers(js []byte) (Peers, error)
+}
+
 // Builder represents peers builder
 type Builder interface {
 	Create() Builder

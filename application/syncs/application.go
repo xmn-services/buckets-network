@@ -5,7 +5,6 @@ import (
 	application_chain "github.com/xmn-services/buckets-network/application/commands/chains"
 	application_identity "github.com/xmn-services/buckets-network/application/commands/identities"
 	"github.com/xmn-services/buckets-network/domain/memory/chains"
-	mined_links "github.com/xmn-services/buckets-network/domain/memory/links/mined"
 	"github.com/xmn-services/buckets-network/domain/memory/peers"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 	"github.com/xmn-services/buckets-network/libs/hash"
@@ -121,7 +120,15 @@ func (app *application) Chain() error {
 		}
 
 		remoteHead := remoteChainAtIndex.Head()
-		err = app.updateChain(localChain, remoteHead)
+		gen := localChain.Genesis()
+		root := localChain.Root()
+		total := localChain.Total() + 1
+		updatedChain, err := app.chainBuilder.Create().WithGenesis(gen).WithRoot(root).WithHead(remoteHead).WithTotal(total).Now()
+		if err != nil {
+			return err
+		}
+
+		err = app.chainService.Update(localChain, updatedChain)
 		if err != nil {
 			return err
 		}
@@ -210,18 +217,6 @@ func (app *application) Storage() error {
 
 	// save the identity:
 	return app.appli.Current().UpdateIdentity(identity, app.password, app.password)
-}
-
-func (app *application) updateChain(chain chains.Chain, newMinedLink mined_links.Link) error {
-	gen := chain.Genesis()
-	root := chain.Root()
-	total := chain.Total() + 1
-	updatedChain, err := app.chainBuilder.Create().WithGenesis(gen).WithRoot(root).WithHead(newMinedLink).WithTotal(total).Now()
-	if err != nil {
-		return err
-	}
-
-	return app.chainService.Update(chain, updatedChain)
 }
 
 func (app *application) download(

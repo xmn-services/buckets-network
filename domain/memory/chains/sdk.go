@@ -63,6 +63,7 @@ func BlockDifficulty(baseDifficulty uint, increasePerBucket float64, amountBucke
 
 // Adapter returns the chain adapter
 type Adapter interface {
+	JSONToChain(js []byte) (Chain, error)
 	ToTransfer(chain Chain) (transfer_chains.Chain, error)
 }
 

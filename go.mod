@@ -5,6 +5,7 @@ go 1.13
 require (
 	dmitri.shuralyov.com/go/generated v0.0.0-20170818220700-b1254a446363 // indirect
 	github.com/alexkohler/nakedret v1.0.0 // indirect
+	github.com/go-resty/resty/v2 v2.3.0
 	github.com/gordonklaus/ineffassign v0.0.0-20201107091007-3b93a8888063 // indirect
 	github.com/gorilla/mux v1.8.0
 	github.com/kisielk/errcheck v1.4.0 // indirect

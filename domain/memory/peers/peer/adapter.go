@@ -25,10 +25,10 @@ func (app *adapter) URLValuesToPeer(values url.Values) (Peer, error) {
 }
 
 // PeerToURLValues converts a Peer instance to url values
-func (app *adapter) PeerToURLValues(peer Peer) (url.Values, error) {
+func (app *adapter) PeerToURLValues(peer Peer) url.Values {
 	values := url.Values{}
 	values.Add("peer", peer.String())
-	return values, nil
+	return values
 }
 
 // StringToPeer converts a string to a peer instance

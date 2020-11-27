@@ -44,13 +44,13 @@ func (app *application) Start() error {
 			// log
 		}
 
-		// download new head link if needed
+		// mine blocks and links, then download new head link if needed
 		err = app.syncApp.Chain()
 		if err != nil {
 			// log
 		}
 
-		// download needed buckets:
+		// download needed files:
 		err = app.syncApp.Storage()
 		if err != nil {
 			// log

@@ -3,6 +3,7 @@ package authenticates
 import (
 	b64 "encoding/base64"
 	"encoding/json"
+	"net/url"
 )
 
 type adapter struct {
@@ -19,6 +20,27 @@ func createAdapter(
 	return &out
 }
 
+// URLValuesToAuthenticate converts an url values to Authenticate instance
+func (app *adapter) URLValuesToAuthenticate(urlValues url.Values) (Authenticate, error) {
+	builder := app.builder.Create()
+	name := urlValues.Get("name")
+	if name != "" {
+		builder.WithName(name)
+	}
+
+	password := urlValues.Get("password")
+	if password != "" {
+		builder.WithPassword(password)
+	}
+
+	seed := urlValues.Get("seed")
+	if seed != "" {
+		builder.WithSeed(seed)
+	}
+
+	return builder.Now()
+}
+
 // Base64ToAuthenticate converts a base64 encoded string to an Authenticate instance
 func (app *adapter) Base64ToAuthenticate(encoded string) (Authenticate, error) {
 	decoded, err := b64.StdEncoding.DecodeString(encoded)
@@ -26,37 +48,28 @@ func (app *adapter) Base64ToAuthenticate(encoded string) (Authenticate, error) {
 		return nil, err
 	}
 
-	mp := map[string]string{}
-	err = json.Unmarshal(decoded, &mp)
+	urlValues := new(url.Values)
+	err = json.Unmarshal(decoded, urlValues)
 	if err != nil {
 		return nil, err
 	}
 
-	builder := app.builder.Create()
-	if name, ok := mp["name"]; ok {
-		builder.WithName(name)
-	}
+	return app.URLValuesToAuthenticate(*urlValues)
+}
 
-	if password, ok := mp["password"]; ok {
-		builder.WithPassword(password)
-	}
-
-	if seed, ok := mp["seed"]; ok {
-		builder.WithSeed(seed)
-	}
-
-	return builder.Now()
+// AuthenticateToURLValues converts an authenticate to urlValues instance
+func (app *adapter) AuthenticateToURLValues(auth Authenticate) url.Values {
+	urlValues := url.Values{}
+	urlValues.Add("name", auth.Name())
+	urlValues.Add("password", auth.Password())
+	urlValues.Add("seed", auth.Seed())
+	return urlValues
 }
 
 // AuthenticateToBase64 converts an Authenticate instance to base64 encoded string
 func (app *adapter) AuthenticateToBase64(auth Authenticate) (string, error) {
-	mp := map[string]string{
-		"name":     auth.Name(),
-		"password": auth.Password(),
-		"seed":     auth.Seed(),
-	}
-
-	js, err := json.Marshal(mp)
+	values := app.AuthenticateToURLValues(auth)
+	js, err := json.Marshal(values)
 	if err != nil {
 		return "", nil
 	}
