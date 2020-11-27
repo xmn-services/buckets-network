@@ -48,6 +48,8 @@ type Adapter interface {
 	ToTransfer(bucket Bucket) (transfer_bucket.Bucket, error)
 	ToJSON(bucket Bucket) *JSONBucket
 	ToBucket(ins *JSONBucket) (Bucket, error)
+	JSONToBucket(js []byte) (Bucket, error)
+	JSONToBuckets(js []byte) ([]Bucket, error)
 }
 
 // Builder represents the bucket builder

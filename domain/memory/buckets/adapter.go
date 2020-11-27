@@ -1,6 +1,8 @@
 package buckets
 
 import (
+	"encoding/json"
+
 	transfer_bucket "github.com/xmn-services/buckets-network/domain/transfers/buckets"
 	"github.com/xmn-services/buckets-network/libs/hashtree"
 )
@@ -50,4 +52,36 @@ func (app *adapter) ToJSON(bucket Bucket) *JSONBucket {
 // ToBucket converts JSON to bucket
 func (app *adapter) ToBucket(ins *JSONBucket) (Bucket, error) {
 	return createBucketFromJSON(ins)
+}
+
+// JSONToBucket converts json to Bucket instance
+func (app *adapter) JSONToBucket(js []byte) (Bucket, error) {
+	ins := new(JSONBucket)
+	err := json.Unmarshal(js, ins)
+	if err != nil {
+		return nil, err
+	}
+
+	return app.ToBucket(ins)
+}
+
+// JSONToBuckets coverts JSON to buckets instance
+func (app *adapter) JSONToBuckets(js []byte) ([]Bucket, error) {
+	ins := new([]JSONBucket)
+	err := json.Unmarshal(js, ins)
+	if err != nil {
+		return nil, err
+	}
+
+	out := []Bucket{}
+	for _, oneIns := range *ins {
+		bucket, err := app.ToBucket(&oneIns)
+		if err != nil {
+			return nil, err
+		}
+
+		out = append(out, bucket)
+	}
+
+	return out, nil
 }

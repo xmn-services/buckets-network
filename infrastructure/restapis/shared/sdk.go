@@ -2,6 +2,12 @@ package shared
 
 import "net/url"
 
+// PathKeyname represents the path keyname in the posted data
+const PathKeyname = "path"
+
+// TokenHeadKeyname represents the token keyname in the headers
+const TokenHeadKeyname = "X-Session-Token"
+
 // URLValuesToAuthenticate converts a url values to Authenticate instance
 func URLValuesToAuthenticate(urlValues url.Values) (*Authenticate, error) {
 	return nil, nil

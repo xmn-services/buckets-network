@@ -21,10 +21,6 @@ const missingHashErrorOutput = "the hash was expected in the vars"
 
 const missingIndexErrorOutput = "the index was expected in the vars"
 
-const tokenHeadKeyname = "X-Session-Token"
-
-const pathKeyname = "path"
-
 // NewApplication creates a new restful server application
 func NewApplication(
 	cmdApp commands.Application,

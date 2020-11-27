@@ -142,7 +142,7 @@ func (app *application) Stop() error {
 
 func (app *application) authenticateMiddleWare(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get(tokenHeadKeyname)
+		token := r.Header.Get(shared.TokenHeadKeyname)
 		auth, err := shared.Base64ToAuthenticate(token)
 		if err != nil {
 			renderError(w, err, []byte(internalErrorOutput))
@@ -280,7 +280,7 @@ func (app *application) retrieveChainAtIndex(w http.ResponseWriter, r *http.Requ
 }
 
 func (app *application) identityMinerTest(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
@@ -312,7 +312,7 @@ func (app *application) identityMinerTest(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) identityMinerBlock(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
@@ -338,7 +338,7 @@ func (app *application) identityMinerBlock(w http.ResponseWriter, r *http.Reques
 }
 
 func (app *application) identityMinerLink(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
@@ -364,7 +364,7 @@ func (app *application) identityMinerLink(w http.ResponseWriter, r *http.Request
 }
 
 func (app *application) initIdentityChain(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
@@ -412,7 +412,7 @@ func (app *application) identityChainMineBlocks(w http.ResponseWriter, r *http.R
 			return
 		}
 
-		token := r.Header.Get(tokenHeadKeyname)
+		token := r.Header.Get(shared.TokenHeadKeyname)
 		defer app.deleteAuthApp(token)
 
 		if appIdentity, ok := app.authApps[token]; ok {
@@ -451,7 +451,7 @@ func (app *application) identityChainMineLinks(w http.ResponseWriter, r *http.Re
 			return
 		}
 
-		token := r.Header.Get(tokenHeadKeyname)
+		token := r.Header.Get(shared.TokenHeadKeyname)
 		defer app.deleteAuthApp(token)
 
 		if appIdentity, ok := app.authApps[token]; ok {
@@ -505,7 +505,7 @@ func (app *application) retrieveStoredFileByHash(w http.ResponseWriter, r *http.
 }
 
 func (app *application) retrieveIdentity(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
@@ -531,7 +531,7 @@ func (app *application) retrieveIdentity(w http.ResponseWriter, r *http.Request)
 }
 
 func (app *application) updateIdentity(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
@@ -586,7 +586,7 @@ func (app *application) updateIdentity(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteIdentity(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
@@ -606,7 +606,7 @@ func (app *application) deleteIdentity(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) retrieveIdentityBuckets(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
@@ -632,11 +632,11 @@ func (app *application) retrieveIdentityBuckets(w http.ResponseWriter, r *http.R
 }
 
 func (app *application) saveIdentityBucketPath(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
-		path := r.Form.Get(pathKeyname)
+		path := r.Form.Get(shared.PathKeyname)
 		err := appIdentity.Sub().Bucket().Add(path)
 		if err != nil {
 			renderError(w, err, []byte(internalErrorOutput))
@@ -653,7 +653,7 @@ func (app *application) saveIdentityBucketPath(w http.ResponseWriter, r *http.Re
 }
 
 func (app *application) retrieveIdentityBucketByHash(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
@@ -685,7 +685,7 @@ func (app *application) retrieveIdentityBucketByHash(w http.ResponseWriter, r *h
 }
 
 func (app *application) deleteIdentityBucketByHash(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
@@ -711,7 +711,7 @@ func (app *application) deleteIdentityBucketByHash(w http.ResponseWriter, r *htt
 }
 
 func (app *application) saveStoredFile(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
@@ -780,7 +780,7 @@ func (app *application) saveStoredFile(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteStoredFileByHash(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(tokenHeadKeyname)
+	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {

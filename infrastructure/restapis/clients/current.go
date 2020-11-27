@@ -66,7 +66,7 @@ func (app *current) Authenticate(name string, seed string, password string) (com
 	})
 
 	resp, err := app.client.R().
-		SetHeader("X-Session-Token", token).
+		SetHeader(shared.TokenHeadKeyname, token).
 		SetResult(&shared.Authenticate{}).
 		Get(app.url)
 
@@ -101,7 +101,7 @@ func (app *current) UpdateIdentity(identity identities.Identity, password string
 	}
 
 	resp, err := app.client.R().
-		SetHeader("X-Session-Token", token).
+		SetHeader(shared.TokenHeadKeyname, token).
 		SetBody(&update).
 		Put(app.url)
 
