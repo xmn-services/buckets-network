@@ -27,6 +27,7 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/links"
 	mined_link "github.com/xmn-services/buckets-network/domain/memory/links/mined"
 	"github.com/xmn-services/buckets-network/domain/memory/peers"
+	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 	transfer_block "github.com/xmn-services/buckets-network/domain/transfers/blocks"
 	transfer_block_mined "github.com/xmn-services/buckets-network/domain/transfers/blocks/mined"
 	transfer_bucket "github.com/xmn-services/buckets-network/domain/transfers/buckets"
@@ -39,6 +40,16 @@ import (
 	transfer_mined_link "github.com/xmn-services/buckets-network/domain/transfers/links/mined"
 	restapis_server "github.com/xmn-services/buckets-network/infrastructure/restapis/servers"
 	libs_file "github.com/xmn-services/buckets-network/libs/file"
+
+	"github.com/xmn-services/buckets-network/infrastructure/restapis/clients"
+	client_chains "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/chains"
+	client_identities "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/identities"
+	client_identities_buckets "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/identities/buckets"
+	client_identities_chains "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/identities/chains"
+	client_identities_miners "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/identities/miners"
+	client_identities_storages "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/identities/storages"
+	client_peers "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/peers"
+	client_storages "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/storages"
 )
 
 const chunksDirName = "chunks"
@@ -52,6 +63,36 @@ const minedLinksDirName = "mined_links"
 const chainsDirName = "chains"
 const peersDirName = "peers"
 const filesDirName = "files"
+
+// NewRestAPIClient creates a new rest api client
+func NewRestAPIClient(peer peer.Peer) commands.Application {
+	commandIdentityBuilder := NewRESTAPIClientIdentityBuilder(peer)
+	peerApp := client_peers.NewApplication(peer)
+	chainApp := client_chains.NewApplication(peer)
+	storageApp := client_storages.NewApplication(peer)
+	return clients.NewApplication(
+		commandIdentityBuilder,
+		peerApp,
+		chainApp,
+		storageApp,
+		peer,
+	)
+}
+
+// NewRESTAPIClientIdentityBuilder creates a new rest api client identity builder
+func NewRESTAPIClientIdentityBuilder(peer peer.Peer) application_identity.Builder {
+	bucketBuilder := client_identities_buckets.NewBuilder(peer)
+	chainBuilder := client_identities_chains.NewBuilder(peer)
+	minerBuilder := client_identities_miners.NewBuilder(peer)
+	storageBuilder := client_identities_storages.NewBuilder(peer)
+	return client_identities.NewBuilder(
+		bucketBuilder,
+		storageBuilder,
+		chainBuilder,
+		minerBuilder,
+		peer,
+	)
+}
 
 // NewRestAPIServer creates a new rest api server
 func NewRestAPIServer(

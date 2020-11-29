@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
 
 func TestInit_Success(t *testing.T) {
@@ -125,7 +127,19 @@ func TestPeer_isClear_Success(t *testing.T) {
 }
 
 func TestRestAPI_Success(t *testing.T) {
-	port := uint(80)
+	basePath := "./test_files"
+	defer func() {
+		os.RemoveAll(basePath)
+	}()
+
+	// identity:
+	name := "roger"
+	password := "this-is-roger-pass"
+	seed := "this is the seed of roger"
+	rootDir := filepath.Join(basePath, "roger")
+
+	// rest server:
+	port := uint(7854)
 	waitPeriod := time.Duration(15 * time.Second)
 	maxUploadFileSize := int64(1024 * 1024 * 10)
 	cmdApp := CreateCommandApplicationForTests()
@@ -135,6 +149,21 @@ func TestRestAPI_Success(t *testing.T) {
 		serverApp.Stop()
 	}()
 
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	// local peer:
+	localPeer, err := peer.NewBuilder().WithHost("127.0.0.1").WithPort(port).IsClear().Now()
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	// create a new identity:
+	client := NewRestAPIClient(localPeer)
+	err = client.Current().NewIdentity(name, password, seed, rootDir)
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
