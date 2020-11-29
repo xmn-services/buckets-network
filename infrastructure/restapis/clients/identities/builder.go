@@ -3,20 +3,46 @@ package identities
 import (
 	"errors"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/xmn-services/buckets-network/application/commands/identities"
+	"github.com/xmn-services/buckets-network/application/commands/identities/buckets"
+	"github.com/xmn-services/buckets-network/application/commands/identities/chains"
+	"github.com/xmn-services/buckets-network/application/commands/identities/miners"
+	"github.com/xmn-services/buckets-network/application/commands/identities/storages"
+	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
+	"github.com/xmn-services/buckets-network/infrastructure/restapis/shared"
 )
 
 type builder struct {
-	name     string
-	password string
-	seed     string
+	bucketBuilder  buckets.Builder
+	storageBuilder storages.Builder
+	chainBuilder   chains.Builder
+	minerBuilder   miners.Builder
+	client         *resty.Client
+	peer           peer.Peer
+	name           string
+	password       string
+	seed           string
 }
 
-func createBuilder() identities.Builder {
+func createBuilder(
+	bucketBuilder buckets.Builder,
+	storageBuilder storages.Builder,
+	chainBuilder chains.Builder,
+	minerBuilder miners.Builder,
+	client *resty.Client,
+	peer peer.Peer,
+) identities.Builder {
 	out := builder{
-		name:     "",
-		password: "",
-		seed:     "",
+		bucketBuilder:  bucketBuilder,
+		storageBuilder: storageBuilder,
+		chainBuilder:   chainBuilder,
+		minerBuilder:   minerBuilder,
+		client:         client,
+		peer:           peer,
+		name:           "",
+		password:       "",
+		seed:           "",
 	}
 
 	return &out
@@ -24,7 +50,14 @@ func createBuilder() identities.Builder {
 
 // Create initializes the builder
 func (app *builder) Create() identities.Builder {
-	return createBuilder()
+	return createBuilder(
+		app.bucketBuilder,
+		app.storageBuilder,
+		app.chainBuilder,
+		app.minerBuilder,
+		app.client,
+		app.peer,
+	)
 }
 
 // WithName adds a name to the builder
@@ -59,5 +92,33 @@ func (app *builder) Now() (identities.Application, error) {
 		return nil, errors.New("the seed is mandatory in order to build an Application instance")
 	}
 
-	return nil, nil
+	bucket, err := app.bucketBuilder.Create().WithName(app.name).WithPassword(app.password).WithSeed(app.seed).Now()
+	if err != nil {
+		return nil, err
+	}
+
+	storage, err := app.storageBuilder.Create().WithName(app.name).WithPassword(app.password).WithSeed(app.seed).Now()
+	if err != nil {
+		return nil, err
+	}
+
+	chain, err := app.chainBuilder.Create().WithName(app.name).WithPassword(app.password).WithSeed(app.seed).Now()
+	if err != nil {
+		return nil, err
+	}
+
+	miner, err := app.minerBuilder.Create().WithName(app.name).WithPassword(app.password).WithSeed(app.seed).Now()
+	if err != nil {
+		return nil, err
+	}
+
+	token := shared.AuthenticateToBase64(&shared.Authenticate{
+		Name:     app.name,
+		Password: app.password,
+		Seed:     app.seed,
+	})
+
+	subApplications := createSubApplications(bucket, storage, chain, miner)
+	current := createCurrent(app.client, token, app.peer)
+	return createApplication(current, subApplications), nil
 }

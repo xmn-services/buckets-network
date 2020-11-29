@@ -21,6 +21,11 @@ func NewRepository(
 	return createRepository(fileRepository, fileNameWithExt)
 }
 
+// NewAdapter creates a new adapter instance
+func NewAdapter() Adapter {
+	return createAdapter()
+}
+
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
 	return createBuilder()

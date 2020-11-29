@@ -27,7 +27,7 @@ func createApplication(
 	out := application{
 		client: client,
 		token:  token,
-		url:    fmt.Sprintf(baseFormat, peer.String(), "/miners"),
+		url:    fmt.Sprintf(baseFormat, peer.String(), "/identities/miners"),
 	}
 	return &out
 }

@@ -3,17 +3,27 @@ package storages
 import (
 	"errors"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/xmn-services/buckets-network/application/commands/identities/storages"
+	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
+	"github.com/xmn-services/buckets-network/infrastructure/restapis/shared"
 )
 
 type builder struct {
+	client   *resty.Client
+	peer     peer.Peer
 	name     string
 	password string
 	seed     string
 }
 
-func createBuilder() storages.Builder {
+func createBuilder(
+	client *resty.Client,
+	peer peer.Peer,
+) storages.Builder {
 	out := builder{
+		client:   client,
+		peer:     peer,
 		name:     "",
 		password: "",
 		seed:     "",
@@ -24,7 +34,10 @@ func createBuilder() storages.Builder {
 
 // Create initializes the builder
 func (app *builder) Create() storages.Builder {
-	return createBuilder()
+	return createBuilder(
+		app.client,
+		app.peer,
+	)
 }
 
 // WithName adds a name to the builder
@@ -59,5 +72,11 @@ func (app *builder) Now() (storages.Application, error) {
 		return nil, errors.New("the seed is mandatory in order to build an Application instance")
 	}
 
-	return nil, nil
+	token := shared.AuthenticateToBase64(&shared.Authenticate{
+		Name:     app.name,
+		Password: app.password,
+		Seed:     app.seed,
+	})
+
+	return createApplication(app.client, token, app.peer), nil
 }

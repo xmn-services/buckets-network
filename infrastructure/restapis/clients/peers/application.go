@@ -2,6 +2,7 @@ package peers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/go-resty/resty/v2"
@@ -9,6 +10,8 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/peers"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
+
+const baseFormat = "%s%s"
 
 type application struct {
 	peersAdapter peers.Adapter
@@ -23,14 +26,14 @@ func createApplication(
 	peerAdapter peer.Adapter,
 	peerBuilder peer.Builder,
 	client *resty.Client,
-	url string,
+	peer peer.Peer,
 ) commands_peers.Application {
 	out := application{
 		peersAdapter: peersAdapter,
 		peerAdapter:  peerAdapter,
 		peerBuilder:  peerBuilder,
 		client:       client,
-		url:          url,
+		url:          fmt.Sprintf(baseFormat, peer.String(), "/peers"),
 	}
 
 	return &out

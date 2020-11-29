@@ -31,6 +31,15 @@ func NewApplication(
 	)
 }
 
+// Builder represents a miner application builder
+type Builder interface {
+	Create() Builder
+	WithName(name string) Builder
+	WithPassword(password string) Builder
+	WithSeed(seed string) Builder
+	Now() (Application, error)
+}
+
 // Application represents a miner application
 type Application interface {
 	Test(difficulty uint) (string, error)
