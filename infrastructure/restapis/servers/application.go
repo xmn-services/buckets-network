@@ -17,7 +17,6 @@ import (
 	"github.com/xmn-services/buckets-network/application/commands"
 	identities_app "github.com/xmn-services/buckets-network/application/commands/identities"
 	"github.com/xmn-services/buckets-network/application/servers"
-	"github.com/xmn-services/buckets-network/domain/memory/file/contents/content"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 	"github.com/xmn-services/buckets-network/infrastructure/restapis/shared"
 )
@@ -26,7 +25,6 @@ type application struct {
 	cmdApp                commands.Application
 	updateIdentityBuilder identities_app.UpdateBuilder
 	peerAdapter           peer.Adapter
-	contentBuilder        content.Builder
 	router                *mux.Router
 	server                *http.Server
 	authApps              map[string]identities_app.Application
@@ -39,7 +37,6 @@ func createApplication(
 	cmdApp commands.Application,
 	updateIdentityBuilder identities_app.UpdateBuilder,
 	peerAdapter peer.Adapter,
-	contentBuilder content.Builder,
 	router *mux.Router,
 	maxUploadFileSize int64,
 	waitPeriod time.Duration,
@@ -49,7 +46,6 @@ func createApplication(
 		cmdApp:                cmdApp,
 		updateIdentityBuilder: updateIdentityBuilder,
 		peerAdapter:           peerAdapter,
-		contentBuilder:        contentBuilder,
 		router:                router,
 		server:                nil,
 		authApps:              map[string]identities_app.Application{},
@@ -63,7 +59,7 @@ func createApplication(
 	out.router.HandleFunc("/chains/{index:[0-9]+}", out.retrieveChainAtIndex).Methods(http.MethodGet, http.MethodOptions)
 	out.router.HandleFunc("/peers", out.retrievePeers).Methods(http.MethodGet, http.MethodOptions)
 	out.router.HandleFunc("/peers", out.savePeer).Methods(http.MethodPost, http.MethodOptions)
-	out.router.HandleFunc("/storages/{hash:[0-9a-f]+}", out.retrieveStoredFileByHash).Methods(http.MethodGet, http.MethodOptions)
+	out.router.HandleFunc("/storages/{bucket_hash:[0-9a-f]+}/{chunk_hash:[0-9a-f]+}", out.retrieveChunk).Methods(http.MethodGet, http.MethodOptions)
 	out.router.HandleFunc("/identities", out.newIdentity).Methods(http.MethodPost, http.MethodOptions)
 
 	// middleware:
@@ -88,8 +84,9 @@ func createApplication(
 	identityRouter.HandleFunc("/buckets/{hash:[0-9a-f]+}", out.retrieveIdentityBucketByHash).Methods(http.MethodGet, http.MethodOptions)
 	identityRouter.HandleFunc("/buckets/{hash:[0-9a-f]+}", out.deleteIdentityBucketByHash).Methods(http.MethodDelete, http.MethodOptions)
 
-	identityRouter.HandleFunc("/storages/{hash:[0-9a-f]+}", out.saveStoredFile).Methods(http.MethodPost, http.MethodOptions)
-	identityRouter.HandleFunc("/storages/{hash:[0-9a-f]+}", out.deleteStoredFileByHash).Methods(http.MethodDelete, http.MethodOptions)
+	identityRouter.HandleFunc("/storages/{bucket_hash:[0-9a-f]+}", out.saveChunk).Methods(http.MethodPost, http.MethodOptions)
+	identityRouter.HandleFunc("/storages/{bucket_hash:[0-9a-f]+}/{chunk_hash:[0-9a-f]+}", out.deleteChunk).Methods(http.MethodDelete, http.MethodOptions)
+	identityRouter.HandleFunc("/storages/{bucket_hash:[0-9a-f]+}", out.deleteBucketChunks).Methods(http.MethodDelete, http.MethodOptions)
 
 	// identity middleware:
 	identityRouter.Use(out.authenticateMiddleWare)
@@ -471,26 +468,25 @@ func (app *application) identityChainMineLinks(w http.ResponseWriter, r *http.Re
 	renderError(w, err, []byte(internalErrorOutput))
 }
 
-func (app *application) retrieveStoredFileByHash(w http.ResponseWriter, r *http.Request) {
+func (app *application) retrieveChunk(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	if hashStr, ok := vars["hash"]; ok {
-		storedFile, err := app.cmdApp.Sub().Storage().Retrieve(hashStr)
-		if err != nil {
-			renderError(w, err, []byte(internalErrorOutput))
+	if bucketHash, ok := vars["bucket_hash"]; ok {
+		if chunkHash, ok := vars["chunk_hash"]; ok {
+			data, err := app.cmdApp.Sub().Storage().Retrieve(bucketHash, chunkHash)
+			if err != nil {
+				renderError(w, err, []byte(internalErrorOutput))
+				return
+			}
+
+			renderSuccess(w, data)
 			return
 		}
 
-		js, err := json.Marshal(storedFile)
-		if err != nil {
-			renderError(w, err, []byte(internalErrorOutput))
-			return
-		}
-
-		renderSuccess(w, js)
-		return
+		err := errors.New(missingChunkHashErrorOutput)
+		renderError(w, err, []byte(internalErrorOutput))
 	}
 
-	err := errors.New(missingHashErrorOutput)
+	err := errors.New(missingBucketHashErrorOutput)
 	renderError(w, err, []byte(internalErrorOutput))
 
 }
@@ -709,13 +705,13 @@ func (app *application) deleteIdentityBucketByHash(w http.ResponseWriter, r *htt
 	renderError(w, err, []byte(str))
 }
 
-func (app *application) saveStoredFile(w http.ResponseWriter, r *http.Request) {
+func (app *application) saveChunk(w http.ResponseWriter, r *http.Request) {
 	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
 		vars := mux.Vars(r)
-		if fileHashStr, ok := vars["hash"]; ok {
+		if bucketHashStr, ok := vars["bucket_hash"]; ok {
 			err := r.ParseMultipartForm(app.maxUploadFileSize)
 			if err != nil {
 				renderError(w, err, []byte(internalErrorOutput))
@@ -735,29 +731,8 @@ func (app *application) saveStoredFile(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			// retrieve the file:
-			file, err := app.cmdApp.Sub().Storage().Retrieve(fileHashStr)
-			if err != nil {
-				renderError(w, err, []byte(internalErrorOutput))
-				return
-			}
-
-			// build the content:
-			content, err := app.contentBuilder.Create().WithContent(fileBytes).Now()
-			if err != nil {
-				renderError(w, err, []byte(internalErrorOutput))
-				return
-			}
-
-			// add the content to the file:
-			err = file.Contents().Add(content)
-			if err != nil {
-				renderError(w, err, []byte(internalErrorOutput))
-				return
-			}
-
 			// save the file:
-			err = appIdentity.Sub().Storage().Save(file)
+			err = appIdentity.Sub().Storage().Save(bucketHashStr, fileBytes)
 			if err != nil {
 				renderError(w, err, []byte(internalErrorOutput))
 				return
@@ -768,7 +743,7 @@ func (app *application) saveStoredFile(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		err := errors.New(missingHashErrorOutput)
+		err := errors.New(missingBucketHashErrorOutput)
 		renderError(w, err, []byte(internalErrorOutput))
 		return
 	}
@@ -778,14 +753,47 @@ func (app *application) saveStoredFile(w http.ResponseWriter, r *http.Request) {
 	renderError(w, err, []byte(str))
 }
 
-func (app *application) deleteStoredFileByHash(w http.ResponseWriter, r *http.Request) {
+func (app *application) deleteChunk(w http.ResponseWriter, r *http.Request) {
 	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
 		vars := mux.Vars(r)
-		if hashStr, ok := vars["hash"]; ok {
-			err := appIdentity.Sub().Storage().Delete(hashStr)
+		if bucketHashStr, ok := vars["bucket_hash"]; ok {
+			if chunkHashStr, ok := vars["chunk_hash"]; ok {
+				err := appIdentity.Sub().Storage().Delete(bucketHashStr, chunkHashStr)
+				if err != nil {
+					renderError(w, err, []byte(internalErrorOutput))
+					return
+				}
+
+				renderSuccess(w, []byte(successPostOutput))
+				return
+			}
+
+			err := errors.New(missingChunkHashErrorOutput)
+			renderError(w, err, []byte(internalErrorOutput))
+			return
+		}
+
+		err := errors.New(missingBucketHashErrorOutput)
+		renderError(w, err, []byte(internalErrorOutput))
+		return
+	}
+
+	str := fmt.Sprintf(authErrorOutput, token)
+	err := errors.New(str)
+	renderError(w, err, []byte(str))
+}
+
+func (app *application) deleteBucketChunks(w http.ResponseWriter, r *http.Request) {
+	token := r.Header.Get(shared.TokenHeadKeyname)
+	defer app.deleteAuthApp(token)
+
+	if appIdentity, ok := app.authApps[token]; ok {
+		vars := mux.Vars(r)
+		if bucketHashStr, ok := vars["bucket_hash"]; ok {
+			err := appIdentity.Sub().Storage().DeleteAll(bucketHashStr)
 			if err != nil {
 				renderError(w, err, []byte(internalErrorOutput))
 				return
@@ -795,7 +803,7 @@ func (app *application) deleteStoredFileByHash(w http.ResponseWriter, r *http.Re
 			return
 		}
 
-		err := errors.New(missingHashErrorOutput)
+		err := errors.New(missingBucketHashErrorOutput)
 		renderError(w, err, []byte(internalErrorOutput))
 		return
 	}

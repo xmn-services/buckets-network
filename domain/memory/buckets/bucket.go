@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
+	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -76,6 +77,29 @@ func (obj *bucket) FileByPath(path string) (files.File, error) {
 
 	str := fmt.Sprintf("the file path (%s) is invalid", path)
 	return nil, errors.New(str)
+}
+
+// FileChunkByHash returns the file and chunk by chunk hash
+func (obj *bucket) FileChunkByHash(hash hash.Hash) (files.File, chunks.Chunk, error) {
+	var file files.File
+	var chunk chunks.Chunk
+	for _, oneFile := range obj.mp {
+		chk, err := oneFile.ChunkByHash(hash)
+		if err != nil {
+			continue
+		}
+
+		file = oneFile
+		chunk = chk
+		break
+	}
+
+	if chunk != nil {
+		return file, chunk, nil
+	}
+
+	str := fmt.Sprintf("the chunk (hash: %s) does not exists in any file", hash.String())
+	return nil, nil, errors.New(str)
 }
 
 // CreatedOn returns the creation time

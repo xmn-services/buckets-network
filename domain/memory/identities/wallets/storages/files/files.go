@@ -5,52 +5,53 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/storages/files/contents"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type files struct {
-	lst []hash.Hash
-	mp  map[string]hash.Hash
+	contents []contents.Content
+	mp       map[string]contents.Content
 }
 
 func createFilesFromJSON(ins *JSONFiles) (Files, error) {
-	files := []hash.Hash{}
-	hashAdapter := hash.NewAdapter()
-	for _, oneHashStr := range ins.Files {
-		hsh, err := hashAdapter.FromString(oneHashStr)
+	lst := []contents.Content{}
+	contentAdapter := contents.NewAdapter()
+	for _, oneContent := range ins.Contents {
+		content, err := contentAdapter.ToContent(oneContent)
 		if err != nil {
 			return nil, err
 		}
 
-		files = append(files, *hsh)
+		lst = append(lst, content)
 	}
 
 	return NewBuilder().
 		Create().
-		WithFiles(files).
+		WithContents(lst).
 		Now()
 }
 
 func createFiles(
-	lst []hash.Hash,
-	mp map[string]hash.Hash,
+	contents []contents.Content,
+	mp map[string]contents.Content,
 ) Files {
 	out := files{
-		lst: lst,
-		mp:  mp,
+		contents: contents,
+		mp:       mp,
 	}
 
 	return &out
 }
 
-// All return all file hashes
-func (obj *files) All() []hash.Hash {
-	return obj.lst
+// All return all contents
+func (obj *files) All() []contents.Content {
+	return obj.contents
 }
 
-// Exists returns true if the file hash already exists, false otherwise
-func (obj *files) Exists(hash hash.Hash) bool {
-	keyname := hash.String()
+// Exists returns true if the chunk hash already exists, false otherwise
+func (obj *files) Exists(chunkHash hash.Hash) bool {
+	keyname := chunkHash.String()
 	if _, ok := obj.mp[keyname]; ok {
 		return true
 	}
@@ -58,30 +59,31 @@ func (obj *files) Exists(hash hash.Hash) bool {
 	return false
 }
 
-// Add adds a file hash to the list
-func (obj *files) Add(hash hash.Hash) error {
-	keyname := hash.String()
-	if obj.Exists(hash) {
-		str := fmt.Sprintf("the file (hash: %s) already exists and therefore cannot be added", keyname)
+// Add adds a content to the list
+func (obj *files) Add(content contents.Content) error {
+	chunkHash := content.Chunk()
+	keyname := chunkHash.String()
+	if obj.Exists(chunkHash) {
+		str := fmt.Sprintf("the chunk (hash: %s) already exists and therefore cannot be added", keyname)
 		return errors.New(str)
 	}
 
-	obj.lst = append(obj.lst, hash)
-	obj.mp[keyname] = hash
+	obj.contents = append(obj.contents, content)
+	obj.mp[keyname] = content
 	return nil
 }
 
-// Delete deletes a file hash to the list
-func (obj *files) Delete(hash hash.Hash) error {
-	keyname := hash.String()
-	if !obj.Exists(hash) {
+// Delete deletes a chunk hash to the list
+func (obj *files) Delete(chunkHash hash.Hash) error {
+	keyname := chunkHash.String()
+	if !obj.Exists(chunkHash) {
 		str := fmt.Sprintf("the file (hash: %s) do not exists and therefore cannot be deleted", keyname)
 		return errors.New(str)
 	}
 
-	for index, oneHash := range obj.lst {
-		if oneHash.Compare(hash) {
-			obj.lst = append(obj.lst[:index], obj.lst[index+1:]...)
+	for index, oneContent := range obj.contents {
+		if oneContent.Chunk().Compare(chunkHash) {
+			obj.contents = append(obj.contents[:index], obj.contents[index+1:]...)
 			break
 		}
 	}
@@ -110,7 +112,7 @@ func (obj *files) UnmarshalJSON(data []byte) error {
 	}
 
 	insFiles := pr.(*files)
-	obj.lst = insFiles.lst
+	obj.contents = insFiles.contents
 	obj.mp = insFiles.mp
 	return nil
 }

@@ -1,6 +1,7 @@
 package files
 
 import (
+	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/storages/files/contents"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
@@ -34,14 +35,14 @@ type Factory interface {
 // Builder represents the files builder
 type Builder interface {
 	Create() Builder
-	WithFiles(hashes []hash.Hash) Builder
+	WithContents(contents []contents.Content) Builder
 	Now() (Files, error)
 }
 
 // Files represents files
 type Files interface {
-	All() []hash.Hash
-	Exists(hash hash.Hash) bool
-	Add(hash hash.Hash) error
-	Delete(hash hash.Hash) error
+	All() []contents.Content
+	Exists(chunkHash hash.Hash) bool
+	Add(content contents.Content) error
+	Delete(chunkHash hash.Hash) error
 }

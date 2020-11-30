@@ -1,14 +1,16 @@
 package files
 
-import "github.com/xmn-services/buckets-network/libs/hash"
+import (
+	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/storages/files/contents"
+)
 
 type builder struct {
-	lst []hash.Hash
+	contents []contents.Content
 }
 
 func createBuilder() Builder {
 	out := builder{
-		lst: nil,
+		contents: nil,
 	}
 
 	return &out
@@ -19,23 +21,23 @@ func (app *builder) Create() Builder {
 	return createBuilder()
 }
 
-// WithFiles add files to the builder
-func (app *builder) WithFiles(hashes []hash.Hash) Builder {
-	app.lst = hashes
+// WithContents add contents to the builder
+func (app *builder) WithContents(contents []contents.Content) Builder {
+	app.contents = contents
 	return app
 }
 
 // Now builds a new Files instance
 func (app *builder) Now() (Files, error) {
-	if app.lst == nil {
-		app.lst = []hash.Hash{}
+	if app.contents == nil {
+		app.contents = []contents.Content{}
 	}
 
-	mp := map[string]hash.Hash{}
-	for _, oneHash := range app.lst {
-		keyname := oneHash.String()
-		mp[keyname] = oneHash
+	mp := map[string]contents.Content{}
+	for _, oneContent := range app.contents {
+		keyname := oneContent.Chunk().String()
+		mp[keyname] = oneContent
 	}
 
-	return createFiles(app.lst, mp), nil
+	return createFiles(app.contents, mp), nil
 }

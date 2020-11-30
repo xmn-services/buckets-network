@@ -278,8 +278,8 @@ func TestRestAPI_Success(t *testing.T) {
 	}
 
 	// delete 1 bucket:
-	deletedBucket := retBuckets[1]
-	err = identityApp.Sub().Bucket().Delete(deletedBucket.Hash().String())
+	deletedIndex := 1
+	err = identityApp.Sub().Bucket().Delete(retBuckets[deletedIndex].Hash().String())
 	if err != nil {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
@@ -301,9 +301,52 @@ func TestRestAPI_Success(t *testing.T) {
 		return
 	}
 
-	// make sure the 2 remaining buckets are in the last mined block:
+	// retrieve the latest chain:
+	retChainAfterBucketAdds, err := client.Sub().Chain().Retrieve()
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
 
-	// retrieve the buckets and make sure they are the same as the ones that were in the block:
+	// make sure the 2 remaining buckets are in the last mined block:
+	newestBuckets := retChainAfterBucketAdds.Head().Link().Next().Block().Buckets()
+	if len(newestBuckets) != 2 {
+		t.Errorf("%d buckets wered expected, %d retrieved", 2, len(newestBuckets))
+		return
+	}
+
+	for index, oneBucket := range retBuckets {
+		found := false
+		for _, oneNewestBucket := range newestBuckets {
+			if oneBucket.Hash().Compare(oneNewestBucket.Hash()) {
+				found = true
+				break
+			}
+		}
+
+		if found {
+			continue
+		}
+
+		if index == deletedIndex {
+			continue
+		}
+
+		t.Errorf("the bucket at index :%d was expected to be in the latest mined link", index)
+		return
+	}
+
+	// retrieve the buckets:
+	retBucketsAfterUpdate, err := identityApp.Sub().Bucket().RetrieveAll()
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	if len(retBucketsAfterUpdate) != 2 {
+		t.Errorf("%d buckets wered expected, %d returned", 2, len(retBucketsAfterUpdate))
+		return
+	}
 
 	// delete 1 bucket:
 

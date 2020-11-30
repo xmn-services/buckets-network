@@ -5,9 +5,9 @@ import (
 	application_chain "github.com/xmn-services/buckets-network/application/commands/chains"
 	application_identity "github.com/xmn-services/buckets-network/application/commands/identities"
 	"github.com/xmn-services/buckets-network/domain/memory/chains"
+	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/storages/files/contents"
 	"github.com/xmn-services/buckets-network/domain/memory/peers"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
-	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type application struct {
@@ -209,8 +209,8 @@ func (app *application) Storage() error {
 	}
 
 	// download the files:
-	toDownloadFiles := identity.Wallet().Storage().ToDownload().All()
-	err = app.download(identityApp, toDownloadFiles, remoteApps)
+	toDownloadContents := identity.Wallet().Storage().ToDownload().All()
+	err = app.download(identityApp, toDownloadContents, remoteApps)
 	if err != nil {
 		return err
 	}
@@ -221,23 +221,25 @@ func (app *application) Storage() error {
 
 func (app *application) download(
 	identityApp application_identity.Application,
-	toDownloadFiles []hash.Hash,
+	toDownloadContents []contents.Content,
 	clientApplication []commands.Application,
 ) error {
-	for _, oneFileHash := range toDownloadFiles {
+	for _, oneContent := range toDownloadContents {
+		bucketHashStr := oneContent.Bucket().String()
+		chunkHashStr := oneContent.Chunk().String()
 		for _, oneClient := range clientApplication {
 			clientStorageApp := oneClient.Sub().Storage()
-			if !clientStorageApp.IsStored(oneFileHash.String()) {
+			if !clientStorageApp.Exists(bucketHashStr, chunkHashStr) {
 				continue
 			}
 
-			storedFile, err := clientStorageApp.Retrieve(oneFileHash.String())
+			storedChunk, err := clientStorageApp.Retrieve(bucketHashStr, chunkHashStr)
 			if err != nil {
 				return err
 			}
 
 			// save the file:
-			err = identityApp.Sub().Storage().Save(storedFile)
+			err = identityApp.Sub().Storage().Save(bucketHashStr, storedChunk)
 			if err != nil {
 				return err
 			}

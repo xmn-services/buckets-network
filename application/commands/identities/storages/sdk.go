@@ -1,23 +1,26 @@
 package storages
 
 import (
-	"github.com/xmn-services/buckets-network/domain/memory/file"
+	"github.com/xmn-services/buckets-network/domain/memory/buckets"
+	"github.com/xmn-services/buckets-network/domain/memory/contents"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
+const bucketDoesNotExistsErr = "the bucket (hash: %s) does not exists"
+
 // NewBuilder creates a new builder instance
 func NewBuilder(
 	identityRepository identities.Repository,
-	identityService identities.Service,
-	fileService file.Service,
+	bucketRepository buckets.Repository,
+	contentService contents.Service,
 ) Builder {
 	hashAdapter := hash.NewAdapter()
 	return createBuilder(
 		hashAdapter,
 		identityRepository,
-		identityService,
-		fileService,
+		bucketRepository,
+		contentService,
 	)
 }
 
@@ -32,6 +35,7 @@ type Builder interface {
 
 // Application represents the storage application
 type Application interface {
-	Save(file file.File) error
-	Delete(fileHashStr string) error
+	Save(bucketHashStr string, chunk []byte) error
+	Delete(bucketHashStr string, chunkHashStr string) error
+	DeleteAll(bucketHashStr string) error
 }

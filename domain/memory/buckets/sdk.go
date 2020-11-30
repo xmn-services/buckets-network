@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
+	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	transfer_bucket "github.com/xmn-services/buckets-network/domain/transfers/buckets"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
@@ -65,6 +66,7 @@ type Bucket interface {
 	entities.Immutable
 	Files() []files.File
 	FileByPath(path string) (files.File, error)
+	FileChunkByHash(hash hash.Hash) (files.File, chunks.Chunk, error)
 }
 
 // Repository represents a bucket bucket repository

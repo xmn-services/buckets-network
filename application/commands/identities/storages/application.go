@@ -1,7 +1,11 @@
 package storages
 
 import (
-	"github.com/xmn-services/buckets-network/domain/memory/file"
+	"errors"
+	"fmt"
+
+	"github.com/xmn-services/buckets-network/domain/memory/buckets"
+	"github.com/xmn-services/buckets-network/domain/memory/contents"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -9,8 +13,8 @@ import (
 type application struct {
 	hashAdapter        hash.Adapter
 	identityRepository identities.Repository
-	identityService    identities.Service
-	fileService        file.Service
+	bucketRepository   buckets.Repository
+	contentService     contents.Service
 	name               string
 	password           string
 	seed               string
@@ -19,8 +23,8 @@ type application struct {
 func createApplication(
 	hashAdapter hash.Adapter,
 	identityRepository identities.Repository,
-	identityService identities.Service,
-	fileService file.Service,
+	bucketRepository buckets.Repository,
+	contentService contents.Service,
 	name string,
 	password string,
 	seed string,
@@ -28,8 +32,8 @@ func createApplication(
 	out := application{
 		hashAdapter:        hashAdapter,
 		identityRepository: identityRepository,
-		identityService:    identityService,
-		fileService:        fileService,
+		bucketRepository:   bucketRepository,
+		contentService:     contentService,
 		name:               name,
 		password:           password,
 		seed:               seed,
@@ -38,55 +42,98 @@ func createApplication(
 	return &out
 }
 
-// Save saves a file
-func (app *application) Save(file file.File) error {
+// Save saves a a chunk in bucket
+func (app *application) Save(bucketHashStr string, chunk []byte) error {
 	// retrieve the identity:
 	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
 	if err != nil {
 		return err
 	}
 
-	// save the file:
-	err = app.fileService.Save(file)
+	// create an hash from the string:
+	bucketHash, err := app.hashAdapter.FromString(bucketHashStr)
 	if err != nil {
 		return err
 	}
 
-	// add the file to the identity:
-	err = identity.Wallet().Storage().Stored().Add(file.File().Hash())
+	// verify if the bucket exists for the authenticated identity:
+	if identity.Wallet().Storage().Stored().Exists(*bucketHash) {
+		str := fmt.Sprintf("the bucket (hash: %s) does not exists", bucketHash.String())
+		return errors.New(str)
+	}
+
+	// retrieve the bucket:
+	bucket, err := app.bucketRepository.Retrieve(*bucketHash)
 	if err != nil {
 		return err
 	}
 
-	// save the identity:
-	return app.identityService.Update(identity, app.password, app.password)
+	// save the content:
+	return app.contentService.Save(bucket, chunk)
 }
 
-// Delete deletes a file
-func (app *application) Delete(fileHashStr string) error {
-	fileHash, err := app.hashAdapter.FromString(fileHashStr)
-	if err != nil {
-		return err
-	}
-
+// Delete deletes a hash from bucket
+func (app *application) Delete(bucketHashStr string, chunkHashStr string) error {
 	// retrieve the identity:
 	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
 	if err != nil {
 		return err
 	}
 
-	// delete the file:
-	err = app.fileService.Delete(*fileHash)
+	// create the bucket hash from the string:
+	bucketHash, err := app.hashAdapter.FromString(bucketHashStr)
 	if err != nil {
 		return err
 	}
 
-	// delete the file from the identity:
-	err = identity.Wallet().Storage().Stored().Delete(*fileHash)
+	// create the chunk hash from the string:
+	chunkHash, err := app.hashAdapter.FromString(chunkHashStr)
 	if err != nil {
 		return err
 	}
 
-	// save the identity:
-	return app.identityService.Update(identity, app.password, app.password)
+	// verify if the bucket exists for the authenticated identity:
+	if identity.Wallet().Storage().Stored().Exists(*bucketHash) {
+		str := fmt.Sprintf(bucketDoesNotExistsErr, bucketHash.String())
+		return errors.New(str)
+	}
+
+	// retrieve the bucket:
+	bucket, err := app.bucketRepository.Retrieve(*bucketHash)
+	if err != nil {
+		return err
+	}
+
+	// save the content:
+	return app.contentService.Delete(bucket, *chunkHash)
+}
+
+// DeleteAll deletes all chunks from bucket
+func (app *application) DeleteAll(bucketHashStr string) error {
+	// retrieve the identity:
+	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
+	if err != nil {
+		return err
+	}
+
+	// create the bucket hash from the string:
+	bucketHash, err := app.hashAdapter.FromString(bucketHashStr)
+	if err != nil {
+		return err
+	}
+
+	// verify if the bucket exists for the authenticated identity:
+	if identity.Wallet().Storage().Stored().Exists(*bucketHash) {
+		str := fmt.Sprintf(bucketDoesNotExistsErr, bucketHash.String())
+		return errors.New(str)
+	}
+
+	// retrieve the bucket:
+	bucket, err := app.bucketRepository.Retrieve(*bucketHash)
+	if err != nil {
+		return err
+	}
+
+	// save the content:
+	return app.contentService.DeleteAll(bucket)
 }

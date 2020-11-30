@@ -195,7 +195,12 @@ func (app *application) RetrieveAll() ([]buckets.Bucket, error) {
 		}
 	}
 
-	bucketHashes := identity.Wallet().Storage().Stored().All()
+	bucketHashes := []hash.Hash{}
+	contents := identity.Wallet().Storage().Stored().All()
+	for _, oneContent := range contents {
+		bucketHashes = append(bucketHashes, oneContent.Bucket())
+	}
+
 	storedBuckets, err := app.bucketRepository.RetrieveAll(bucketHashes)
 	if err != nil {
 		return nil, err

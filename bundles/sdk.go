@@ -21,7 +21,7 @@ import (
 	bucket_files "github.com/xmn-services/buckets-network/domain/memory/buckets/files"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	"github.com/xmn-services/buckets-network/domain/memory/chains"
-	"github.com/xmn-services/buckets-network/domain/memory/file"
+	"github.com/xmn-services/buckets-network/domain/memory/contents"
 	"github.com/xmn-services/buckets-network/domain/memory/genesis"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	"github.com/xmn-services/buckets-network/domain/memory/links"
@@ -34,7 +34,7 @@ import (
 	transfer_file "github.com/xmn-services/buckets-network/domain/transfers/buckets/files"
 	transfer_chunk "github.com/xmn-services/buckets-network/domain/transfers/buckets/files/chunks"
 	transfer_chains "github.com/xmn-services/buckets-network/domain/transfers/chains"
-	transfer_data "github.com/xmn-services/buckets-network/domain/transfers/file"
+	transfer_content "github.com/xmn-services/buckets-network/domain/transfers/contents"
 	transfer_genesis "github.com/xmn-services/buckets-network/domain/transfers/genesis"
 	transfer_link "github.com/xmn-services/buckets-network/domain/transfers/links"
 	transfer_mined_link "github.com/xmn-services/buckets-network/domain/transfers/links/mined"
@@ -62,7 +62,7 @@ const linksDirName = "links"
 const minedLinksDirName = "mined_links"
 const chainsDirName = "chains"
 const peersDirName = "peers"
-const filesDirName = "files"
+const contentsDirName = "contents"
 
 // NewRestAPIClient creates a new rest api client
 func NewRestAPIClient(peer peer.Peer) commands.Application {
@@ -214,9 +214,9 @@ func NewIdentityStorageApplicationBuilder(
 	extension string,
 ) application_identity_storages.Builder {
 	identityRepository := identities.NewRepository(basePath, extension)
-	identityService := identities.NewService(basePath, extension)
-	fileService := NewFileService(basePath)
-	return application_identity_storages.NewBuilder(identityRepository, identityService, fileService)
+	bucketRepository := NewBucketRepository(basePath)
+	contentService := NewContentService(basePath)
+	return application_identity_storages.NewBuilder(identityRepository, bucketRepository, contentService)
 }
 
 // NewIdentityBucketApplicationBuilder creates a new identity bucket application builder
@@ -243,8 +243,9 @@ func NewIdentityBucketApplicationBuilder(
 func NewStorageApplication(
 	basePath string,
 ) storages.Application {
-	fileRepository := NewFileRepository(basePath)
-	return storages.NewApplication(fileRepository)
+	bucketRepository := NewBucketRepository(basePath)
+	contentRepository := NewContentRepository(basePath)
+	return storages.NewApplication(bucketRepository, contentRepository)
 }
 
 // NewPeerApplication creates a new peer application
@@ -267,31 +268,6 @@ func NewChainApplication(
 	genesisRepository := NewGenesisRepository(basePath, genesisFileNameWithExt)
 	chainRepository := NewChainRepository(basePath, chainFileName, chainFileExt, genesisRepository)
 	return application_chains.NewApplication(chainRepository)
-}
-
-// NewFileRepository creates a new file repository
-func NewFileRepository(
-	basePath string,
-) file.Repository {
-	path := filepath.Join(basePath, filesDirName)
-	fileRepository := libs_file.NewFileDiskRepository(path)
-
-	bucketFileRepository := NewBucketFileRepository(basePath)
-	trFileRepository := transfer_data.NewRepository(fileRepository)
-	return file.NewRepository(bucketFileRepository, trFileRepository)
-}
-
-// NewFileService creates a new file service
-func NewFileService(
-	basePath string,
-) file.Service {
-	path := filepath.Join(basePath, filesDirName)
-	fileService := libs_file.NewFileDiskService(path)
-
-	repository := NewFileRepository(basePath)
-	bucketFileService := NewBucketFileService(basePath)
-	trDataService := transfer_data.NewService(fileService)
-	return file.NewService(repository, bucketFileService, trDataService)
 }
 
 // NewPeerRepository creates a new peer repository
@@ -354,6 +330,24 @@ func NewBucketFileService(basePath string) bucket_files.Service {
 	bucketFileRepository := NewBucketFileRepository(basePath)
 	trBucketFileService := transfer_file.NewService(fileService)
 	return bucket_files.NewService(chunkService, bucketFileRepository, trBucketFileService)
+}
+
+// NewContentRepository creates a new content repository
+func NewContentRepository(basePath string) contents.Repository {
+	path := filepath.Join(basePath, contentsDirName)
+	fileRepository := libs_file.NewFileDiskRepository(path)
+
+	trBucketRepository := transfer_content.NewRepository(fileRepository)
+	return contents.NewRepository(trBucketRepository)
+}
+
+// NewContentService creates a new content service
+func NewContentService(basePath string) contents.Service {
+	path := filepath.Join(basePath, contentsDirName)
+	fileService := libs_file.NewFileDiskService(path)
+
+	trContentService := transfer_content.NewService(fileService)
+	return contents.NewService(trContentService)
 }
 
 // NewBucketRepository creates a new bucket repository

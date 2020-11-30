@@ -3,7 +3,8 @@ package storages
 import (
 	"errors"
 
-	"github.com/xmn-services/buckets-network/domain/memory/file"
+	"github.com/xmn-services/buckets-network/domain/memory/buckets"
+	"github.com/xmn-services/buckets-network/domain/memory/contents"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -11,8 +12,8 @@ import (
 type builder struct {
 	hashAdapter        hash.Adapter
 	identityRepository identities.Repository
-	identityService    identities.Service
-	fileService        file.Service
+	bucketRepository   buckets.Repository
+	contentService     contents.Service
 	name               string
 	password           string
 	seed               string
@@ -21,14 +22,14 @@ type builder struct {
 func createBuilder(
 	hashAdapter hash.Adapter,
 	identityRepository identities.Repository,
-	identityService identities.Service,
-	fileService file.Service,
+	bucketRepository buckets.Repository,
+	contentService contents.Service,
 ) Builder {
 	out := builder{
 		hashAdapter:        hashAdapter,
 		identityRepository: identityRepository,
-		identityService:    identityService,
-		fileService:        fileService,
+		bucketRepository:   bucketRepository,
+		contentService:     contentService,
 		name:               "",
 		password:           "",
 		seed:               "",
@@ -42,8 +43,8 @@ func (app *builder) Create() Builder {
 	return createBuilder(
 		app.hashAdapter,
 		app.identityRepository,
-		app.identityService,
-		app.fileService,
+		app.bucketRepository,
+		app.contentService,
 	)
 }
 
@@ -82,8 +83,8 @@ func (app *builder) Now() (Application, error) {
 	return createApplication(
 		app.hashAdapter,
 		app.identityRepository,
-		app.identityService,
-		app.fileService,
+		app.bucketRepository,
+		app.contentService,
 		app.name,
 		app.password,
 		app.seed,

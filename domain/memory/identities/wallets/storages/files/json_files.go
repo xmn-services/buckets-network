@@ -1,25 +1,29 @@
 package files
 
+import "github.com/xmn-services/buckets-network/domain/memory/identities/wallets/storages/files/contents"
+
 // JSONFiles represents a JSON buckets instance
 type JSONFiles struct {
-	Files []string `json:"files"`
+	Contents []*contents.JSONContent `json:"contents"`
 }
 
 func createJSONFilesFromFiles(ins Files) *JSONFiles {
-	files := ins.All()
-	lst := []string{}
-	for _, oneHash := range files {
-		lst = append(lst, oneHash.String())
+	lst := ins.All()
+	out := []*contents.JSONContent{}
+	contentAdapter := contents.NewAdapter()
+	for _, oneContent := range lst {
+		content := contentAdapter.ToJSON(oneContent)
+		out = append(out, content)
 	}
 
-	return createJSONFiles(lst)
+	return createJSONFiles(out)
 }
 
 func createJSONFiles(
-	files []string,
+	contents []*contents.JSONContent,
 ) *JSONFiles {
 	out := JSONFiles{
-		Files: files,
+		Contents: contents,
 	}
 
 	return &out

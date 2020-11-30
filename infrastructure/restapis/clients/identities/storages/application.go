@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-resty/resty/v2"
 	"github.com/xmn-services/buckets-network/application/commands/identities/storages"
-	"github.com/xmn-services/buckets-network/domain/memory/file"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
 
@@ -31,12 +30,17 @@ func createApplication(
 	return &out
 }
 
-// Save saves a file
-func (app *application) Save(file file.File) error {
+// Save saves a chunk
+func (app *application) Save(bucketHashStr string, chunk []byte) error {
 	return nil
 }
 
-// Delete deletes a file by hash
-func (app *application) Delete(fileHashStr string) error {
+// Delete deletes a chunk
+func (app *application) Delete(bucketHashStr string, chunkHashStr string) error {
+	return nil
+}
+
+// DeleteAll deletes all chunks contained in a bucket
+func (app *application) DeleteAll(bucketHashStr string) error {
 	return nil
 }

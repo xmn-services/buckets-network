@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-resty/resty/v2"
 	commands_storages "github.com/xmn-services/buckets-network/application/commands/storages"
-	stored_file "github.com/xmn-services/buckets-network/domain/memory/file"
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
 
@@ -28,12 +27,12 @@ func createApplication(
 	return &out
 }
 
-// IsStored retrieves true if the file is totally stored, false otherwise
-func (app *application) IsStored(fileHashStr string) bool {
+// Exists returns true if the chunk exists, false otherwise
+func (app *application) Exists(bucketHashStr string, chunkHashStr string) bool {
 	return true
 }
 
-// Retrieve retrieves a stored file instance by hash
-func (app *application) Retrieve(fileHashStr string) (stored_file.File, error) {
+// Retrieve retrieves a chunk from a bucket
+func (app *application) Retrieve(bucketHashStr string, chunkHashStr string) ([]byte, error) {
 	return nil, nil
 }
