@@ -62,7 +62,7 @@ func (obj *buckets) Fetch(hash hash.Hash) (bucket.Bucket, error) {
 
 // Add adds a bucket to the list
 func (obj *buckets) Add(bucket bucket.Bucket) error {
-	keyname := bucket.Hash().String()
+	keyname := bucket.Bucket().Hash().String()
 	if _, ok := obj.mp[keyname]; ok {
 		str := fmt.Sprintf("the bucket (hash: %s) cannot be added because it already exists", keyname)
 		return errors.New(str)
@@ -82,7 +82,7 @@ func (obj *buckets) Delete(hash hash.Hash) error {
 	}
 
 	for index, oneBucket := range obj.lst {
-		if oneBucket.Hash().Compare(hash) {
+		if oneBucket.Bucket().Hash().Compare(hash) {
 			obj.lst = append(obj.lst[:index], obj.lst[index+1:]...)
 			break
 		}

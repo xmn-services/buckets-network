@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/buckets"
@@ -84,17 +83,12 @@ func (app *builder) Now() (Bucket, error) {
 		return nil, errors.New("the PrivateKey is mandatory in order to build a Bucket instance")
 	}
 
-	absolutePath, err := filepath.Abs(app.absolutePath)
-	if err != nil {
-		return nil, err
-	}
-
-	if _, err := os.Stat(absolutePath); os.IsNotExist(err) {
-		str := fmt.Sprintf("the absolutePath (%s) does not exists", absolutePath)
+	if _, err := os.Stat(app.absolutePath); os.IsNotExist(err) {
+		str := fmt.Sprintf("the absolutePath (%s) does not exists", app.absolutePath)
 		return nil, errors.New(str)
 	}
 
-	hsh, err := app.hashAdapter.FromBytes([]byte(absolutePath))
+	hsh, err := app.hashAdapter.FromBytes([]byte(app.absolutePath))
 	if err != nil {
 		return nil, err
 	}
@@ -104,5 +98,5 @@ func (app *builder) Now() (Bucket, error) {
 		return nil, err
 	}
 
-	return createBucket(immutable, app.bucket, absolutePath, app.pk), nil
+	return createBucket(immutable, app.bucket, app.absolutePath, app.pk), nil
 }

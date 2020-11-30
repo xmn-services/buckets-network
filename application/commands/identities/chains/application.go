@@ -173,7 +173,7 @@ func (app *application) Init(
 // Block mines a new block on the chain
 func (app *application) Block(additional uint) error {
 	// retrieve the identity:
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
 	if err != nil {
 		return err
 	}
@@ -225,7 +225,7 @@ func (app *application) Block(additional uint) error {
 
 	for _, oneToMinePrivBucket := range toMinePrivBuckets {
 		// delete the to-mine buckets from identity:
-		err = identity.Wallet().Miner().ToTransact().Delete(oneToMinePrivBucket.Hash())
+		err = identity.Wallet().Miner().ToTransact().Delete(oneToMinePrivBucket.Bucket().Hash())
 		if err != nil {
 			return err
 		}
@@ -244,7 +244,7 @@ func (app *application) Block(additional uint) error {
 // Link mines a new link on the chain
 func (app *application) Link(additional uint) error {
 	// retrieve the identity:
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
 	if err != nil {
 		return err
 	}
@@ -316,7 +316,7 @@ func (app *application) Link(additional uint) error {
 				}
 
 				// delete the bucket from the queue:
-				err = identity.Wallet().Miner().Queue().Delete(oneQueuedBucket.Hash())
+				err = identity.Wallet().Miner().Queue().Delete(oneQueuedBucket.Bucket().Hash())
 				if err != nil {
 					return err
 				}

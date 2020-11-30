@@ -41,7 +41,7 @@ func createApplication(
 // Save saves a file
 func (app *application) Save(file file.File) error {
 	// retrieve the identity:
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (app *application) Delete(fileHashStr string) error {
 	}
 
 	// retrieve the identity:
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
 	if err != nil {
 		return err
 	}

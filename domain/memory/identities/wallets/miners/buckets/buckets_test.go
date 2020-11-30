@@ -38,7 +38,7 @@ func TestBuckets_addBucket_deleteBucket_Success(t *testing.T) {
 		return
 	}
 
-	err = ins.Delete(bucket.Hash())
+	err = ins.Delete(bucket.Bucket().Hash())
 	if err != nil {
 		t.Errorf("the error was expected to nil, error returned: %s", err.Error())
 		return

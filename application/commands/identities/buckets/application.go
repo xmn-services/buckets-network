@@ -68,8 +68,17 @@ func createApplication(
 }
 
 // Add adds the bucket path
-func (app *application) Add(absolutePath string) error {
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+func (app *application) Add(relativePath string) error {
+	if relativePath == "" {
+		return errors.New("the path cannot be empty")
+	}
+
+	absolutePath, err := filepath.Abs(relativePath)
+	if err != nil {
+		return err
+	}
+
+	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
 	if err != nil {
 		return err
 	}
@@ -112,7 +121,7 @@ func (app *application) Add(absolutePath string) error {
 
 // Delete deletes a bucket from the given path
 func (app *application) Delete(hashStr string) error {
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
 	if err != nil {
 		return err
 	}
@@ -137,7 +146,7 @@ func (app *application) Retrieve(hashStr string) (buckets.Bucket, error) {
 		return nil, err
 	}
 
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
 	if err != nil {
 		return nil, err
 	}
@@ -152,13 +161,48 @@ func (app *application) Retrieve(hashStr string) (buckets.Bucket, error) {
 
 // RetrieveAll retrieves all the buckets
 func (app *application) RetrieveAll() ([]buckets.Bucket, error) {
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+
+	fetchBuckets := func(identityBuckets []identity_buckets.Bucket) []buckets.Bucket {
+		out := []buckets.Bucket{}
+		for _, oneIdentityBucket := range identityBuckets {
+			out = append(out, oneIdentityBucket.Bucket())
+		}
+
+		return out
+	}
+
+	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
 	if err != nil {
 		return nil, err
 	}
 
+	buckets := []buckets.Bucket{}
+	identityMiner := identity.Wallet().Miner()
+	toTransactBuckets := identityMiner.ToTransact().All()
+	broadcastedBuckets := identityMiner.Broadcasted().All()
+	queuedBuckets := identityMiner.Queue().All()
+
+	buckets = append(buckets, fetchBuckets(toTransactBuckets)...)
+	buckets = append(buckets, fetchBuckets(broadcastedBuckets)...)
+	buckets = append(buckets, fetchBuckets(queuedBuckets)...)
+
+	toLinkBlocks := identityMiner.ToLink().All()
+	for _, oneToLinkBlock := range toLinkBlocks {
+		block := oneToLinkBlock.Block()
+		if block.HasBuckets() {
+			toLinkBuckets := block.Buckets()
+			buckets = append(buckets, toLinkBuckets...)
+		}
+	}
+
 	bucketHashes := identity.Wallet().Storage().Stored().All()
-	return app.bucketRepository.RetrieveAll(bucketHashes)
+	storedBuckets, err := app.bucketRepository.RetrieveAll(bucketHashes)
+	if err != nil {
+		return nil, err
+	}
+
+	buckets = append(buckets, storedBuckets...)
+	return buckets, nil
 }
 
 func (app *application) dirToFiles(rootPath string, relativePath string) ([]files.File, error) {
@@ -202,7 +246,7 @@ func (app *application) dirFileToFile(rootPath string, relativePath string) (fil
 
 	index := 0
 	chunks := []chunks.Chunk{}
-	loops := int(math.Floor(float64(len(data)) / float64(app.chunkSizeInBytes)))
+	loops := int(math.Ceil(float64(len(data)) / float64(app.chunkSizeInBytes)))
 	for i := 0; i < loops; i++ {
 		beginsOn := i * int(app.chunkSizeInBytes)
 		createdOn := time.Now().UTC()

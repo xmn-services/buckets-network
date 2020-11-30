@@ -1,7 +1,8 @@
 package bundles
 
 import (
-	"fmt"
+	"io/ioutil"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
@@ -151,6 +152,28 @@ func TestRestAPI_Success(t *testing.T) {
 	cmdApp := CreateCommandApplicationForTests()
 	serverApp := NewRestAPIServer(cmdApp, maxUploadFileSize, waitPeriod, port)
 
+	// create the base bucket folder:
+	bucketDirPath := filepath.Join(basePath, "source_buckets")
+	os.MkdirAll(bucketDirPath, os.ModePerm)
+
+	// first bucket:
+	firstBucketPath := filepath.Join(bucketDirPath, "first")
+	os.MkdirAll(firstBucketPath, os.ModePerm)
+	ioutil.WriteFile(filepath.Join(firstBucketPath, "first.data"), []byte("first bucket first data"), os.ModePerm)
+	ioutil.WriteFile(filepath.Join(firstBucketPath, "second.data"), []byte("first bucket second data"), os.ModePerm)
+	ioutil.WriteFile(filepath.Join(firstBucketPath, "third.data"), []byte("first bucket third data"), os.ModePerm)
+
+	// second bucket:
+	secondBucketPath := filepath.Join(bucketDirPath, "second")
+	os.MkdirAll(secondBucketPath, os.ModePerm)
+	ioutil.WriteFile(filepath.Join(secondBucketPath, "first.data"), []byte("second bucket first data"), os.ModePerm)
+	ioutil.WriteFile(filepath.Join(secondBucketPath, "second.data"), []byte("second bucket second data"), os.ModePerm)
+
+	// third bucket:
+	thirdBucketPath := filepath.Join(bucketDirPath, "third")
+	os.MkdirAll(thirdBucketPath, os.ModePerm)
+	ioutil.WriteFile(filepath.Join(thirdBucketPath, "first.data"), []byte("third bucket first data"), os.ModePerm)
+
 	// start the server in a new go routine:
 	go serverApp.Start()
 
@@ -209,5 +232,80 @@ func TestRestAPI_Success(t *testing.T) {
 		return
 	}
 
-	fmt.Printf("\n%v\n", chain)
+	// retrieve the chain at index:
+	chainAtIndexZero, err := client.Sub().Chain().RetrieveAtIndex(0)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	if !chain.Hash().Compare(chainAtIndexZero.Hash()) {
+		t.Errorf("the two (2) chains were expected to contain the same hash")
+		return
+	}
+
+	// add first bucket:
+	err = identityApp.Sub().Bucket().Add(firstBucketPath)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	// add second bucket:
+	err = identityApp.Sub().Bucket().Add(secondBucketPath)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	// add third bucket:
+	err = identityApp.Sub().Bucket().Add(thirdBucketPath)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	// retrieve the buckets:
+	retBuckets, err := identityApp.Sub().Bucket().RetrieveAll()
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	if len(retBuckets) != 3 {
+		t.Errorf("%d buckets wered expected, %d returned", 3, len(retBuckets))
+		return
+	}
+
+	// delete 1 bucket:
+	deletedBucket := retBuckets[1]
+	err = identityApp.Sub().Bucket().Delete(deletedBucket.Hash().String())
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	// mine the block:
+	additionalBlockBuckets := uint(rand.Intn(5) + 1)
+	err = identityApp.Sub().Chain().Block(additionalBlockBuckets)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	// mine the link:
+	additionalLinkBuckets := uint(rand.Intn(5) + 1)
+	err = identityApp.Sub().Chain().Link(additionalLinkBuckets)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	// make sure the 2 remaining buckets are in the last mined block:
+
+	// retrieve the buckets and make sure they are the same as the ones that were in the block:
+
+	// delete 1 bucket:
+
+	// retrieve the buckets, make sure there is only 1 bucket remaining:
 }

@@ -271,11 +271,11 @@ func (app *application) retrieveChainAtIndex(w http.ResponseWriter, r *http.Requ
 		}
 
 		renderSuccess(w, js)
+		return
 	}
 
 	err := errors.New(missingIndexErrorOutput)
 	renderError(w, err, []byte(internalErrorOutput))
-
 }
 
 func (app *application) identityMinerTest(w http.ResponseWriter, r *http.Request) {
@@ -298,6 +298,7 @@ func (app *application) identityMinerTest(w http.ResponseWriter, r *http.Request
 			}
 
 			renderSuccess(w, []byte(results))
+			return
 		}
 
 		err := errors.New(missingIndexErrorOutput)
@@ -324,6 +325,7 @@ func (app *application) identityMinerBlock(w http.ResponseWriter, r *http.Reques
 			}
 
 			renderSuccess(w, []byte(results))
+			return
 		}
 
 		err := errors.New(missingHashErrorOutput)
@@ -350,6 +352,7 @@ func (app *application) identityMinerLink(w http.ResponseWriter, r *http.Request
 			}
 
 			renderSuccess(w, []byte(results))
+			return
 		}
 
 		err := errors.New(missingHashErrorOutput)
@@ -415,12 +418,6 @@ func (app *application) identityChainMineBlocks(w http.ResponseWriter, r *http.R
 		defer app.deleteAuthApp(token)
 
 		if appIdentity, ok := app.authApps[token]; ok {
-			err := r.ParseForm()
-			if err != nil {
-				renderError(w, err, []byte(internalErrorOutput))
-				return
-			}
-
 			err = appIdentity.Sub().Chain().Block(uint(additional))
 			if err != nil {
 				renderError(w, err, []byte(internalErrorOutput))
@@ -454,12 +451,6 @@ func (app *application) identityChainMineLinks(w http.ResponseWriter, r *http.Re
 		defer app.deleteAuthApp(token)
 
 		if appIdentity, ok := app.authApps[token]; ok {
-			err := r.ParseForm()
-			if err != nil {
-				renderError(w, err, []byte(internalErrorOutput))
-				return
-			}
-
 			err = appIdentity.Sub().Chain().Link(uint(additional))
 			if err != nil {
 				renderError(w, err, []byte(internalErrorOutput))
@@ -496,6 +487,7 @@ func (app *application) retrieveStoredFileByHash(w http.ResponseWriter, r *http.
 		}
 
 		renderSuccess(w, js)
+		return
 	}
 
 	err := errors.New(missingHashErrorOutput)
@@ -635,8 +627,14 @@ func (app *application) saveIdentityBucketPath(w http.ResponseWriter, r *http.Re
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
+		err := r.ParseForm()
+		if err != nil {
+			renderError(w, err, []byte(internalErrorOutput))
+			return
+		}
+
 		path := r.Form.Get(shared.PathKeyname)
-		err := appIdentity.Sub().Bucket().Add(path)
+		err = appIdentity.Sub().Bucket().Add(path)
 		if err != nil {
 			renderError(w, err, []byte(internalErrorOutput))
 			return
@@ -676,6 +674,7 @@ func (app *application) retrieveIdentityBucketByHash(w http.ResponseWriter, r *h
 
 		err := errors.New(missingHashErrorOutput)
 		renderError(w, err, []byte(internalErrorOutput))
+		return
 	}
 
 	str := fmt.Sprintf(authErrorOutput, token)
@@ -702,6 +701,7 @@ func (app *application) deleteIdentityBucketByHash(w http.ResponseWriter, r *htt
 
 		err := errors.New(missingHashErrorOutput)
 		renderError(w, err, []byte(internalErrorOutput))
+		return
 	}
 
 	str := fmt.Sprintf(authErrorOutput, token)

@@ -50,8 +50,8 @@ type Builder interface {
 
 // Application represents the bucket application
 type Application interface {
-	Add(absolutePath string) error
-	Delete(hashStr string) error
+	Add(relativePath string) error
+	Delete(relativePath string) error
 	Retrieve(hashStr string) (buckets.Bucket, error)
 	RetrieveAll() ([]buckets.Bucket, error)
 }

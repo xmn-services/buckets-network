@@ -69,6 +69,7 @@ func (app *application) Init(
 func (app *application) Block(additional uint) error {
 	endpoint := fmt.Sprintf("%s%d", "/blocks/", additional)
 	url := fmt.Sprintf(baseFormat, app.url, endpoint)
+
 	resp, err := app.client.R().
 		SetHeader(shared.TokenHeadKeyname, app.token).
 		Post(url)

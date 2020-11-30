@@ -55,7 +55,7 @@ func (app *service) Update(original Chain, updated Chain) error {
 	// make sure the the genesis is the same in both chains:
 	updatedGenHash := updated.Genesis().Hash()
 	originalGenHash := original.Genesis().Hash()
-	if originalGenHash.Compare(updatedGenHash) {
+	if !originalGenHash.Compare(updatedGenHash) {
 		str := fmt.Sprintf("the chain cannot be updated at height (%d) because its Genesis instance is invalid (updated: %s, stored: %s)", original.Head().Link().Index(), updatedGenHash.String(), originalGenHash.String())
 		return errors.New(str)
 	}
@@ -63,7 +63,7 @@ func (app *service) Update(original Chain, updated Chain) error {
 	// make sure the root is the same in both chains:
 	updatedRootHash := updated.Root().Hash()
 	originalRootHash := original.Root().Hash()
-	if originalRootHash.Compare(updatedRootHash) {
+	if !originalRootHash.Compare(updatedRootHash) {
 		str := fmt.Sprintf("the chain cannot be updated at height (%d) because its Root mined Block instance is invalid (updated: %s, stored: %s)", original.Head().Link().Index(), updatedRootHash.String(), originalRootHash.String())
 		return errors.New(str)
 	}

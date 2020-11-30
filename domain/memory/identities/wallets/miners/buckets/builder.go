@@ -35,7 +35,7 @@ func (app *builder) Now() (Buckets, error) {
 
 	mp := map[string]bucket.Bucket{}
 	for _, oneBucket := range app.lst {
-		keyname := oneBucket.Hash().String()
+		keyname := oneBucket.Bucket().Hash().String()
 		mp[keyname] = oneBucket
 	}
 

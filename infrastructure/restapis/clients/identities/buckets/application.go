@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 
 	"github.com/go-resty/resty/v2"
 	command_bucket "github.com/xmn-services/buckets-network/application/commands/identities/buckets"
@@ -38,12 +39,13 @@ func createApplication(
 }
 
 // Add adds a path to the bucket application
-func (app *application) Add(absolutePath string) error {
+func (app *application) Add(relativePath string) error {
+	values := url.Values{}
+	values.Set(shared.PathKeyname, relativePath)
+
 	resp, err := app.client.R().
 		SetHeader(shared.TokenHeadKeyname, app.token).
-		SetBody(map[string]string{
-			shared.PathKeyname: absolutePath,
-		}).
+		SetFormDataFromValues(values).
 		Post(app.url)
 
 	if err != nil {
@@ -59,7 +61,7 @@ func (app *application) Add(absolutePath string) error {
 
 // Delete deletes a bucket by hash
 func (app *application) Delete(hashStr string) error {
-	url := fmt.Sprintf(baseFormat, app.url, hashStr)
+	url := fmt.Sprintf("%s/%s", app.url, hashStr)
 	resp, err := app.client.R().
 		SetHeader(shared.TokenHeadKeyname, app.token).
 		Delete(url)
@@ -77,7 +79,7 @@ func (app *application) Delete(hashStr string) error {
 
 // Retrieve retrieves a bucket by hash
 func (app *application) Retrieve(hashStr string) (buckets.Bucket, error) {
-	url := fmt.Sprintf(baseFormat, app.url, hashStr)
+	url := fmt.Sprintf("%s/%s", app.url, hashStr)
 	resp, err := app.client.R().
 		SetHeader(shared.TokenHeadKeyname, app.token).
 		Get(url)
