@@ -1,15 +1,16 @@
 package bundles
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/peers/peer"
 )
 
+/*
 func TestInit_Success(t *testing.T) {
 	miningValue := uint8(0)
 	baseDifficulty := uint(1)
@@ -125,12 +126,9 @@ func TestPeer_isClear_Success(t *testing.T) {
 		return
 	}
 }
-
+*/
 func TestRestAPI_Success(t *testing.T) {
 	basePath := "./test_files"
-	defer func() {
-		os.RemoveAll(basePath)
-	}()
 
 	// identity:
 	name := "roger"
@@ -138,21 +136,34 @@ func TestRestAPI_Success(t *testing.T) {
 	seed := "this is the seed of roger"
 	rootDir := filepath.Join(basePath, "roger")
 
+	// blockchain init:
+	miningValue := uint8(0)
+	baseDifficulty := uint(1)
+	increasePerBucket := float64(0.05)
+	linkDifficulty := uint(2)
+	rootAdditionalBuckets := uint(120)
+	headAdditionalBuckets := uint(20)
+
 	// rest server:
 	port := uint(7854)
 	waitPeriod := time.Duration(15 * time.Second)
 	maxUploadFileSize := int64(1024 * 1024 * 10)
 	cmdApp := CreateCommandApplicationForTests()
 	serverApp := NewRestAPIServer(cmdApp, maxUploadFileSize, waitPeriod, port)
-	err := serverApp.Start()
+
+	// start the server in a new go routine:
+	go serverApp.Start()
+
 	defer func() {
+		// delete the files:
+		os.RemoveAll(basePath)
+
+		// stop the server after running the tests
 		serverApp.Stop()
 	}()
 
-	if err != nil {
-		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
-		return
-	}
+	// wait a bit to make sure the server is started before we execute the tests:
+	time.Sleep(10 * time.Second)
 
 	// local peer:
 	localPeer, err := peer.NewBuilder().WithHost("127.0.0.1").WithPort(port).IsClear().Now()
@@ -168,4 +179,35 @@ func TestRestAPI_Success(t *testing.T) {
 		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
 		return
 	}
+
+	// authenticate:
+	identityApp, err := client.Current().Authenticate(name, seed, password)
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	// init the blockchain:
+	err = identityApp.Sub().Chain().Init(
+		miningValue,
+		baseDifficulty,
+		increasePerBucket,
+		linkDifficulty,
+		rootAdditionalBuckets,
+		headAdditionalBuckets,
+	)
+
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	// retrieve the blockchain:
+	chain, err := client.Sub().Chain().Retrieve()
+	if err != nil {
+		t.Errorf("the error was expected to be nil, error returned: %s", err.Error())
+		return
+	}
+
+	fmt.Printf("\n%v\n", chain)
 }

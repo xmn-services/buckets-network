@@ -44,14 +44,14 @@ func (app *application) Init(
 ) error {
 	resp, err := app.client.R().
 		SetHeader(shared.TokenHeadKeyname, app.token).
-		SetBody(shared.InitChain{
+		SetFormDataFromValues(shared.InitChainToURLValues(&shared.InitChain{
 			MiningValue:           miningValue,
 			BaseDifficulty:        baseDifficulty,
 			IncreasePerBucket:     increasePerBucket,
 			LinkDifficulty:        linkDifficulty,
 			RootAdditionalBuckets: rootAdditionalBuckets,
 			HeadAdditionalBuckets: headAdditionalBuckets,
-		}).
+		})).
 		Post(app.url)
 
 	if err != nil {

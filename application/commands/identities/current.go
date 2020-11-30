@@ -31,7 +31,7 @@ func createCurrent(
 // Update updates the identity
 func (app *current) Update(update Update) error {
 	// retrieve the identity:
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
 	if err != nil {
 		return err
 	}
@@ -73,13 +73,13 @@ func (app *current) Update(update Update) error {
 
 // Retrieve retrieves the identity
 func (app *current) Retrieve() (identities.Identity, error) {
-	return app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	return app.identityRepository.Retrieve(app.name, app.seed, app.password)
 }
 
 // Delete deletes the identity
 func (app *current) Delete() error {
 	// retrieve the identity:
-	identity, err := app.identityRepository.Retrieve(app.name, app.password, app.seed)
+	identity, err := app.identityRepository.Retrieve(app.name, app.seed, app.password)
 	if err != nil {
 		return err
 	}

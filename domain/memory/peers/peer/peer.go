@@ -61,7 +61,7 @@ func (obj *peer) IsOnion() bool {
 
 // String returns the string representation of the peer
 func (obj *peer) String() string {
-	scheme := "https"
+	scheme := "http"
 	if obj.IsOnion() {
 		scheme = "onion"
 	}

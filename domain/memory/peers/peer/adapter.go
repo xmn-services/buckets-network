@@ -45,7 +45,7 @@ func (app *adapter) StringToPeer(str string) (Peer, error) {
 
 	builder := app.builder.Create().WithHost(url.Hostname()).WithPort(uint(port))
 	switch url.Scheme {
-	case "https":
+	case "http":
 		builder.IsClear()
 		break
 	case "onion":

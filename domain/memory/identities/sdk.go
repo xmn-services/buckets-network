@@ -55,7 +55,7 @@ type Identity interface {
 
 // Repository represents an identity repository
 type Repository interface {
-	Retrieve(name string, password string, seed string) (Identity, error)
+	Retrieve(name string, seed string, password string) (Identity, error)
 }
 
 // Service represents an identity service

@@ -72,11 +72,15 @@ func (app *builder) Now() (miners.Application, error) {
 		return nil, errors.New("the seed is mandatory in order to build an Application instance")
 	}
 
-	token := shared.AuthenticateToBase64(&shared.Authenticate{
+	token, err := shared.AuthenticateToBase64(&shared.Authenticate{
 		Name:     app.name,
 		Password: app.password,
 		Seed:     app.seed,
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	return createApplication(app.client, token, app.peer), nil
 }

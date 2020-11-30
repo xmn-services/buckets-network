@@ -64,16 +64,16 @@ func createApplication(
 	out.router.HandleFunc("/peers", out.retrievePeers).Methods(http.MethodGet, http.MethodOptions)
 	out.router.HandleFunc("/peers", out.savePeer).Methods(http.MethodPost, http.MethodOptions)
 	out.router.HandleFunc("/storages/{hash:[0-9a-f]+}", out.retrieveStoredFileByHash).Methods(http.MethodGet, http.MethodOptions)
+	out.router.HandleFunc("/identities", out.newIdentity).Methods(http.MethodPost, http.MethodOptions)
 
 	// middleware:
 	out.router.Use(mux.CORSMethodMiddleware(out.router))
 
 	// identities:
 	identityRouter := out.router.PathPrefix("/identities").Subrouter()
-	identityRouter.HandleFunc("/", out.newIdentity).Methods(http.MethodPost, http.MethodOptions)
-	identityRouter.HandleFunc("/", out.retrieveIdentity).Methods(http.MethodGet, http.MethodOptions)
-	identityRouter.HandleFunc("/", out.updateIdentity).Methods(http.MethodPut, http.MethodOptions)
-	identityRouter.HandleFunc("/", out.deleteIdentity).Methods(http.MethodDelete, http.MethodOptions)
+	identityRouter.HandleFunc("", out.retrieveIdentity).Methods(http.MethodGet, http.MethodOptions)
+	identityRouter.HandleFunc("", out.updateIdentity).Methods(http.MethodPut, http.MethodOptions)
+	identityRouter.HandleFunc("", out.deleteIdentity).Methods(http.MethodDelete, http.MethodOptions)
 
 	identityRouter.HandleFunc("/miners/test/{difficulty:[0-9]+}", out.identityMinerTest).Methods(http.MethodGet, http.MethodOptions)
 	identityRouter.HandleFunc("/miners/block/{hash:[0-9a-f]+}", out.identityMinerBlock).Methods(http.MethodGet, http.MethodOptions)
@@ -117,11 +117,11 @@ func (app *application) Start() error {
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
-	go func() {
-		app.Stop()
-	}()
 
-	return nil
+	//block until we receive signal
+	<-c
+
+	return app.Stop()
 }
 
 // Stop stops the application
@@ -156,8 +156,7 @@ func (app *application) authenticateMiddleWare(next http.Handler) http.Handler {
 		)
 
 		if err != nil {
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("invalid authentication"))
+			renderInvalidAuthentication(w, err, []byte("invalid authentication"))
 			return
 		}
 
@@ -520,6 +519,8 @@ func (app *application) retrieveIdentity(w http.ResponseWriter, r *http.Request)
 			renderError(w, err, []byte(internalErrorOutput))
 			return
 		}
+
+		fmt.Printf("\nserver: %s\n", js)
 
 		renderSuccess(w, js)
 		return

@@ -43,7 +43,7 @@ func TestWallet_Success(t *testing.T) {
 		return
 	}
 
-	retIns, err := repository.Retrieve(name, pass, seed)
+	retIns, err := repository.Retrieve(name, seed, pass)
 	if err != nil {
 		t.Errorf("the error was expected to nil, error returned: %s", err.Error())
 		return
@@ -55,7 +55,7 @@ func TestWallet_Success(t *testing.T) {
 		return
 	}
 
-	_, err = repository.Retrieve(name, pass, seed)
+	_, err = repository.Retrieve(name, seed, pass)
 	if err == nil {
 		t.Errorf("the error was expected to be valid")
 		return

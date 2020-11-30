@@ -112,11 +112,15 @@ func (app *builder) Now() (identities.Application, error) {
 		return nil, err
 	}
 
-	token := shared.AuthenticateToBase64(&shared.Authenticate{
+	token, err := shared.AuthenticateToBase64(&shared.Authenticate{
 		Name:     app.name,
 		Password: app.password,
 		Seed:     app.seed,
 	})
+
+	if err != nil {
+		return nil, err
+	}
 
 	subApplications := createSubApplications(bucket, storage, chain, miner)
 	current := createCurrent(app.client, token, app.peer)

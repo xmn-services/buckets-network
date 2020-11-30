@@ -30,7 +30,7 @@ func TestPeer_withClear_Success(t *testing.T) {
 		return
 	}
 
-	str := fmt.Sprintf("https://%s:%d", host, port)
+	str := fmt.Sprintf("http://%s:%d", host, port)
 	if peer.String() != str {
 		t.Errorf("the peer string is invalid, expected: %s, returned %s", str, peer.String())
 		return

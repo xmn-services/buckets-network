@@ -37,7 +37,7 @@ func createService(
 
 // Insert inserts a new identity
 func (app *service) Insert(identity Identity, password string) error {
-	_, err := app.repository.Retrieve(identity.Name(), password, identity.Seed())
+	_, err := app.repository.Retrieve(identity.Name(), identity.Seed(), password)
 	if err == nil {
 		str := fmt.Sprintf("the identity (name: %s) already exists", identity.Name())
 		return errors.New(str)
@@ -48,7 +48,7 @@ func (app *service) Insert(identity Identity, password string) error {
 
 // Update updates an existing identity
 func (app *service) Update(identity Identity, password string, newPassword string) error {
-	_, err := app.repository.Retrieve(identity.Name(), password, identity.Seed())
+	_, err := app.repository.Retrieve(identity.Name(), identity.Seed(), password)
 	if err != nil {
 		str := fmt.Sprintf("the identity (name: %s) does not exists and therefore cannot be updated", identity.Name())
 		return errors.New(str)
@@ -59,7 +59,7 @@ func (app *service) Update(identity Identity, password string, newPassword strin
 
 // Delete deletes an existing identity
 func (app *service) Delete(identity Identity, password string) error {
-	_, err := app.repository.Retrieve(identity.Name(), password, identity.Seed())
+	_, err := app.repository.Retrieve(identity.Name(), identity.Seed(), password)
 	if err != nil {
 		str := fmt.Sprintf("the identity (name: %s) does not exists and therefore cannot be deleted", identity.Name())
 		return errors.New(str)

@@ -31,7 +31,7 @@ func createRepository(
 }
 
 // Retrieve retrieves an identity
-func (app *repository) Retrieve(name string, password string, seed string) (Identity, error) {
+func (app *repository) Retrieve(name string, seed string, password string) (Identity, error) {
 	pass, err := makePassword(app.hashAdapter, seed, password)
 	if err != nil {
 		return nil, err

@@ -15,3 +15,9 @@ func renderError(w http.ResponseWriter, err error, output []byte) {
 	w.WriteHeader(http.StatusInternalServerError)
 	w.Write(output)
 }
+
+func renderInvalidAuthentication(w http.ResponseWriter, err error, output []byte) {
+	log.Printf("Cannot authenticate: %s\n", err.Error())
+	w.WriteHeader(http.StatusUnauthorized)
+	w.Write(output)
+}

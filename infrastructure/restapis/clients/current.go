@@ -36,14 +36,14 @@ func createCurrent(
 // NewIdentity creates a new identity instance
 func (app *current) NewIdentity(name string, password string, seed string, root string) error {
 	resp, err := app.client.R().
-		SetBody(shared.Identity{
+		SetFormDataFromValues(shared.IdentityToURLValues(shared.Identity{
 			Authenticate: &shared.Authenticate{
 				Name:     name,
 				Password: password,
 				Seed:     seed,
 			},
 			Root: root,
-		}).
+		})).
 		Post(app.url)
 
 	if err != nil {
@@ -59,31 +59,22 @@ func (app *current) NewIdentity(name string, password string, seed string, root 
 
 // Authenticate authenticates on the identity application
 func (app *current) Authenticate(name string, seed string, password string) (command_identities.Application, error) {
-	token := shared.AuthenticateToBase64(&shared.Authenticate{
-		Name:     name,
-		Password: password,
-		Seed:     seed,
-	})
-
-	resp, err := app.client.R().
-		SetHeader(shared.TokenHeadKeyname, token).
-		SetResult(&shared.Authenticate{}).
-		Get(app.url)
+	cmdIdentityApp, err := app.commandIdentityBuilder.Create().
+		WithName(name).
+		WithPassword(password).
+		WithSeed(seed).
+		Now()
 
 	if err != nil {
 		return nil, err
 	}
 
-	if resp.StatusCode() == http.StatusOK {
-		auth := resp.Result().(*shared.Authenticate)
-		return app.commandIdentityBuilder.Create().
-			WithName(auth.Name).
-			WithPassword(auth.Password).
-			WithSeed(auth.Seed).
-			Now()
+	_, err = cmdIdentityApp.Current().Retrieve()
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, errors.New(string(resp.Body()))
+	return cmdIdentityApp, nil
 }
 
 // UpdateIdentity updates an identity instance
@@ -94,15 +85,17 @@ func (app *current) UpdateIdentity(identity identities.Identity, password string
 		Seed:     identity.Seed(),
 	}
 
-	token := shared.AuthenticateToBase64(&auth)
-	update := shared.Identity{
-		Authenticate: &auth,
-		Root:         identity.Root(),
+	token, err := shared.AuthenticateToBase64(&auth)
+	if err != nil {
+		return err
 	}
 
 	resp, err := app.client.R().
 		SetHeader(shared.TokenHeadKeyname, token).
-		SetBody(&update).
+		SetFormDataFromValues(shared.IdentityToURLValues(shared.Identity{
+			Authenticate: &auth,
+			Root:         identity.Root(),
+		})).
 		Put(app.url)
 
 	if err != nil {
