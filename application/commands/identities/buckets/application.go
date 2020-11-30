@@ -11,6 +11,7 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/buckets"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
+	"github.com/xmn-services/buckets-network/domain/memory/contents"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	identity_buckets "github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/buckets/bucket"
 	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption"
@@ -24,9 +25,11 @@ type application struct {
 	fileBuilder           files.Builder
 	bucketBuilder         buckets.Builder
 	bucketRepository      buckets.Repository
+	bucketService         buckets.Service
 	identityBucketBuilder identity_buckets.Builder
 	identityRepository    identities.Repository
 	identityService       identities.Service
+	contentService        contents.Service
 	name                  string
 	password              string
 	seed                  string
@@ -40,9 +43,11 @@ func createApplication(
 	fileBuilder files.Builder,
 	bucketBuilder buckets.Builder,
 	bucketRepository buckets.Repository,
+	bucketService buckets.Service,
 	identityBucketBuilder identity_buckets.Builder,
 	identityRepository identities.Repository,
 	identityService identities.Service,
+	contentService contents.Service,
 	name string,
 	password string,
 	seed string,
@@ -55,9 +60,11 @@ func createApplication(
 		fileBuilder:           fileBuilder,
 		bucketBuilder:         bucketBuilder,
 		bucketRepository:      bucketRepository,
+		bucketService:         bucketService,
 		identityBucketBuilder: identityBucketBuilder,
 		identityRepository:    identityRepository,
 		identityService:       identityService,
+		contentService:        contentService,
 		name:                  name,
 		password:              password,
 		seed:                  seed,
@@ -83,7 +90,7 @@ func (app *application) Add(relativePath string) error {
 		return err
 	}
 
-	files, err := app.dirToFiles(absolutePath, ".")
+	files, filesChksData, err := app.dirToFiles(absolutePath, ".")
 	if err != nil {
 		return err
 	}
@@ -92,6 +99,22 @@ func (app *application) Add(relativePath string) error {
 	bucket, err := app.bucketBuilder.Create().WithFiles(files).CreatedOn(bucketCreatedOn).Now()
 	if err != nil {
 		return err
+	}
+
+	// save the bucket:
+	err = app.bucketService.Save(bucket)
+	if err != nil {
+		return err
+	}
+
+	// for each file, fetch the chunks and save its data:
+	for _, oneFileChkData := range filesChksData {
+		for _, oneChkData := range oneFileChkData {
+			err := app.contentService.Save(bucket, oneChkData)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	pk, err := app.pkFactory.Create()
@@ -131,6 +154,24 @@ func (app *application) Delete(hashStr string) error {
 		return err
 	}
 
+	// retrieve the bucket:
+	bucket, err := app.bucketRepository.Retrieve(*hash)
+	if err != nil {
+		return err
+	}
+
+	// delete the bucket:
+	err = app.bucketService.Delete(bucket)
+	if err != nil {
+		return err
+	}
+
+	// delete the bucket's content:
+	err = app.contentService.DeleteAll(bucket)
+	if err != nil {
+		return err
+	}
+
 	err = identity.Wallet().Miner().ToTransact().Delete(*hash)
 	if err != nil {
 		return err
@@ -161,7 +202,6 @@ func (app *application) Retrieve(hashStr string) (buckets.Bucket, error) {
 
 // RetrieveAll retrieves all the buckets
 func (app *application) RetrieveAll() ([]buckets.Bucket, error) {
-
 	fetchBuckets := func(identityBuckets []identity_buckets.Bucket) []buckets.Bucket {
 		out := []buckets.Bucket{}
 		for _, oneIdentityBucket := range identityBuckets {
@@ -210,46 +250,50 @@ func (app *application) RetrieveAll() ([]buckets.Bucket, error) {
 	return buckets, nil
 }
 
-func (app *application) dirToFiles(rootPath string, relativePath string) ([]files.File, error) {
+func (app *application) dirToFiles(rootPath string, relativePath string) ([]files.File, [][][]byte, error) {
 	path := filepath.Join(rootPath, relativePath)
 	dirFiles, err := ioutil.ReadDir(path)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	out := []files.File{}
+	chks := [][][]byte{}
 	for _, oneFile := range dirFiles {
 		name := oneFile.Name()
 		filePath := filepath.Join(relativePath, name)
 		if oneFile.IsDir() {
-			subFiles, err := app.dirToFiles(rootPath, filePath)
+			subFiles, subChksData, err := app.dirToFiles(rootPath, filePath)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 
 			out = append(out, subFiles...)
+			chks = append(chks, subChksData...)
 			continue
 		}
 
-		file, err := app.dirFileToFile(rootPath, filePath)
+		file, chksData, err := app.dirFileToFile(rootPath, filePath)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		out = append(out, file)
+		chks = append(chks, chksData)
 	}
 
-	return out, nil
+	return out, chks, nil
 }
 
-func (app *application) dirFileToFile(rootPath string, relativePath string) (files.File, error) {
+func (app *application) dirFileToFile(rootPath string, relativePath string) (files.File, [][]byte, error) {
 	path := filepath.Join(rootPath, relativePath)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	index := 0
+	chkData := [][]byte{}
 	chunks := []chunks.Chunk{}
 	loops := int(math.Ceil(float64(len(data)) / float64(app.chunkSizeInBytes)))
 	for i := 0; i < loops; i++ {
@@ -260,15 +304,16 @@ func (app *application) dirFileToFile(rootPath string, relativePath string) (fil
 			sizeInBytes := len(dataChk)
 			dataHash, err := app.hashAdapter.FromBytes(dataChk)
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 
 			chk, err := app.chunkBuilder.Create().WithSizeInBytes(uint(sizeInBytes)).WithData(*dataHash).CreatedOn(createdOn).Now()
 			if err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 
 			chunks = append(chunks, chk)
+			chkData = append(chkData, dataChk)
 			continue
 		}
 
@@ -277,18 +322,24 @@ func (app *application) dirFileToFile(rootPath string, relativePath string) (fil
 		sizeInBytes := len(dataChk)
 		dataHash, err := app.hashAdapter.FromBytes(dataChk)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		chk, err := app.chunkBuilder.Create().WithSizeInBytes(uint(sizeInBytes)).WithData(*dataHash).CreatedOn(createdOn).Now()
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 
 		chunks = append(chunks, chk)
+		chkData = append(chkData, dataChk)
 		index++
 	}
 
 	createdOn := time.Now().UTC()
-	return app.fileBuilder.Create().WithRelativePath(relativePath).WithChunks(chunks).CreatedOn(createdOn).Now()
+	file, err := app.fileBuilder.Create().WithRelativePath(relativePath).WithChunks(chunks).CreatedOn(createdOn).Now()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return file, chkData, nil
 }

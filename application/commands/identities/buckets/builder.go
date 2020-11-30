@@ -6,6 +6,7 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/buckets"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
+	"github.com/xmn-services/buckets-network/domain/memory/contents"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	identity_buckets "github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/buckets/bucket"
 	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption"
@@ -19,9 +20,11 @@ type builder struct {
 	fileBuilder           files.Builder
 	bucketBuilder         buckets.Builder
 	bucketRepository      buckets.Repository
+	bucketService         buckets.Service
 	identityBucketBuilder identity_buckets.Builder
 	identityRepository    identities.Repository
 	identityService       identities.Service
+	contentService        contents.Service
 	chunkSizeInBytes      uint
 	name                  string
 	password              string
@@ -35,9 +38,11 @@ func createBuilder(
 	fileBuilder files.Builder,
 	bucketBuilder buckets.Builder,
 	bucketRepository buckets.Repository,
+	bucketService buckets.Service,
 	identityBucketBuilder identity_buckets.Builder,
 	identityRepository identities.Repository,
 	identityService identities.Service,
+	contentService contents.Service,
 	chunkSizeInBytes uint,
 ) Builder {
 	out := builder{
@@ -47,9 +52,11 @@ func createBuilder(
 		fileBuilder:           fileBuilder,
 		bucketBuilder:         bucketBuilder,
 		bucketRepository:      bucketRepository,
+		bucketService:         bucketService,
 		identityBucketBuilder: identityBucketBuilder,
 		identityRepository:    identityRepository,
 		identityService:       identityService,
+		contentService:        contentService,
 		chunkSizeInBytes:      chunkSizeInBytes,
 	}
 
@@ -65,9 +72,11 @@ func (app *builder) Create() Builder {
 		app.fileBuilder,
 		app.bucketBuilder,
 		app.bucketRepository,
+		app.bucketService,
 		app.identityBucketBuilder,
 		app.identityRepository,
 		app.identityService,
+		app.contentService,
 		app.chunkSizeInBytes,
 	)
 }
@@ -111,9 +120,11 @@ func (app *builder) Now() (Application, error) {
 		app.fileBuilder,
 		app.bucketBuilder,
 		app.bucketRepository,
+		app.bucketService,
 		app.identityBucketBuilder,
 		app.identityRepository,
 		app.identityService,
+		app.contentService,
 		app.name,
 		app.password,
 		app.seed,

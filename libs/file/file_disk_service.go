@@ -39,7 +39,7 @@ func (app *fileDiskService) Delete(relativePath string) error {
 		return errors.New(str)
 	}
 
-	return os.Remove(path)
+	return os.RemoveAll(path)
 }
 
 // DeleteAll deletes all content from disk

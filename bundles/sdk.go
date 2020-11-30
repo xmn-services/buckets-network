@@ -227,12 +227,16 @@ func NewIdentityBucketApplicationBuilder(
 	encPKBitrate int,
 ) application_identity_buckets.Builder {
 	bucketRepository := NewBucketRepository(basePath)
+	bucketService := NewBucketService(basePath)
 	identityRepository := identities.NewRepository(basePath, extension)
 	identityService := identities.NewService(basePath, extension)
+	contentService := NewContentService(basePath)
 	return application_identity_buckets.NewBuilder(
 		bucketRepository,
+		bucketService,
 		identityRepository,
 		identityService,
+		contentService,
 		chunkSizeInBytes,
 		encPKBitrate,
 	)

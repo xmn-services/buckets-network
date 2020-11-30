@@ -94,7 +94,7 @@ func (obj *bucket) FileChunkByHash(hash hash.Hash) (files.File, chunks.Chunk, er
 		break
 	}
 
-	if chunk != nil {
+	if file != nil && chunk != nil {
 		return file, chunk, nil
 	}
 

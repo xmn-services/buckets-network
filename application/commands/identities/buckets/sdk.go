@@ -4,6 +4,7 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/buckets"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
+	"github.com/xmn-services/buckets-network/domain/memory/contents"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	identity_buckets "github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/buckets/bucket"
 	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption"
@@ -13,8 +14,10 @@ import (
 // NewBuilder creates a new builder instance
 func NewBuilder(
 	bucketRepository buckets.Repository,
+	bucketService buckets.Service,
 	identityRepository identities.Repository,
 	identityService identities.Service,
+	contentService contents.Service,
 	chunkSizeInBytes uint,
 	encPKBitrate int,
 ) Builder {
@@ -32,9 +35,11 @@ func NewBuilder(
 		fileBuilder,
 		bucketBuilder,
 		bucketRepository,
+		bucketService,
 		identityBucketBuilder,
 		identityRepository,
 		identityService,
+		contentService,
 		chunkSizeInBytes,
 	)
 }

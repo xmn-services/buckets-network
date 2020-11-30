@@ -4,9 +4,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
-	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 )
 
 type builder struct {
@@ -74,7 +74,7 @@ func (app *builder) Now() (File, error) {
 	}
 
 	for _, oneChunk := range app.chunks {
-		data = append(data, oneChunk.Hash().Bytes())
+		data = append(data, oneChunk.Data().Bytes())
 	}
 
 	hsh, err := app.hashAdapter.FromMultiBytes(data)
@@ -89,7 +89,7 @@ func (app *builder) Now() (File, error) {
 
 	mp := map[string]chunks.Chunk{}
 	for _, oneChunk := range app.chunks {
-		mp[oneChunk.Hash().String()] = oneChunk
+		mp[oneChunk.Data().String()] = oneChunk
 	}
 
 	return createFile(immutable, app.relativePath, app.chunks, mp), nil
