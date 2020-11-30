@@ -520,8 +520,6 @@ func (app *application) retrieveIdentity(w http.ResponseWriter, r *http.Request)
 			return
 		}
 
-		fmt.Printf("\nserver: %s\n", js)
-
 		renderSuccess(w, js)
 		return
 	}
