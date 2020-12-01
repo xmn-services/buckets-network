@@ -38,9 +38,6 @@ import (
 	transfer_genesis "github.com/xmn-services/buckets-network/domain/transfers/genesis"
 	transfer_link "github.com/xmn-services/buckets-network/domain/transfers/links"
 	transfer_mined_link "github.com/xmn-services/buckets-network/domain/transfers/links/mined"
-	restapis_server "github.com/xmn-services/buckets-network/infrastructure/restapis/servers"
-	libs_file "github.com/xmn-services/buckets-network/libs/file"
-
 	"github.com/xmn-services/buckets-network/infrastructure/restapis/clients"
 	client_chains "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/chains"
 	client_identities "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/identities"
@@ -50,6 +47,8 @@ import (
 	client_identities_storages "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/identities/storages"
 	client_peers "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/peers"
 	client_storages "github.com/xmn-services/buckets-network/infrastructure/restapis/clients/storages"
+	restapis_server "github.com/xmn-services/buckets-network/infrastructure/restapis/servers"
+	libs_file "github.com/xmn-services/buckets-network/libs/file"
 )
 
 const chunksDirName = "chunks"

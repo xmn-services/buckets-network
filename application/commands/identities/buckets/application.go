@@ -15,6 +15,7 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	identity_buckets "github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners/buckets/bucket"
 	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption"
+	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption/public"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
@@ -90,7 +91,13 @@ func (app *application) Add(relativePath string) error {
 		return err
 	}
 
-	files, filesChksData, err := app.dirToFiles(absolutePath, ".")
+	pk, err := app.pkFactory.Create()
+	if err != nil {
+		return err
+	}
+
+	pubKey := pk.Public()
+	files, filesChksData, err := app.dirToFiles(absolutePath, ".", pubKey)
 	if err != nil {
 		return err
 	}
@@ -115,11 +122,6 @@ func (app *application) Add(relativePath string) error {
 				return err
 			}
 		}
-	}
-
-	pk, err := app.pkFactory.Create()
-	if err != nil {
-		return err
 	}
 
 	createdOn := time.Now().UTC()
@@ -250,7 +252,7 @@ func (app *application) RetrieveAll() ([]buckets.Bucket, error) {
 	return buckets, nil
 }
 
-func (app *application) dirToFiles(rootPath string, relativePath string) ([]files.File, [][][]byte, error) {
+func (app *application) dirToFiles(rootPath string, relativePath string, pubKey public.Key) ([]files.File, [][][]byte, error) {
 	path := filepath.Join(rootPath, relativePath)
 	dirFiles, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -263,7 +265,7 @@ func (app *application) dirToFiles(rootPath string, relativePath string) ([]file
 		name := oneFile.Name()
 		filePath := filepath.Join(relativePath, name)
 		if oneFile.IsDir() {
-			subFiles, subChksData, err := app.dirToFiles(rootPath, filePath)
+			subFiles, subChksData, err := app.dirToFiles(rootPath, filePath, pubKey)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -273,7 +275,7 @@ func (app *application) dirToFiles(rootPath string, relativePath string) ([]file
 			continue
 		}
 
-		file, chksData, err := app.dirFileToFile(rootPath, filePath)
+		file, chksData, err := app.dirFileToFile(rootPath, filePath, pubKey)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -285,7 +287,25 @@ func (app *application) dirToFiles(rootPath string, relativePath string) ([]file
 	return out, chks, nil
 }
 
-func (app *application) dirFileToFile(rootPath string, relativePath string) (files.File, [][]byte, error) {
+func (app *application) transformData(input []byte, pubKey public.Key) ([]byte, *hash.Hash, uint, error) {
+	if pubKey != nil {
+		data, err := pubKey.Encrypt(input)
+		if err != nil {
+			return nil, nil, 0, err
+		}
+
+		input = data
+	}
+
+	hsh, err := app.hashAdapter.FromBytes(input)
+	if err != nil {
+		return nil, nil, 0, err
+	}
+
+	return input, hsh, uint(len(input)), nil
+}
+
+func (app *application) dirFileToFile(rootPath string, relativePath string, pubKey public.Key) (files.File, [][]byte, error) {
 	path := filepath.Join(rootPath, relativePath)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -300,14 +320,12 @@ func (app *application) dirFileToFile(rootPath string, relativePath string) (fil
 		beginsOn := i * int(app.chunkSizeInBytes)
 		createdOn := time.Now().UTC()
 		if (i + 1) == loops {
-			dataChk := data[beginsOn:]
-			sizeInBytes := len(dataChk)
-			dataHash, err := app.hashAdapter.FromBytes(dataChk)
+			dataChk, dataHash, sizeInBytes, err := app.transformData(data[beginsOn:], pubKey)
 			if err != nil {
 				return nil, nil, err
 			}
 
-			chk, err := app.chunkBuilder.Create().WithSizeInBytes(uint(sizeInBytes)).WithData(*dataHash).CreatedOn(createdOn).Now()
+			chk, err := app.chunkBuilder.Create().WithSizeInBytes(sizeInBytes).WithData(*dataHash).CreatedOn(createdOn).Now()
 			if err != nil {
 				return nil, nil, err
 			}
