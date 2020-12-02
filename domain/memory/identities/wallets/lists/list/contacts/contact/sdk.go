@@ -39,7 +39,10 @@ type Builder interface {
 type Contact interface {
 	Hash() hash.Hash
 	Key() public.Key
+	SetKey(key public.Key)
 	Name() string
+	SetName(name string)
 	Description() string
+	SetDescription(description string)
 	Access() accesses.Accesses
 }

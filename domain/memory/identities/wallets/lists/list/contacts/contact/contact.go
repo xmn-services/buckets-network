@@ -66,14 +66,29 @@ func (obj *contact) Key() public.Key {
 	return obj.key
 }
 
+// SetKey sets the key
+func (obj *contact) SetKey(key public.Key) {
+	obj.key = key
+}
+
 // Name returns the name
 func (obj *contact) Name() string {
 	return obj.name
 }
 
+// SetName sets the name
+func (obj *contact) SetName(name string) {
+	obj.name = name
+}
+
 // Description returns the description
 func (obj *contact) Description() string {
 	return obj.description
+}
+
+// SetDescription sets the description
+func (obj *contact) SetDescription(description string) {
+	obj.description = description
 }
 
 // Access returns the access

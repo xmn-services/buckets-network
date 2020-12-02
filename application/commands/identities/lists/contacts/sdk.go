@@ -2,10 +2,33 @@ package contacts
 
 import (
 	"github.com/xmn-services/buckets-network/application/commands/identities/lists/contacts/buckets"
+	application_contact_bucket "github.com/xmn-services/buckets-network/application/commands/identities/lists/contacts/buckets"
+	"github.com/xmn-services/buckets-network/domain/memory/identities"
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/lists/list/contacts"
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/lists/list/contacts/contact"
 	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption/public"
+	"github.com/xmn-services/buckets-network/libs/hash"
 )
+
+// NewBuilder creates a new builder instance
+func NewBuilder(
+	identityRepository identities.Repository,
+	identityService identities.Service,
+	bucketAppBuilder application_contact_bucket.Builder,
+) Builder {
+	hashAdapter := hash.NewAdapter()
+	return createBuilder(
+		hashAdapter,
+		identityRepository,
+		identityService,
+		bucketAppBuilder,
+	)
+}
+
+// NewUpdateBuilder creates a new update builder
+func NewUpdateBuilder() UpdateBuilder {
+	return createUpdateBuilder()
+}
 
 // Builder represents a contact application builder
 type Builder interface {
@@ -19,7 +42,7 @@ type Builder interface {
 
 // Application represents a contacts application
 type Application interface {
-	RetrieveAll() contacts.Contacts
+	RetrieveAll() (contacts.Contacts, error)
 	Retrieve(contactHashStr string) (contact.Contact, error)
 	Update(contactHashStr string, update Update) error
 	Delete(contactHashStr string) error
