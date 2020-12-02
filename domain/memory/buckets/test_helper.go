@@ -3,6 +3,7 @@ package buckets
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"testing"
 	"time"
 
@@ -27,7 +28,7 @@ func CreateBucketForTests(files []files.File) Bucket {
 // CreateBucketForTestsWithoutParams creates a bucket for tests without params
 func CreateBucketForTestsWithoutParams() Bucket {
 	hashAdapter := hash.NewAdapter()
-	firstHash, _ := hashAdapter.FromBytes([]byte("this is the first hash"))
+	firstHash, _ := hashAdapter.FromBytes([]byte(fmt.Sprintf("this is the first hash: %s", time.Now().UTC().String())))
 	secondHash, _ := hashAdapter.FromBytes([]byte("this is the second hash"))
 
 	firstChunks := []chunks.Chunk{

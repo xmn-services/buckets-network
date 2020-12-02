@@ -1,6 +1,8 @@
 package wallets
 
 import (
+	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/accesses"
+	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/lists"
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/miners"
 	"github.com/xmn-services/buckets-network/domain/memory/identities/wallets/storages"
 )
@@ -20,7 +22,14 @@ func NewFactory() Factory {
 func NewBuilder() Builder {
 	minerFactory := miners.NewFactory()
 	storageFactory := storages.NewFactory()
-	return createBuilder(minerFactory, storageFactory)
+	accessesFactory := accesses.NewFactory()
+	listsFactory := lists.NewFactory()
+	return createBuilder(
+		minerFactory,
+		storageFactory,
+		accessesFactory,
+		listsFactory,
+	)
 }
 
 // Adapter represents the wallet adapter
@@ -39,6 +48,8 @@ type Builder interface {
 	Create() Builder
 	WithMiner(miner miners.Miner) Builder
 	WithStorage(storage storages.Storage) Builder
+	WithAccesses(accesses accesses.Accesses) Builder
+	WithLists(lists lists.Lists) Builder
 	Now() (Wallet, error)
 }
 
@@ -46,4 +57,6 @@ type Builder interface {
 type Wallet interface {
 	Miner() miners.Miner
 	Storage() storages.Storage
+	Accesses() accesses.Accesses
+	Lists() lists.Lists
 }

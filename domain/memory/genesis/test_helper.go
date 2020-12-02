@@ -39,7 +39,7 @@ func CreateRepositoryServiceForTests() (Repository, Service) {
 	return repository, service
 }
 
-// TestCompare compare two expense instances
+// TestCompare compare two genesis instances
 func TestCompare(t *testing.T, first Genesis, second Genesis) {
 	js, err := json.Marshal(first)
 	if err != nil {
