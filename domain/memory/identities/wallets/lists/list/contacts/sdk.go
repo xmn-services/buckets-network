@@ -42,6 +42,8 @@ type Builder interface {
 // Contacts represents contacts
 type Contacts interface {
 	All() []contact.Contact
+	Fetch(contactHash hash.Hash) (contact.Contact, error)
 	Add(contact contact.Contact) error
 	Delete(contact hash.Hash) error
+	Update(contact contact.Contact) error
 }

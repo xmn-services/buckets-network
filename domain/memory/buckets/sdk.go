@@ -6,6 +6,7 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	transfer_bucket "github.com/xmn-services/buckets-network/domain/transfers/buckets"
+	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption/public"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 	"github.com/xmn-services/buckets-network/libs/hashtree"
@@ -73,6 +74,7 @@ type Bucket interface {
 type Repository interface {
 	Retrieve(hash hash.Hash) (Bucket, error)
 	RetrieveAll(hashes []hash.Hash) ([]Bucket, error)
+	RetrieveWithChunksContentFromPath(path string, decryptPubKey public.Key) (Bucket, [][][]byte, error)
 }
 
 // Service represents a bucket bucket service

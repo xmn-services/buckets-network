@@ -3,6 +3,7 @@ package buckets
 import (
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files"
 	transfer_bucket "github.com/xmn-services/buckets-network/domain/transfers/buckets"
+	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption/public"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
@@ -62,4 +63,19 @@ func (app *repository) RetrieveAll(hashes []hash.Hash) ([]Bucket, error) {
 	}
 
 	return out, nil
+}
+
+// RetrieveWithChunksContentFromPath retrieves a bucket with chunk's contents from path
+func (app *repository) RetrieveWithChunksContentFromPath(path string, decryptPubKey public.Key) (Bucket, [][][]byte, error) {
+	files, chunksContent, err := app.fileRepository.RetrieveAllWithChunksContentFromPath(path, decryptPubKey)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	bucket, err := app.builder.Create().WithFiles(files).Now()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return bucket, chunksContent, nil
 }

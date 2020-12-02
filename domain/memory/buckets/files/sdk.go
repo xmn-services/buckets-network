@@ -5,6 +5,7 @@ import (
 
 	"github.com/xmn-services/buckets-network/domain/memory/buckets/files/chunks"
 	transfer_file "github.com/xmn-services/buckets-network/domain/transfers/buckets/files"
+	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption/public"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 	"github.com/xmn-services/buckets-network/libs/hashtree"
@@ -24,9 +25,11 @@ func NewService(
 func NewRepository(
 	chunkRepository chunks.Repository,
 	trRepository transfer_file.Repository,
+	chkSizeInBytes uint,
 ) Repository {
+	hashAdapter := hash.NewAdapter()
 	builder := NewBuilder()
-	return createRepository(chunkRepository, trRepository, builder)
+	return createRepository(hashAdapter, chunkRepository, trRepository, builder, chkSizeInBytes)
 }
 
 // NewAdapter creates a new adapter instance
@@ -71,6 +74,7 @@ type File interface {
 type Repository interface {
 	Retrieve(hash hash.Hash) (File, error)
 	RetrieveAll(hashes []hash.Hash) ([]File, error)
+	RetrieveAllWithChunksContentFromPath(path string, decryptPubKey public.Key) ([]File, [][][]byte, error)
 }
 
 // Service represents a file service

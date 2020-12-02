@@ -24,11 +24,12 @@ func CreateFileForTests(relativePath string, chunks []chunks.Chunk) File {
 
 // CreateRepositoryServiceForTests creates a repository and service for tests
 func CreateRepositoryServiceForTests() (Repository, Service) {
+	chkSizeInBytes := uint(1024 * 1024)
 	fileRepositoryService := libs_file.CreateRepositoryServiceForTests()
 	chunkRepository, chunkService := chunks.CreateRepositoryServiceForTests()
 	trRepository := transfer_file.NewRepository(fileRepositoryService)
 	trService := transfer_file.NewService(fileRepositoryService)
-	repository := NewRepository(chunkRepository, trRepository)
+	repository := NewRepository(chunkRepository, trRepository, chkSizeInBytes)
 	service := NewService(chunkService, repository, trService)
 	return repository, service
 }

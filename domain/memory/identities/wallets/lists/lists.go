@@ -49,6 +49,17 @@ func (obj *lists) All() []list.List {
 	return obj.lst
 }
 
+// Fetch fetches a list by hash
+func (obj *lists) Fetch(listHash hash.Hash) (list.List, error) {
+	keyname := listHash.String()
+	if ins, ok := obj.mp[keyname]; ok {
+		return ins, nil
+	}
+
+	str := fmt.Sprintf("the list (hash: %s) does NOT exists", keyname)
+	return nil, errors.New(str)
+}
+
 // Add adds a list
 func (obj *lists) Add(list list.List) error {
 	keyname := list.Hash().String()
@@ -78,6 +89,25 @@ func (obj *lists) Delete(listHash hash.Hash) error {
 	}
 
 	delete(obj.mp, keyname)
+	return nil
+}
+
+// Update updates a list
+func (obj *lists) Update(list list.List) error {
+	keyname := list.Hash().String()
+	if _, ok := obj.mp[keyname]; !ok {
+		str := fmt.Sprintf("the list (hash: %s) does not exists and therefore cannot be updated", keyname)
+		return errors.New(str)
+	}
+
+	for index, oneList := range obj.lst {
+		if oneList.Hash().Compare(list.Hash()) {
+			obj.lst[index] = list
+			break
+		}
+	}
+
+	obj.mp[keyname] = list
 	return nil
 }
 

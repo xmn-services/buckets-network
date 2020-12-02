@@ -49,6 +49,17 @@ func (obj *contacts) All() []contact.Contact {
 	return obj.lst
 }
 
+// Fetch fetches a contact by hash
+func (obj *contacts) Fetch(contactHash hash.Hash) (contact.Contact, error) {
+	keyname := contactHash.String()
+	if ins, ok := obj.mp[keyname]; ok {
+		return ins, nil
+	}
+
+	str := fmt.Sprintf("the contact (hash: %s) does NOT exists", keyname)
+	return nil, errors.New(str)
+}
+
 // Add adds a conatct
 func (obj *contacts) Add(contact contact.Contact) error {
 	keyname := contact.Hash().String()
@@ -78,6 +89,25 @@ func (obj *contacts) Delete(contact hash.Hash) error {
 	}
 
 	delete(obj.mp, keyname)
+	return nil
+}
+
+// Update updates a contact
+func (obj *contacts) Update(contact contact.Contact) error {
+	keyname := contact.Hash().String()
+	if _, ok := obj.mp[keyname]; !ok {
+		str := fmt.Sprintf("the contact (hash: %s) does not exists and therefore cannot be updated", keyname)
+		return errors.New(str)
+	}
+
+	for index, oneContact := range obj.lst {
+		if oneContact.Hash().Compare(contact.Hash()) {
+			obj.lst[index] = contact
+			break
+		}
+	}
+
+	obj.mp[keyname] = contact
 	return nil
 }
 

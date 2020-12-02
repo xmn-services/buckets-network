@@ -42,6 +42,8 @@ type Builder interface {
 // Lists represents lists
 type Lists interface {
 	All() []list.List
+	Fetch(listHash hash.Hash) (list.List, error)
 	Add(list list.List) error
 	Delete(listHash hash.Hash) error
+	Update(list list.List) error
 }
