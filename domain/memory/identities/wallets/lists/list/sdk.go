@@ -36,6 +36,8 @@ type Builder interface {
 type List interface {
 	Hash() hash.Hash
 	Name() string
+	SetName(name string)
 	Description() string
+	SetDescription(description string)
 	Contacts() contacts.Contacts
 }

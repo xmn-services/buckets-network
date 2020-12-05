@@ -55,9 +55,19 @@ func (obj *list) Name() string {
 	return obj.name
 }
 
+// SetName sets the name
+func (obj *list) SetName(name string) {
+	obj.name = name
+}
+
 // Description returns the description
 func (obj *list) Description() string {
 	return obj.description
+}
+
+// SetDescription sets the description
+func (obj *list) SetDescription(description string) {
+	obj.description = description
 }
 
 // Contacts returns the contacts
