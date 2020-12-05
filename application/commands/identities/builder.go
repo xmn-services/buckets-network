@@ -3,8 +3,9 @@ package identities
 import (
 	"errors"
 
-	"github.com/xmn-services/buckets-network/application/commands/identities/buckets"
+	"github.com/xmn-services/buckets-network/application/commands/identities/access"
 	"github.com/xmn-services/buckets-network/application/commands/identities/chains"
+	"github.com/xmn-services/buckets-network/application/commands/identities/lists"
 	"github.com/xmn-services/buckets-network/application/commands/identities/miners"
 	"github.com/xmn-services/buckets-network/application/commands/identities/storages"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
@@ -12,7 +13,8 @@ import (
 
 type builder struct {
 	minerApp           miners.Application
-	bucketBuilder      buckets.Builder
+	accessBuilder      access.Builder
+	listsBuilder       lists.Builder
 	storageBuilder     storages.Builder
 	chainBuilder       chains.Builder
 	identityRepository identities.Repository
@@ -24,7 +26,8 @@ type builder struct {
 
 func createBuilder(
 	minerApp miners.Application,
-	bucketBuilder buckets.Builder,
+	accessBuilder access.Builder,
+	listsBuilder lists.Builder,
 	storageBuilder storages.Builder,
 	chainBuilder chains.Builder,
 	identityRepository identities.Repository,
@@ -32,7 +35,8 @@ func createBuilder(
 ) Builder {
 	out := builder{
 		minerApp:           minerApp,
-		bucketBuilder:      bucketBuilder,
+		accessBuilder:      accessBuilder,
+		listsBuilder:       listsBuilder,
 		storageBuilder:     storageBuilder,
 		chainBuilder:       chainBuilder,
 		identityRepository: identityRepository,
@@ -49,7 +53,8 @@ func createBuilder(
 func (app *builder) Create() Builder {
 	return createBuilder(
 		app.minerApp,
-		app.bucketBuilder,
+		app.accessBuilder,
+		app.listsBuilder,
 		app.storageBuilder,
 		app.chainBuilder,
 		app.identityRepository,
@@ -89,7 +94,12 @@ func (app *builder) Now() (Application, error) {
 		return nil, errors.New("the seed is mandatory in order to build an Application instance")
 	}
 
-	bucketApp, err := app.bucketBuilder.Create().WithName(app.name).WithPassword(app.password).WithSeed(app.seed).Now()
+	accessApp, err := app.accessBuilder.Create().WithName(app.name).WithPassword(app.password).WithSeed(app.seed).Now()
+	if err != nil {
+		return nil, err
+	}
+
+	listApp, err := app.listsBuilder.Create().WithName(app.name).WithPassword(app.password).WithSeed(app.seed).Now()
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +114,7 @@ func (app *builder) Now() (Application, error) {
 		return nil, err
 	}
 
-	subApps := createSubApplications(bucketApp, storageApp, chainApp, app.minerApp)
+	subApps := createSubApplications(accessApp, listApp, storageApp, chainApp, app.minerApp)
 	currentApp := createCurrent(app.identityRepository, app.identityService, app.name, app.password, app.seed)
 	return createApplication(currentApp, subApps), nil
 }

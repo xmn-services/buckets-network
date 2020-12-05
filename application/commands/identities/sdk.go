@@ -3,8 +3,9 @@ package identities
 import (
 	"net/url"
 
-	"github.com/xmn-services/buckets-network/application/commands/identities/buckets"
+	"github.com/xmn-services/buckets-network/application/commands/identities/access"
 	"github.com/xmn-services/buckets-network/application/commands/identities/chains"
+	"github.com/xmn-services/buckets-network/application/commands/identities/lists"
 	"github.com/xmn-services/buckets-network/application/commands/identities/miners"
 	"github.com/xmn-services/buckets-network/application/commands/identities/storages"
 	"github.com/xmn-services/buckets-network/domain/memory/identities"
@@ -13,7 +14,8 @@ import (
 // NewBuilder creates a new builder instance
 func NewBuilder(
 	minerApp miners.Application,
-	bucketBuilder buckets.Builder,
+	accesBuilder access.Builder,
+	listBuilder lists.Builder,
 	storageBuilder storages.Builder,
 	chainBuilder chains.Builder,
 	identityRepository identities.Repository,
@@ -21,7 +23,8 @@ func NewBuilder(
 ) Builder {
 	return createBuilder(
 		minerApp,
-		bucketBuilder,
+		accesBuilder,
+		listBuilder,
 		storageBuilder,
 		chainBuilder,
 		identityRepository,
@@ -58,7 +61,8 @@ type Current interface {
 
 // SubApplications represents an identity's sub applications
 type SubApplications interface {
-	Bucket() buckets.Application
+	Access() access.Application
+	List() lists.Application
 	Storage() storages.Application
 	Chain() chains.Application
 	Miner() miners.Application

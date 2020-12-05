@@ -1,27 +1,31 @@
 package identities
 
 import (
-	"github.com/xmn-services/buckets-network/application/commands/identities/buckets"
+	"github.com/xmn-services/buckets-network/application/commands/identities/access"
 	"github.com/xmn-services/buckets-network/application/commands/identities/chains"
+	"github.com/xmn-services/buckets-network/application/commands/identities/lists"
 	"github.com/xmn-services/buckets-network/application/commands/identities/miners"
 	"github.com/xmn-services/buckets-network/application/commands/identities/storages"
 )
 
 type subApplications struct {
-	bucket  buckets.Application
+	access  access.Application
+	lists   lists.Application
 	storage storages.Application
 	chain   chains.Application
 	miner   miners.Application
 }
 
 func createSubApplications(
-	bucket buckets.Application,
+	access access.Application,
+	lists lists.Application,
 	storage storages.Application,
 	chain chains.Application,
 	miner miners.Application,
 ) SubApplications {
 	out := subApplications{
-		bucket:  bucket,
+		access:  access,
+		lists:   lists,
 		storage: storage,
 		chain:   chain,
 		miner:   miner,
@@ -30,9 +34,14 @@ func createSubApplications(
 	return &out
 }
 
-// Bucket returns the bucket application
-func (app *subApplications) Bucket() buckets.Application {
-	return app.bucket
+// Access returns the access application
+func (app *subApplications) Access() access.Application {
+	return app.access
+}
+
+// List returns the list application
+func (app *subApplications) List() lists.Application {
+	return app.lists
 }
 
 // Storage returns the storage application
