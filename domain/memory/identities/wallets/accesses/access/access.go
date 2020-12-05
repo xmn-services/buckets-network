@@ -3,13 +3,13 @@ package access
 import (
 	"encoding/json"
 
-	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption/public"
+	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type access struct {
 	bucket hash.Hash
-	key    public.Key
+	key    encryption.PrivateKey
 }
 
 func createAccessFromJSON(ins *JSONAccess) (Access, error) {
@@ -18,7 +18,7 @@ func createAccessFromJSON(ins *JSONAccess) (Access, error) {
 		return nil, err
 	}
 
-	key, err := public.NewAdapter().FromEncoded(ins.Key)
+	key, err := encryption.NewAdapter().FromEncoded(ins.Key)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +32,7 @@ func createAccessFromJSON(ins *JSONAccess) (Access, error) {
 
 func createAccess(
 	bucket hash.Hash,
-	key public.Key,
+	key encryption.PrivateKey,
 ) Access {
 	out := access{
 		bucket: bucket,
@@ -48,7 +48,7 @@ func (obj *access) Bucket() hash.Hash {
 }
 
 // Key returns the public key
-func (obj *access) Key() public.Key {
+func (obj *access) Key() encryption.PrivateKey {
 	return obj.key
 }
 

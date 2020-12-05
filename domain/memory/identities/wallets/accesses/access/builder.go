@@ -3,13 +3,13 @@ package access
 import (
 	"errors"
 
-	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption/public"
+	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type builder struct {
 	bucket *hash.Hash
-	key    public.Key
+	key    encryption.PrivateKey
 }
 
 func createBuilder() Builder {
@@ -33,7 +33,7 @@ func (app *builder) WithBucket(bucket hash.Hash) Builder {
 }
 
 // WithKey adds a public key to the builder
-func (app *builder) WithKey(key public.Key) Builder {
+func (app *builder) WithKey(key encryption.PrivateKey) Builder {
 	app.key = key
 	return app
 }

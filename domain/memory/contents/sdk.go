@@ -3,13 +3,14 @@ package contents
 import (
 	"github.com/xmn-services/buckets-network/domain/memory/buckets"
 	transfer_content "github.com/xmn-services/buckets-network/domain/transfers/contents"
+	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 // NewService creates a new service
-func NewService(trService transfer_content.Service) Service {
+func NewService(repository Repository, trService transfer_content.Service) Service {
 	hashAdapter := hash.NewAdapter()
-	return createService(hashAdapter, trService)
+	return createService(hashAdapter, repository, trService)
 }
 
 // NewRepository creates a new repository
@@ -24,6 +25,7 @@ type Repository interface {
 
 // Service represents a content service
 type Service interface {
+	Extract(bucket buckets.Bucket, decryptPrivKey encryption.PrivateKey, absolutePath string) error
 	Save(bucket buckets.Bucket, data []byte) error
 	Delete(bucket buckets.Bucket, chunkHash hash.Hash) error
 	DeleteAll(bucket buckets.Bucket) error

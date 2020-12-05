@@ -7,21 +7,18 @@ import (
 	"testing"
 
 	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption"
-	"github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption/public"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 // CreateAccessForTests creates an access instance for tests
-func CreateAccessForTests(bucket hash.Hash) (Access, public.Key) {
+func CreateAccessForTests(bucket hash.Hash) (Access, encryption.PrivateKey) {
 	pk, _ := encryption.NewFactory(4096).Create()
-	key := pk.Public()
-
-	ins, err := NewBuilder().Create().WithBucket(bucket).WithKey(key).Now()
+	ins, err := NewBuilder().Create().WithBucket(bucket).WithKey(pk).Now()
 	if err != nil {
 		panic(err)
 	}
 
-	return ins, key
+	return ins, pk
 }
 
 // TestCompare compare two access instances

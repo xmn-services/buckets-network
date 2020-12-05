@@ -1,16 +1,16 @@
 package access
 
-import "github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption/public"
+import "github.com/xmn-services/buckets-network/libs/cryptography/pk/encryption"
 
 // JSONAccess represents a JSON access
 type JSONAccess struct {
 	Bucket string `json:"bucket"`
-	Key    string `json:"pubkey"`
+	Key    string `json:"pk"`
 }
 
 func createJSONAccessFromAccess(access Access) *JSONAccess {
-	pubKeyAdapter := public.NewAdapter()
-	key := pubKeyAdapter.ToEncoded(access.Key())
+	privKeyadapter := encryption.NewAdapter()
+	key := privKeyadapter.ToEncoded(access.Key())
 	bucket := access.Bucket().String()
 	return createJSONAccess(
 		key,
