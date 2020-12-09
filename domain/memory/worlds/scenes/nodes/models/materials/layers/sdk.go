@@ -1,6 +1,9 @@
 package layers
 
-import "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer"
+import (
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer"
+	"github.com/xmn-services/buckets-network/libs/entities"
+)
 
 // Builder represents the layers builder
 type Builder interface {
@@ -11,5 +14,6 @@ type Builder interface {
 
 // Layers represents layers
 type Layers interface {
+	entities.Immutable
 	All() []layer.Layer
 }
