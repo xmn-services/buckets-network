@@ -19,4 +19,5 @@ type Builder interface {
 type Rectangle interface {
 	Position() math.Vec2
 	Dimension() math.Vec2
+	String() string
 }
