@@ -19,4 +19,5 @@ type Color interface {
 	Red() uint32
 	Green() uint32
 	Blue() uint32
+	String() string
 }
