@@ -5,7 +5,6 @@ import (
 
 	"github.com/go-resty/resty/v2"
 	"github.com/xmn-services/buckets-network/application/commands/identities"
-	"github.com/xmn-services/buckets-network/application/commands/identities/buckets"
 	"github.com/xmn-services/buckets-network/application/commands/identities/chains"
 	"github.com/xmn-services/buckets-network/application/commands/identities/miners"
 	"github.com/xmn-services/buckets-network/application/commands/identities/storages"
@@ -14,7 +13,6 @@ import (
 )
 
 type builder struct {
-	bucketBuilder  buckets.Builder
 	storageBuilder storages.Builder
 	chainBuilder   chains.Builder
 	minerBuilder   miners.Builder
@@ -26,7 +24,6 @@ type builder struct {
 }
 
 func createBuilder(
-	bucketBuilder buckets.Builder,
 	storageBuilder storages.Builder,
 	chainBuilder chains.Builder,
 	minerBuilder miners.Builder,
@@ -34,7 +31,6 @@ func createBuilder(
 	peer peer.Peer,
 ) identities.Builder {
 	out := builder{
-		bucketBuilder:  bucketBuilder,
 		storageBuilder: storageBuilder,
 		chainBuilder:   chainBuilder,
 		minerBuilder:   minerBuilder,
@@ -51,7 +47,6 @@ func createBuilder(
 // Create initializes the builder
 func (app *builder) Create() identities.Builder {
 	return createBuilder(
-		app.bucketBuilder,
 		app.storageBuilder,
 		app.chainBuilder,
 		app.minerBuilder,
@@ -92,11 +87,6 @@ func (app *builder) Now() (identities.Application, error) {
 		return nil, errors.New("the seed is mandatory in order to build an Application instance")
 	}
 
-	bucket, err := app.bucketBuilder.Create().WithName(app.name).WithPassword(app.password).WithSeed(app.seed).Now()
-	if err != nil {
-		return nil, err
-	}
-
 	storage, err := app.storageBuilder.Create().WithName(app.name).WithPassword(app.password).WithSeed(app.seed).Now()
 	if err != nil {
 		return nil, err
@@ -122,7 +112,7 @@ func (app *builder) Now() (identities.Application, error) {
 		return nil, err
 	}
 
-	subApplications := createSubApplications(bucket, storage, chain, miner)
+	subApplications := createSubApplications(storage, chain, miner)
 	current := createCurrent(app.client, token, app.peer)
 	return createApplication(current, subApplications), nil
 }

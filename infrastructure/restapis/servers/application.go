@@ -71,6 +71,30 @@ func createApplication(
 	identityRouter.HandleFunc("", out.updateIdentity).Methods(http.MethodPut, http.MethodOptions)
 	identityRouter.HandleFunc("", out.deleteIdentity).Methods(http.MethodDelete, http.MethodOptions)
 
+	identityRouter.HandleFunc("/access/{bucket_hash:[0-9a-f]+}", out.retrieveAccess).Methods(http.MethodGet, http.MethodOptions)
+	identityRouter.HandleFunc("/access/{bucket_hash:[0-9a-f]+}", out.saveAccess).Methods(http.MethodPost, http.MethodOptions)
+	identityRouter.HandleFunc("/access/{bucket_hash:[0-9a-f]+}", out.deleteAccess).Methods(http.MethodDelete, http.MethodOptions)
+
+	identityRouter.HandleFunc("/access/{bucket_hash:[0-9a-f]+}/bucket", out.deleteAccessBucket).Methods(http.MethodDelete, http.MethodOptions)
+	identityRouter.HandleFunc("/access/{bucket_hash:[0-9a-f]+}/bucket", out.retrieveAccessBucket).Methods(http.MethodGet, http.MethodOptions)
+	identityRouter.HandleFunc("/access/{bucket_hash:[0-9a-f]+}/bucket", out.extractAccessBucket).Methods(http.MethodPost, http.MethodOptions)
+
+	identityRouter.HandleFunc("/lists", out.retrieveLists).Methods(http.MethodGet, http.MethodOptions)
+	identityRouter.HandleFunc("/lists", out.saveList).Methods(http.MethodPost, http.MethodOptions)
+	identityRouter.HandleFunc("/lists/{list_hash:[0-9a-f]+}", out.retrieveList).Methods(http.MethodGet, http.MethodOptions)
+	identityRouter.HandleFunc("/lists/{list_hash:[0-9a-f]+}", out.updateList).Methods(http.MethodPut, http.MethodOptions)
+	identityRouter.HandleFunc("/lists/{list_hash:[0-9a-f]+}", out.deleteList).Methods(http.MethodDelete, http.MethodOptions)
+
+	identityRouter.HandleFunc("/lists/{list_hash:[0-9a-f]+}/contacts", out.retrieveListContacts).Methods(http.MethodGet, http.MethodOptions)
+	identityRouter.HandleFunc("/lists/{list_hash:[0-9a-f]+}/contacts/{contact_hash:[0-9a-f]+}", out.retrieveListContact).Methods(http.MethodGet, http.MethodOptions)
+	identityRouter.HandleFunc("/lists/{list_hash:[0-9a-f]+}/contacts/{contact_hash:[0-9a-f]+}", out.updateListContact).Methods(http.MethodPut, http.MethodOptions)
+	identityRouter.HandleFunc("/lists/{list_hash:[0-9a-f]+}/contacts/{contact_hash:[0-9a-f]+}", out.deleteListContact).Methods(http.MethodDelete, http.MethodOptions)
+
+	identityRouter.HandleFunc("/lists/{list_hash:[0-9a-f]+}/contacts/{contact_hash:[0-9a-f]+}/buckets", out.retrieveListContactBuckets).Methods(http.MethodGet, http.MethodOptions)
+	identityRouter.HandleFunc("/lists/{list_hash:[0-9a-f]+}/contacts/{contact_hash:[0-9a-f]+}/buckets", out.saveListContactBucket).Methods(http.MethodPost, http.MethodOptions)
+	identityRouter.HandleFunc("/lists/{list_hash:[0-9a-f]+}/contacts/{contact_hash:[0-9a-f]+}/buckets/{bucket_hash:[0-9a-f]+}/", out.retrieveListContactBucket).Methods(http.MethodGet, http.MethodOptions)
+	identityRouter.HandleFunc("/lists/{list_hash:[0-9a-f]+}/contacts/{contact_hash:[0-9a-f]+}/buckets/{bucket_hash:[0-9a-f]+}/", out.deleteListContactBucket).Methods(http.MethodDelete, http.MethodOptions)
+
 	identityRouter.HandleFunc("/miners/test/{difficulty:[0-9]+}", out.identityMinerTest).Methods(http.MethodGet, http.MethodOptions)
 	identityRouter.HandleFunc("/miners/block/{hash:[0-9a-f]+}", out.identityMinerBlock).Methods(http.MethodGet, http.MethodOptions)
 	identityRouter.HandleFunc("/miners/link/{hash:[0-9a-f]+}", out.identityMinerLink).Methods(http.MethodGet, http.MethodOptions)
@@ -78,11 +102,6 @@ func createApplication(
 	identityRouter.HandleFunc("/chains", out.initIdentityChain).Methods(http.MethodPost, http.MethodOptions)
 	identityRouter.HandleFunc("/chains/blocks/{additional:[0-9]+}", out.identityChainMineBlocks).Methods(http.MethodPost, http.MethodOptions)
 	identityRouter.HandleFunc("/chains/links/{additional:[0-9]+}", out.identityChainMineLinks).Methods(http.MethodPost, http.MethodOptions)
-
-	identityRouter.HandleFunc("/buckets", out.retrieveIdentityBuckets).Methods(http.MethodGet, http.MethodOptions)
-	identityRouter.HandleFunc("/buckets", out.saveIdentityBucketPath).Methods(http.MethodPost, http.MethodOptions)
-	identityRouter.HandleFunc("/buckets/{hash:[0-9a-f]+}", out.retrieveIdentityBucketByHash).Methods(http.MethodGet, http.MethodOptions)
-	identityRouter.HandleFunc("/buckets/{hash:[0-9a-f]+}", out.deleteIdentityBucketByHash).Methods(http.MethodDelete, http.MethodOptions)
 
 	identityRouter.HandleFunc("/storages/{bucket_hash:[0-9a-f]+}", out.saveChunk).Methods(http.MethodPost, http.MethodOptions)
 	identityRouter.HandleFunc("/storages/{bucket_hash:[0-9a-f]+}/{chunk_hash:[0-9a-f]+}", out.deleteChunk).Methods(http.MethodDelete, http.MethodOptions)
@@ -592,83 +611,31 @@ func (app *application) deleteIdentity(w http.ResponseWriter, r *http.Request) {
 	renderError(w, err, []byte(str))
 }
 
-func (app *application) retrieveIdentityBuckets(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(shared.TokenHeadKeyname)
-	defer app.deleteAuthApp(token)
-
-	if appIdentity, ok := app.authApps[token]; ok {
-		buckets, err := appIdentity.Sub().Bucket().RetrieveAll()
-		if err != nil {
-			renderError(w, err, []byte(internalErrorOutput))
-			return
-		}
-
-		js, err := json.Marshal(buckets)
-		if err != nil {
-			renderError(w, err, []byte(internalErrorOutput))
-			return
-		}
-
-		renderSuccess(w, js)
-		return
-	}
-
-	str := fmt.Sprintf(authErrorOutput, token)
-	err := errors.New(str)
-	renderError(w, err, []byte(str))
-}
-
-func (app *application) saveIdentityBucketPath(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(shared.TokenHeadKeyname)
-	defer app.deleteAuthApp(token)
-
-	if appIdentity, ok := app.authApps[token]; ok {
-		err := r.ParseForm()
-		if err != nil {
-			renderError(w, err, []byte(internalErrorOutput))
-			return
-		}
-
-		path := r.Form.Get(shared.PathKeyname)
-		err = appIdentity.Sub().Bucket().Add(path)
-		if err != nil {
-			renderError(w, err, []byte(internalErrorOutput))
-			return
-		}
-
-		renderSuccess(w, []byte(successPostOutput))
-		return
-	}
-
-	str := fmt.Sprintf(authErrorOutput, token)
-	err := errors.New(str)
-	renderError(w, err, []byte(str))
-}
-
-func (app *application) retrieveIdentityBucketByHash(w http.ResponseWriter, r *http.Request) {
+func (app *application) retrieveAccess(w http.ResponseWriter, r *http.Request) {
 	token := r.Header.Get(shared.TokenHeadKeyname)
 	defer app.deleteAuthApp(token)
 
 	if appIdentity, ok := app.authApps[token]; ok {
 		vars := mux.Vars(r)
-		if hashStr, ok := vars["hash"]; ok {
-			bucket, err := appIdentity.Sub().Bucket().Retrieve(hashStr)
+		if bucketHashStr, ok := vars["bucket_hash"]; ok {
+			access, err := appIdentity.Sub().Access().Retrieve(bucketHashStr)
 			if err != nil {
 				renderError(w, err, []byte(internalErrorOutput))
 				return
 			}
 
-			js, err := json.Marshal(bucket)
+			js, err := json.Marshal(access)
 			if err != nil {
 				renderError(w, err, []byte(internalErrorOutput))
 				return
 			}
 
-			renderSuccess(w, js)
+			// success:
+			renderSuccess(w, []byte(js))
 			return
 		}
 
-		err := errors.New(missingHashErrorOutput)
+		err := errors.New(missingBucketHashErrorOutput)
 		renderError(w, err, []byte(internalErrorOutput))
 		return
 	}
@@ -678,31 +645,76 @@ func (app *application) retrieveIdentityBucketByHash(w http.ResponseWriter, r *h
 	renderError(w, err, []byte(str))
 }
 
-func (app *application) deleteIdentityBucketByHash(w http.ResponseWriter, r *http.Request) {
-	token := r.Header.Get(shared.TokenHeadKeyname)
-	defer app.deleteAuthApp(token)
+func (app *application) saveAccess(w http.ResponseWriter, r *http.Request) {
 
-	if appIdentity, ok := app.authApps[token]; ok {
-		vars := mux.Vars(r)
-		if hashStr, ok := vars["hash"]; ok {
-			err := appIdentity.Sub().Bucket().Delete(hashStr)
-			if err != nil {
-				renderError(w, err, []byte(internalErrorOutput))
-				return
-			}
+}
 
-			renderSuccess(w, []byte(successPostOutput))
-			return
-		}
+func (app *application) deleteAccess(w http.ResponseWriter, r *http.Request) {
 
-		err := errors.New(missingHashErrorOutput)
-		renderError(w, err, []byte(internalErrorOutput))
-		return
-	}
+}
 
-	str := fmt.Sprintf(authErrorOutput, token)
-	err := errors.New(str)
-	renderError(w, err, []byte(str))
+func (app *application) deleteAccessBucket(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) retrieveAccessBucket(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) extractAccessBucket(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) retrieveLists(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) saveList(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) retrieveList(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) updateList(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) deleteList(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) retrieveListContacts(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) retrieveListContact(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) updateListContact(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) deleteListContact(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) retrieveListContactBuckets(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) saveListContactBucket(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) retrieveListContactBucket(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) deleteListContactBucket(w http.ResponseWriter, r *http.Request) {
+
 }
 
 func (app *application) saveChunk(w http.ResponseWriter, r *http.Request) {
