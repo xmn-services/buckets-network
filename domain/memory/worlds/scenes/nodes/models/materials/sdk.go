@@ -1,8 +1,8 @@
 package materials
 
 import (
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/rectangles"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
 	"github.com/xmn-services/buckets-network/libs/entities"
 )
 

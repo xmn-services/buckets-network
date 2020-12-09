@@ -1,9 +1,9 @@
 package layer
 
 import (
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/rectangles"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/renders"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
 	"github.com/xmn-services/buckets-network/libs/entities"
 )
 
