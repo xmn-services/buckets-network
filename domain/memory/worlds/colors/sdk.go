@@ -1,12 +1,17 @@
 package colors
 
+// NewBuilder creates a new builder instance
+func NewBuilder() Builder {
+	return createBuilder()
+}
+
 // Builder represents a color builder
 type Builder interface {
 	Create() Builder
 	WithRed(red uint32) Builder
 	WithGreen(green uint32) Builder
 	WithBlue(blue uint32) Builder
-	Now() (Color, error)
+	Now() Color
 }
 
 // Color represents a color
