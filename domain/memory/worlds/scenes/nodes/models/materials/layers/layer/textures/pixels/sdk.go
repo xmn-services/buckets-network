@@ -19,4 +19,5 @@ type Builder interface {
 type Pixels interface {
 	entities.Immutable
 	All() []pixel.Pixel
+	Amount() uint
 }

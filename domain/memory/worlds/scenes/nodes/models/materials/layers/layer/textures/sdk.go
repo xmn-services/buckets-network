@@ -1,16 +1,27 @@
 package textures
 
 import (
+	"time"
+
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/rows"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
 	"github.com/xmn-services/buckets-network/libs/entities"
+	"github.com/xmn-services/buckets-network/libs/hash"
 )
+
+// NewBuilder creates a new builder instance
+func NewBuilder() Builder {
+	hashAdapter := hash.NewAdapter()
+	immutableBuilder := entities.NewImmutableBuilder()
+	return createBuilder(hashAdapter, immutableBuilder)
+}
 
 // Builder represents a texture builder
 type Builder interface {
 	Create() Builder
 	WithViewport(viewport rectangles.Rectangle) Builder
-	WithRows(rows rows.Rows) Builder
+	WithPixels(pixels rows.Rows) Builder
+	CreatedOn(createdOn time.Time) Builder
 	Now() (Texture, error)
 }
 
@@ -18,5 +29,5 @@ type Builder interface {
 type Texture interface {
 	entities.Immutable
 	Viewport() rectangles.Rectangle
-	Rows() rows.Rows
+	Pixels() rows.Rows
 }
