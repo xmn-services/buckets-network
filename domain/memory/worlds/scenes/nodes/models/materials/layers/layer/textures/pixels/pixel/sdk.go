@@ -2,6 +2,11 @@ package pixel
 
 import "github.com/xmn-services/buckets-network/domain/memory/worlds/colors"
 
+// NewBuilder creates a new builder instance
+func NewBuilder() Builder {
+	return createBuilder()
+}
+
 // Builder represents a pixel builder
 type Builder interface {
 	Create() Builder
