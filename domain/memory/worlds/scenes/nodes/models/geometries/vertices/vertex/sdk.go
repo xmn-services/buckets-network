@@ -21,4 +21,5 @@ type Builder interface {
 type Vertex interface {
 	Position() math.Vec3
 	Texture() math.Vec2
+	String() string
 }

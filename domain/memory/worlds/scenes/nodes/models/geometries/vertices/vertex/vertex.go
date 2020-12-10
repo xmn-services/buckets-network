@@ -1,6 +1,10 @@
 package vertex
 
-import "github.com/xmn-services/buckets-network/domain/memory/worlds/math"
+import (
+	"fmt"
+
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math"
+)
 
 type vertex struct {
 	pos math.Vec3
@@ -27,4 +31,9 @@ func (obj *vertex) Position() math.Vec3 {
 // Texture returns the texture
 func (obj *vertex) Texture() math.Vec2 {
 	return obj.tex
+}
+
+// String returns the string representation of the vertex
+func (obj *vertex) String() string {
+	return fmt.Sprintf("pos: %s, tex: %s", obj.Position().String(), obj.Texture().String())
 }
