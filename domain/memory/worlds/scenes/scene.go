@@ -1,6 +1,8 @@
 package scenes
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes"
@@ -10,29 +12,33 @@ import (
 
 type scene struct {
 	immutable entities.Immutable
-	nodes     []nodes.Node
+	list      []nodes.Node
+	mp        map[string]nodes.Node
 }
 
 func createScene(
 	immutable entities.Immutable,
 ) Scene {
-	return createSceneInternally(immutable, nil)
+	return createSceneInternally(immutable, nil, nil)
 }
 
 func createSceneWithNodes(
 	immutable entities.Immutable,
-	nodes []nodes.Node,
+	list []nodes.Node,
+	mp map[string]nodes.Node,
 ) Scene {
-	return createSceneInternally(immutable, nodes)
+	return createSceneInternally(immutable, list, mp)
 }
 
 func createSceneInternally(
 	immutable entities.Immutable,
-	nodes []nodes.Node,
+	list []nodes.Node,
+	mp map[string]nodes.Node,
 ) Scene {
 	out := scene{
 		immutable: immutable,
-		nodes:     nodes,
+		list:      list,
+		mp:        mp,
 	}
 
 	return &out
@@ -43,6 +49,23 @@ func (obj *scene) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
+// Add adds a node instance
+func (obj *scene) Add(node nodes.Node) error {
+	if obj.mp == nil {
+		obj.mp = map[string]nodes.Node{}
+	}
+
+	keyname := node.Hash().String()
+	if existingNode, ok := obj.mp[keyname]; ok {
+		str := fmt.Sprintf("the node (hash: %s) already exists", existingNode.Hash().String())
+		return errors.New(str)
+	}
+
+	obj.mp[keyname] = node
+	obj.list = append(obj.list, node)
+	return nil
+}
+
 // CreatedOn returns the creation time
 func (obj *scene) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()
@@ -50,10 +73,10 @@ func (obj *scene) CreatedOn() time.Time {
 
 // HasNodes returns true if there is nodes, false otherwise
 func (obj *scene) HasNodes() bool {
-	return obj.nodes != nil
+	return obj.list != nil
 }
 
 // Nodes returns the nodes, if any
 func (obj *scene) Nodes() []nodes.Node {
-	return obj.nodes
+	return obj.list
 }

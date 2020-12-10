@@ -1,10 +1,9 @@
-package scenes
+package worlds
 
 import (
-	"strconv"
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -12,18 +11,21 @@ import (
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
-	nodes            []nodes.Node
+	sceneFactory     scenes.Factory
+	scenes           []scenes.Scene
 	createdOn        *time.Time
 }
 
 func createBuilder(
 	hashAdapter hash.Adapter,
 	immutableBuilder entities.ImmutableBuilder,
+	sceneFactory scenes.Factory,
 ) Builder {
 	out := builder{
 		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
-		nodes:            nil,
+		sceneFactory:     sceneFactory,
+		scenes:           nil,
 		createdOn:        nil,
 	}
 
@@ -32,12 +34,12 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.hashAdapter, app.immutableBuilder)
+	return createBuilder(app.hashAdapter, app.immutableBuilder, app.sceneFactory)
 }
 
-// WithNodes add nodes to the builder
-func (app *builder) WithNodes(nodes []nodes.Node) Builder {
-	app.nodes = nodes
+// WithScenes add scenes to the builder
+func (app *builder) WithScenes(scenes []scenes.Scene) Builder {
+	app.scenes = scenes
 	return app
 }
 
@@ -47,18 +49,26 @@ func (app *builder) CreatedOn(createdOn time.Time) Builder {
 	return app
 }
 
-// Now builds a new Scene instance
-func (app *builder) Now() (Scene, error) {
-	if app.nodes != nil && len(app.nodes) <= 0 {
-		app.nodes = nil
+// Now builds a new World instance
+func (app *builder) Now() (World, error) {
+	if app.scenes != nil && len(app.scenes) <= 0 {
+		app.scenes = nil
 	}
 
-	data := [][]byte{
-		[]byte(strconv.Itoa(int(time.Now().UTC().Nanosecond()))),
+	if app.scenes == nil {
+		scene, err := app.sceneFactory.Create()
+		if err != nil {
+			return nil, err
+		}
+
+		app.scenes = []scenes.Scene{
+			scene,
+		}
 	}
 
-	for _, oneNode := range app.nodes {
-		data = append(data, oneNode.Hash().Bytes())
+	data := [][]byte{}
+	for _, oneScene := range app.scenes {
+		data = append(data, oneScene.Hash().Bytes())
 	}
 
 	hsh, err := app.hashAdapter.FromMultiBytes(data)
@@ -71,14 +81,5 @@ func (app *builder) Now() (Scene, error) {
 		return nil, err
 	}
 
-	if app.nodes != nil {
-		mp := map[string]nodes.Node{}
-		for _, oneNode := range app.nodes {
-			mp[oneNode.Hash().String()] = oneNode
-		}
-
-		return createSceneWithNodes(immutable, app.nodes, mp), nil
-	}
-
-	return createScene(immutable), nil
+	return createWorld(immutable, app.scenes), nil
 }
