@@ -19,4 +19,5 @@ type Builder interface {
 type Pixel interface {
 	Color() colors.Color
 	Alpha() uint32
+	String() string
 }

@@ -1,6 +1,10 @@
 package pixel
 
-import "github.com/xmn-services/buckets-network/domain/memory/worlds/colors"
+import (
+	"fmt"
+
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/colors"
+)
 
 type pixel struct {
 	color colors.Color
@@ -27,4 +31,9 @@ func (obj *pixel) Color() colors.Color {
 // Alpha returns the alpha
 func (obj *pixel) Alpha() uint32 {
 	return obj.alpha
+}
+
+// String returns the string representation of the pixel
+func (obj *pixel) String() string {
+	return fmt.Sprintf("color: %s, alpha: %d", obj.color.String(), obj.alpha)
 }
