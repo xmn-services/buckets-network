@@ -13,6 +13,7 @@ import (
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
+	verticesFactory  vertices.Factory
 	shaders          shaders.Shaders
 	vertices         vertices.Vertices
 	createdOn        *time.Time
@@ -21,10 +22,12 @@ type builder struct {
 func createBuilder(
 	hashAdapter hash.Adapter,
 	immutableBuilder entities.ImmutableBuilder,
+	verticesFactory vertices.Factory,
 ) Builder {
 	out := builder{
 		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
+		verticesFactory:  verticesFactory,
 		shaders:          nil,
 		vertices:         nil,
 		createdOn:        nil,
@@ -35,7 +38,7 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.hashAdapter, app.immutableBuilder)
+	return createBuilder(app.hashAdapter, app.immutableBuilder, app.verticesFactory)
 }
 
 // WithShaders add shaders to the builder
@@ -62,12 +65,17 @@ func (app *builder) Now() (Geometry, error) {
 		return nil, errors.New("the shaders are mandatory in order to build a Geometry instance")
 	}
 
-	if app.vertices == nil {
-		return nil, errors.New("the vertices are mandatory in order to build a Geometry instance")
-	}
-
 	if app.shaders.IsVertex() {
 		return nil, errors.New("the geometry shaders were expected to be vertex shaders")
+	}
+
+	if app.vertices == nil {
+		vertices, err := app.verticesFactory.Create()
+		if err != nil {
+			return nil, err
+		}
+
+		app.vertices = vertices
 	}
 
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{

@@ -13,7 +13,8 @@ import (
 func NewBuilder() Builder {
 	hashAdapter := hash.NewAdapter()
 	immutableBuilder := entities.NewImmutableBuilder()
-	return createBuilder(hashAdapter, immutableBuilder)
+	verticesFactory := vertices.NewFactory()
+	return createBuilder(hashAdapter, immutableBuilder, verticesFactory)
 }
 
 // Builder represents the geometry builder
