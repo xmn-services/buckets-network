@@ -9,7 +9,7 @@ require (
 	github.com/alexkohler/nakedret v1.0.0 // indirect
 	github.com/client9/misspell v0.3.4 // indirect
 	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7
-	github.com/go-gl/glfw v0.0.0-20201108214237-06ea97f0c265 // indirect
+	github.com/go-gl/glfw v0.0.0-20201108214237-06ea97f0c265
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20201108214237-06ea97f0c265
 	github.com/go-gl/mathgl v1.0.0
 	github.com/go-resty/resty/v2 v2.3.0

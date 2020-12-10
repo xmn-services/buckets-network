@@ -1,6 +1,7 @@
 package windows
 
 type window struct {
+	title        string
 	width        uint
 	height       uint
 	isResizable  bool
@@ -8,12 +9,14 @@ type window struct {
 }
 
 func createWindow(
+	title string,
 	width uint,
 	height uint,
 	isResizable bool,
 	isFullscreen bool,
 ) Window {
 	out := window{
+		title:        title,
 		width:        width,
 		height:       height,
 		isResizable:  isResizable,
@@ -21,6 +24,11 @@ func createWindow(
 	}
 
 	return &out
+}
+
+// Title returns the title
+func (obj *window) Title() string {
+	return obj.title
 }
 
 // Width returns the width

@@ -3,6 +3,7 @@ package windows
 import "errors"
 
 type builder struct {
+	title        string
 	width        uint
 	height       uint
 	isResizable  bool
@@ -11,6 +12,7 @@ type builder struct {
 
 func createBuilder() Builder {
 	out := builder{
+		title:        "",
 		width:        0,
 		height:       0,
 		isResizable:  false,
@@ -23,6 +25,12 @@ func createBuilder() Builder {
 // Create initializes the builder
 func (app *builder) Create() Builder {
 	return createBuilder()
+}
+
+// WithTitle adds a title to the builder
+func (app *builder) WithTitle(title string) Builder {
+	app.title = title
+	return app
 }
 
 // WithWidth adds a width to the builder
@@ -59,5 +67,11 @@ func (app *builder) Now() (Window, error) {
 		return nil, errors.New("the height must be greater than zero (0)")
 	}
 
-	return createWindow(app.width, app.height, app.isResizable, app.isFullscreen), nil
+	return createWindow(
+		app.title,
+		app.width,
+		app.height,
+		app.isResizable,
+		app.isFullscreen,
+	), nil
 }

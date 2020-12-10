@@ -31,3 +31,14 @@ type Texture interface {
 	Viewport() rectangles.Rectangle
 	Pixels() rows.Rows
 }
+
+// Repository represents the texture repository
+type Repository interface {
+	Retrieve(path string) (Texture, error)
+}
+
+// Service represents a texture service
+type Service interface {
+	Save(tex Texture) error
+	SaveAll(tex []Texture) error
+}
