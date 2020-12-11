@@ -12,7 +12,7 @@ require (
 	github.com/go-gl/gl v0.0.0-20190320180904-bf2b1f2f34d7
 	github.com/go-gl/glfw v0.0.0-20201108214237-06ea97f0c265
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20201108214237-06ea97f0c265
-	github.com/go-gl/mathgl v1.0.0
+	github.com/go-gl/mathgl v1.0.0 // indirect
 	github.com/go-resty/resty/v2 v2.3.0
 	github.com/gordonklaus/ineffassign v0.0.0-20201107091007-3b93a8888063 // indirect
 	github.com/gorilla/mux v1.8.0

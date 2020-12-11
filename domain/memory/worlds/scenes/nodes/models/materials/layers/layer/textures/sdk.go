@@ -19,7 +19,7 @@ func NewBuilder() Builder {
 // Builder represents a texture builder
 type Builder interface {
 	Create() Builder
-	WithViewport(viewport rectangles.Rectangle) Builder
+	WithDimension(dimension rectangles.Rectangle) Builder
 	WithPixels(pixels rows.Rows) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Texture, error)
@@ -28,7 +28,7 @@ type Builder interface {
 // Texture represents a texture
 type Texture interface {
 	entities.Immutable
-	Viewport() rectangles.Rectangle
+	Dimension() rectangles.Rectangle
 	Pixels() rows.Rows
 }
 

@@ -11,18 +11,18 @@ import (
 
 type texture struct {
 	immutable entities.Immutable
-	viewport  rectangles.Rectangle
+	dimension rectangles.Rectangle
 	pixels    rows.Rows
 }
 
 func createTexture(
 	immutable entities.Immutable,
-	viewport rectangles.Rectangle,
+	dimension rectangles.Rectangle,
 	pixels rows.Rows,
 ) Texture {
 	out := texture{
 		immutable: immutable,
-		viewport:  viewport,
+		dimension: dimension,
 		pixels:    pixels,
 	}
 
@@ -34,9 +34,9 @@ func (obj *texture) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// Viewport returns the viewport
-func (obj *texture) Viewport() rectangles.Rectangle {
-	return obj.viewport
+// Dimension returns the dimension
+func (obj *texture) Dimension() rectangles.Rectangle {
+	return obj.dimension
 }
 
 // Pixels returns the pixels

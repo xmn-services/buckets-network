@@ -13,7 +13,7 @@ import (
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
-	viewport         rectangles.Rectangle
+	dimension        rectangles.Rectangle
 	pixels           rows.Rows
 	createdOn        *time.Time
 }
@@ -25,7 +25,7 @@ func createBuilder(
 	out := builder{
 		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
-		viewport:         nil,
+		dimension:        nil,
 		pixels:           nil,
 		createdOn:        nil,
 	}
@@ -38,9 +38,9 @@ func (app *builder) Create() Builder {
 	return createBuilder(app.hashAdapter, app.immutableBuilder)
 }
 
-// WithViewport adds a viewport to the builder
-func (app *builder) WithViewport(viewport rectangles.Rectangle) Builder {
-	app.viewport = viewport
+// WithDimension adds a dimension to the builder
+func (app *builder) WithDimension(dimension rectangles.Rectangle) Builder {
+	app.dimension = dimension
 	return app
 }
 
@@ -58,8 +58,8 @@ func (app *builder) CreatedOn(createdOn time.Time) Builder {
 
 // Now builds a new Texture instance
 func (app *builder) Now() (Texture, error) {
-	if app.viewport == nil {
-		return nil, errors.New("the viewport is mandatory in order to build a Texture instance")
+	if app.dimension == nil {
+		return nil, errors.New("the dimension is mandatory in order to build a Texture instance")
 	}
 
 	if app.pixels == nil {
@@ -67,7 +67,7 @@ func (app *builder) Now() (Texture, error) {
 	}
 
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
-		[]byte(app.viewport.String()),
+		[]byte(app.dimension.String()),
 		app.pixels.Hash().Bytes(),
 	})
 
@@ -80,5 +80,5 @@ func (app *builder) Now() (Texture, error) {
 		return nil, err
 	}
 
-	return createTexture(immutable, app.viewport, app.pixels), nil
+	return createTexture(immutable, app.dimension, app.pixels), nil
 }

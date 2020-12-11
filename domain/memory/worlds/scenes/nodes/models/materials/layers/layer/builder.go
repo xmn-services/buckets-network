@@ -92,6 +92,10 @@ func (app *builder) Now() (Layer, error) {
 		return nil, errors.New("the opacity must be a float between 0.0 and 1.0")
 	}
 
+	if !app.shaders.IsFragment() {
+		return nil, errors.New("the material's layer shaders were expected to be fragment shaders")
+	}
+
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
 		[]byte(strconv.FormatFloat(app.opacity, 'f', 10, 64)),
 		[]byte(app.viewport.String()),

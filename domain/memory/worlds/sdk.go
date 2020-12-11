@@ -38,5 +38,6 @@ type Builder interface {
 // World represents a world
 type World interface {
 	entities.Immutable
+	Add(scene scenes.Scene) error
 	Scenes() []scenes.Scene
 }

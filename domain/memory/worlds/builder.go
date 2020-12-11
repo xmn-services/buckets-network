@@ -81,5 +81,14 @@ func (app *builder) Now() (World, error) {
 		return nil, err
 	}
 
-	return createWorld(immutable, app.scenes), nil
+	if app.scenes != nil {
+		mp := map[string]scenes.Scene{}
+		for _, oneScene := range app.scenes {
+			mp[oneScene.Hash().String()] = oneScene
+		}
+
+		return createWorldWithScene(immutable, app.scenes, mp), nil
+	}
+
+	return createWorld(immutable), nil
 }

@@ -25,7 +25,6 @@ func createApplication(
 func (app *application) Execute(fn windows.UpdateFn) error {
 	defer glfw.Terminate()
 	prev := time.Now().UTC()
-	app.win.MakeContextCurrent()
 	for !app.win.ShouldClose() {
 		// update:
 		current := time.Now().UTC()

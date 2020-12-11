@@ -65,7 +65,7 @@ func (app *builder) Now() (Geometry, error) {
 		return nil, errors.New("the shaders are mandatory in order to build a Geometry instance")
 	}
 
-	if app.shaders.IsVertex() {
+	if !app.shaders.IsVertex() {
 		return nil, errors.New("the geometry shaders were expected to be vertex shaders")
 	}
 

@@ -38,14 +38,15 @@ func (app *builder) Now() (application_windows.Application, error) {
 		return nil, errors.New("the window is mandatory in order to build a GLFW Application")
 	}
 
-	if err := glfw.Init(); err != nil {
+	err := glfw.Init()
+	if err != nil {
 		str := fmt.Sprintf("failed to initialize glfw: %s", err.Error())
 		return nil, errors.New(str)
 	}
 
 	resizable := glfw.False
 	if app.win.IsResizable() {
-		resizable = glfw.True
+		resizable = glfw.False
 	}
 
 	glfw.WindowHint(glfw.Resizable, resizable)
@@ -70,6 +71,7 @@ func (app *builder) Now() (application_windows.Application, error) {
 			return nil, err
 		}
 
+		win.MakeContextCurrent()
 		return createApplication(win), nil
 	}
 
@@ -78,5 +80,6 @@ func (app *builder) Now() (application_windows.Application, error) {
 		return nil, err
 	}
 
+	win.MakeContextCurrent()
 	return createApplication(win), nil
 }
