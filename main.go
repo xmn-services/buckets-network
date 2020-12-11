@@ -42,15 +42,20 @@ func main() {
 	}
 
 	// create the camera:
-	fov := float64(0.5)
-	index := uint(0)
-	cameraNode := nodeFromCamera(camera(fov, index))
+	cameraIndex := uint(0)
+	cameraNode := nodeFromCamera(camera(width, height, cameraIndex))
 
 	// create the cube model:
 	cubeModel := nodeFromModel(cubeModel())
 
-	// create the scene:
-	scene, err := scenes.NewFactory().Create()
+	// create the world:
+	world, err := worlds.NewFactory().Create()
+	if err != nil {
+		panic(err)
+	}
+
+	// fetch the scene:
+	scene, err := world.Scene(scenes.CurrentSceneIndex)
 	if err != nil {
 		panic(err)
 	}
@@ -67,19 +72,11 @@ func main() {
 		panic(err)
 	}
 
-	// create the world:
-	world, err := worlds.NewFactory().Create()
-	if err != nil {
-		panic(err)
-	}
+	app := gui.NewOpenglApplication(
+		scenes.CurrentSceneIndex,
+		cameraIndex,
+	)
 
-	// add the scene to the world:
-	err = world.Add(scene)
-	if err != nil {
-		panic(err)
-	}
-
-	app := gui.NewOpenglApplication()
 	err = app.Execute(window, world)
 	if err != nil {
 		log.Println(err.Error())
@@ -110,19 +107,32 @@ func nodeFromModel(model models.Model) nodes.Node {
 	return node
 }
 
-func camera(fov float64, index uint) cameras.Camera {
-	pos := math.Vec2{0.0, 0.0}
-	dimension := math.Vec2{1.0, 1.0}
+func camera(width uint, height uint, index uint) cameras.Camera {
+	lookAtVariable := "camera"
+	eye := math.Vec3{3, 3, 3}
+	center := math.Vec3{0, 0, 0}
+	up := math.Vec3{0, 1, 0}
 
-	rectangleBuilder := rectangles.NewBuilder()
-	viewport, err := rectangleBuilder.Create().WithPosition(pos).WithDimension(dimension).Now()
-	if err != nil {
-		panic(err)
-	}
-
+	projectionVariable := "projection"
+	fov := float32(45.0)
+	aspectRatio := float32(width / height)
+	near := float32(0.1)
+	far := float32(10.0)
 	createdOn := time.Now().UTC()
-	cameraBuilder := cameras.NewBuilder()
-	camera, err := cameraBuilder.Create().WithViewport(viewport).WithFieldOfView(fov).WithIndex(index).CreatedOn(createdOn).Now()
+	camera, err := cameras.NewBuilder().Create().
+		WithLookAtVariable(lookAtVariable).
+		WithLookAtEye(eye).
+		WithLookAtCenter(center).
+		WithLookAtUp(up).
+		WithProjectionVariable(projectionVariable).
+		WithProjectionFieldofView(fov).
+		WithProjectionAspectRatio(aspectRatio).
+		WithProjectionNear(near).
+		WithProjectionFar(far).
+		WithIndex(index).
+		CreatedOn(createdOn).
+		Now()
+
 	if err != nil {
 		panic(err)
 	}
@@ -349,7 +359,7 @@ void main() {
 }
 ` + "\x00"
 
-var cubeVertices = []float64{
+var cubeVertices = []float32{
 	//  X, Y, Z, U, V
 	// Bottom
 	-1.0, -1.0, -1.0, 0.0, 0.0,

@@ -3,29 +3,28 @@ package cameras
 import (
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type camera struct {
-	immutable entities.Immutable
-	viewport  rectangles.Rectangle
-	fov       float64
-	index     uint
+	immutable  entities.Immutable
+	index      uint
+	projection Projection
+	lookAt     LookAt
 }
 
 func createCamera(
 	immutable entities.Immutable,
-	viewport rectangles.Rectangle,
-	fov float64,
 	index uint,
+	projection Projection,
+	lookAt LookAt,
 ) Camera {
 	out := camera{
-		immutable: immutable,
-		viewport:  viewport,
-		fov:       fov,
-		index:     index,
+		immutable:  immutable,
+		index:      index,
+		projection: projection,
+		lookAt:     lookAt,
 	}
 
 	return &out
@@ -36,19 +35,19 @@ func (obj *camera) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// Viewport returns the viewport
-func (obj *camera) Viewport() rectangles.Rectangle {
-	return obj.viewport
-}
-
-// FieldOfView returns the field of view
-func (obj *camera) FieldOfView() float64 {
-	return obj.fov
-}
-
-// Index returns the index
+// Index returns the camera index
 func (obj *camera) Index() uint {
 	return obj.index
+}
+
+// Projection returns the camera projection
+func (obj *camera) Projection() Projection {
+	return obj.projection
+}
+
+// LookAt returns the camera lookAt
+func (obj *camera) LookAt() LookAt {
+	return obj.lookAt
 }
 
 // CreatedOn returns the creation time

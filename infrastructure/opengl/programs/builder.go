@@ -39,5 +39,10 @@ func (app *builder) Now() (Programs, error) {
 		return nil, errors.New("the compiled programs are mandatory in order to build a Programs instance")
 	}
 
-	return createPrograms(app.list), nil
+	mp := map[string]program.Program{}
+	for _, oneProgram := range app.list {
+		mp[oneProgram.Scene().String()] = oneProgram
+	}
+
+	return createPrograms(app.list, mp), nil
 }

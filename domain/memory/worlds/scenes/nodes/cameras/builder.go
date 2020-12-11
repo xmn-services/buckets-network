@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -13,8 +13,15 @@ import (
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
-	viewport         rectangles.Rectangle
-	fov              *float64
+	lookAtVariable   string
+	eye              *math.Vec3
+	center           *math.Vec3
+	up               *math.Vec3
+	projVariable     string
+	fov              *float32
+	aspectRatio      *float32
+	near             *float32
+	far              *float32
 	index            uint
 	createdOn        *time.Time
 }
@@ -26,9 +33,16 @@ func createBuilder(
 	out := builder{
 		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
-		viewport:         nil,
+		lookAtVariable:   "",
+		eye:              nil,
+		center:           nil,
+		up:               nil,
+		projVariable:     "",
 		fov:              nil,
-		index:            0,
+		aspectRatio:      nil,
+		near:             nil,
+		far:              nil,
+		index:            uint(0),
 		createdOn:        nil,
 	}
 
@@ -43,19 +57,61 @@ func (app *builder) Create() Builder {
 	)
 }
 
-// WithViewport adds a viewport to the builder
-func (app *builder) WithViewport(viewport rectangles.Rectangle) Builder {
-	app.viewport = viewport
+// WithLookAtVariable adds the lookAt variable to the builder
+func (app *builder) WithLookAtVariable(lookAtVariable string) Builder {
+	app.lookAtVariable = lookAtVariable
 	return app
 }
 
-// WithFieldOfView adds a fov to the builder
-func (app *builder) WithFieldOfView(fov float64) Builder {
+// WithLookAtEye adds the lookAt eye to the builder
+func (app *builder) WithLookAtEye(eye math.Vec3) Builder {
+	app.eye = &eye
+	return app
+}
+
+// WithLookAtCenter adds the lookAt center to the builder
+func (app *builder) WithLookAtCenter(center math.Vec3) Builder {
+	app.center = &center
+	return app
+}
+
+// WithLookAtUp adds the lookAt up to the builder
+func (app *builder) WithLookAtUp(up math.Vec3) Builder {
+	app.up = &up
+	return app
+}
+
+// WithProjectionVariable adds the projection variable to the builder
+func (app *builder) WithProjectionVariable(projVariable string) Builder {
+	app.projVariable = projVariable
+	return app
+}
+
+// WithProjectionFieldofView adds the projection fov to the builder
+func (app *builder) WithProjectionFieldofView(fov float32) Builder {
 	app.fov = &fov
 	return app
 }
 
-// WithIndex adds an index to the builder
+// WithProjectionAspectRatio adds the projection aspectRatio to the builder
+func (app *builder) WithProjectionAspectRatio(aspectRatio float32) Builder {
+	app.aspectRatio = &aspectRatio
+	return app
+}
+
+// WithProjectionNear adds the projection near to the builder
+func (app *builder) WithProjectionNear(near float32) Builder {
+	app.near = &near
+	return app
+}
+
+// WithProjectionFar adds the projection far to the builder
+func (app *builder) WithProjectionFar(far float32) Builder {
+	app.far = &far
+	return app
+}
+
+// WithIndex adds the index to the builder
 func (app *builder) WithIndex(index uint) Builder {
 	app.index = index
 	return app
@@ -69,17 +125,53 @@ func (app *builder) CreatedOn(createdOn time.Time) Builder {
 
 // Now builds a new Camera instance
 func (app *builder) Now() (Camera, error) {
-	if app.viewport == nil {
-		return nil, errors.New("the viewport is mandatory in order to build a Camera instance")
+	if app.lookAtVariable == "" {
+		return nil, errors.New("the lookAt variable is mandatory in order to build a Camera instance")
+	}
+
+	if app.eye == nil {
+		return nil, errors.New("the lookAt eye is mandatory in order to build a Camera instance")
+	}
+
+	if app.center == nil {
+		return nil, errors.New("the lookAt center is mandatory in order to build a Camera instance")
+	}
+
+	if app.up == nil {
+		return nil, errors.New("the lookAt up is mandatory in order to build a Camera instance")
+	}
+
+	if app.projVariable == "" {
+		return nil, errors.New("the projection variable is mandatory in order to build a Camera instance")
 	}
 
 	if app.fov == nil {
-		return nil, errors.New("the fieldOfView is mandatory in order to build a Camera instance")
+		return nil, errors.New("the projection fov is mandatory in order to build a Camera instance")
+	}
+
+	if app.aspectRatio == nil {
+		return nil, errors.New("the projection aspectRatio is mandatory in order to build a Camera instance")
+	}
+
+	if app.near == nil {
+		return nil, errors.New("the projection near is mandatory in order to build a Camera instance")
+	}
+
+	if app.far == nil {
+		return nil, errors.New("the projection far is mandatory in order to build a Camera instance")
 	}
 
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
-		[]byte(app.viewport.String()),
-		[]byte(strconv.FormatFloat(*app.fov, 'f', 10, 64)),
+		[]byte(app.lookAtVariable),
+		[]byte(app.eye.String()),
+		[]byte(app.center.String()),
+		[]byte(app.up.String()),
+		[]byte(app.projVariable),
+		[]byte(strconv.FormatFloat(float64(*app.fov), 'f', 10, 32)),
+		[]byte(strconv.FormatFloat(float64(*app.aspectRatio), 'f', 10, 32)),
+		[]byte(strconv.FormatFloat(float64(*app.near), 'f', 10, 32)),
+		[]byte(strconv.FormatFloat(float64(*app.far), 'f', 10, 32)),
+		[]byte(strconv.Itoa(int(app.index))),
 	})
 
 	if err != nil {
@@ -91,5 +183,7 @@ func (app *builder) Now() (Camera, error) {
 		return nil, err
 	}
 
-	return createCamera(immutable, app.viewport, *app.fov, app.index), nil
+	lookAt := createLookAt(app.lookAtVariable, *app.eye, *app.center, *app.up)
+	projection := createProjection(app.projVariable, *app.fov, *app.aspectRatio, *app.near, *app.far)
+	return createCamera(immutable, app.index, projection, lookAt), nil
 }

@@ -8,9 +8,16 @@ import (
 )
 
 // NewOpenglApplication creates a new OpenGL application
-func NewOpenglApplication() gui.Application {
+func NewOpenglApplication(
+	currentSceneIndex uint,
+	currentCameraIndex uint,
+) gui.Application {
 	builder := NewGlfwApplicationBuilder()
-	return opengl.NewApplication(builder)
+	return opengl.NewApplication(
+		builder,
+		currentSceneIndex,
+		currentCameraIndex,
+	)
 }
 
 // NewGlfwApplicationBuilder creates a new glfw application builder

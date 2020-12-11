@@ -8,6 +8,7 @@ import (
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs/materials/material"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs/program"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs/shaders"
+	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 // NewApplication creates a new application instance
@@ -50,4 +51,5 @@ type Builder interface {
 // Programs represents compiled programs
 type Programs interface {
 	All() []program.Program
+	Fetch(scene hash.Hash) (program.Program, error)
 }

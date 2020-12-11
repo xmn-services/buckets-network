@@ -1,8 +1,11 @@
 package nodes
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -65,6 +68,34 @@ func createNodeInternally(
 // Hash returns the hash
 func (obj *node) Hash() hash.Hash {
 	return obj.immutable.Hash()
+}
+
+// Camera returns the camera at index, if any
+func (obj *node) Camera(index uint) (cameras.Camera, error) {
+	if obj.HasContent() {
+		content := obj.Content()
+		if content.IsCamera() {
+			camera := content.Camera()
+			if camera.Index() == index {
+				return camera, nil
+			}
+		}
+	}
+
+	if obj.HasChildren() {
+		children := obj.Children()
+		for _, oneNode := range children {
+			cam, err := oneNode.Camera(index)
+			if err != nil {
+				continue
+			}
+
+			return cam, nil
+		}
+	}
+
+	str := fmt.Sprintf("the camera (index: %d) could not be found in the node (hash: %s)", index, obj.Hash().String())
+	return nil, errors.New(str)
 }
 
 // Space returns the space

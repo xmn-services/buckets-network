@@ -10,21 +10,28 @@ import (
 	application_window "github.com/xmn-services/buckets-network/application/windows"
 	"github.com/xmn-services/buckets-network/domain/memory/windows"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/cameras"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs"
 )
 
 type application struct {
-	windowBuilder application_window.Builder
-	programsApp   programs.Application
+	windowBuilder     application_window.Builder
+	programsApp       programs.Application
+	cameraApp         cameras.Application
+	currentSceneIndex uint
 }
 
 func createApplication(
 	windowBuilder application_window.Builder,
 	programsApp programs.Application,
+	cameraApp cameras.Application,
+	currentSceneIndex uint,
 ) gui.Application {
 	out := application{
-		windowBuilder: windowBuilder,
-		programsApp:   programsApp,
+		windowBuilder:     windowBuilder,
+		programsApp:       programsApp,
+		cameraApp:         cameraApp,
+		currentSceneIndex: currentSceneIndex,
 	}
 
 	return &out
@@ -51,8 +58,14 @@ func (app *application) Execute(win windows.Window, world worlds.World) error {
 }
 
 func (app *application) init(world worlds.World) error {
+	// fetch the current scene:
+	scene, err := world.Scene(app.currentSceneIndex)
+	if err != nil {
+		return err
+	}
+
 	// initialize OpenGL:
-	err := gl.Init()
+	err = gl.Init()
 	if err != nil {
 		return err
 	}
@@ -67,7 +80,22 @@ func (app *application) init(world worlds.World) error {
 	log.Printf("\nOpenGL version: %s", version)
 
 	// compile the program:
-	program, err := app.programsApp.Execute(world)
+	programs, err := app.programsApp.Execute(world)
+	if err != nil {
+		return err
+	}
+
+	// fetch the program for the current scene:
+	program, err := programs.Fetch(scene.Hash())
+	if err != nil {
+		return err
+	}
+
+	// use the program:
+	gl.UseProgram(program.Identifier())
+
+	// execute the camera application:
+	err = app.cameraApp.Init(program, world)
 	if err != nil {
 		return err
 	}

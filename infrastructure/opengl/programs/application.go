@@ -74,6 +74,7 @@ func (app *application) Execute(world worlds.World) (Programs, error) {
 
 func (app *application) scene(scene scenes.Scene) (program.Program, error) {
 	if !scene.HasNodes() {
+		fmt.Printf("\n**%s\n", scene.Hash().String())
 		return nil, nil
 	}
 
@@ -118,7 +119,9 @@ func (app *application) scene(scene scenes.Scene) (program.Program, error) {
 		gl.DeleteShader(oneCompiledShader.Identifier())
 	}
 
+	sceneHash := scene.Hash()
 	return app.programBuilder.Create().
+		WithScene(sceneHash).
 		WithCompiledMaterials(compiledMaterials).
 		WithIdentifier(program).
 		Now()

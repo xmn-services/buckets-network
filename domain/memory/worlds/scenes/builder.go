@@ -12,6 +12,7 @@ import (
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
+	index            uint
 	nodes            []nodes.Node
 	createdOn        *time.Time
 }
@@ -23,6 +24,7 @@ func createBuilder(
 	out := builder{
 		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
+		index:            0,
 		nodes:            nil,
 		createdOn:        nil,
 	}
@@ -33,6 +35,12 @@ func createBuilder(
 // Create initializes the builder
 func (app *builder) Create() Builder {
 	return createBuilder(app.hashAdapter, app.immutableBuilder)
+}
+
+// WithIndex adds an index to the builder
+func (app *builder) WithIndex(index uint) Builder {
+	app.index = index
+	return app
 }
 
 // WithNodes add nodes to the builder
@@ -57,8 +65,10 @@ func (app *builder) Now() (Scene, error) {
 		[]byte(strconv.Itoa(int(time.Now().UTC().Nanosecond()))),
 	}
 
-	for _, oneNode := range app.nodes {
-		data = append(data, oneNode.Hash().Bytes())
+	if app.nodes != nil {
+		for _, oneNode := range app.nodes {
+			data = append(data, oneNode.Hash().Bytes())
+		}
 	}
 
 	hsh, err := app.hashAdapter.FromMultiBytes(data)
@@ -77,8 +87,8 @@ func (app *builder) Now() (Scene, error) {
 			mp[oneNode.Hash().String()] = oneNode
 		}
 
-		return createSceneWithNodes(immutable, app.nodes, mp), nil
+		return createSceneWithNodes(immutable, app.index, app.nodes, mp), nil
 	}
 
-	return createScene(immutable), nil
+	return createScene(immutable, app.index), nil
 }

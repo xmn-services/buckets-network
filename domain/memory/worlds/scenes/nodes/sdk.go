@@ -33,6 +33,7 @@ type Builder interface {
 // Node represents a node
 type Node interface {
 	entities.Immutable
+	Camera(index uint) (cameras.Camera, error)
 	Space() Space
 	HasContent() bool
 	Content() Content

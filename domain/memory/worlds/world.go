@@ -71,6 +71,20 @@ func (obj *world) Add(scene scenes.Scene) error {
 	return nil
 }
 
+// Scene returns the scene at index, if any
+func (obj *world) Scene(index uint) (scenes.Scene, error) {
+	for _, oneScene := range obj.list {
+		if oneScene.Index() != index {
+			continue
+		}
+
+		return oneScene, nil
+	}
+
+	str := fmt.Sprintf("the scene (index: %d) could not be found in the world (hash: %s)", index, obj.Hash().String())
+	return nil, errors.New(str)
+}
+
 // CreatedOn returns the creation time
 func (obj *world) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()

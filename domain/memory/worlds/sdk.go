@@ -40,4 +40,5 @@ type World interface {
 	entities.Immutable
 	Add(scene scenes.Scene) error
 	Scenes() []scenes.Scene
+	Scene(index uint) (scenes.Scene, error)
 }
