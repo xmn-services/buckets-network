@@ -1,10 +1,13 @@
 package models
 
 import (
+	"time"
+
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/materials"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/renders"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/spaces"
 )
 
@@ -35,7 +38,7 @@ type Model interface {
 	UniformVariable() int32
 	Program() programs.Program
 	Material() materials.Material
-	Render(camera cameras.Camera, space spaces.Space) error
+	Render(delta time.Duration, camera cameras.Camera, space spaces.Space, renderApp renders.Application) error
 }
 
 // Type represents the model type

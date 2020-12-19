@@ -9,8 +9,8 @@ import (
 
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
-	surfacesBuilder := surfaces.NewBuilder()
-	return createBuilder(surfacesBuilder)
+	surfaceBuilder := surfaces.NewBuilder()
+	return createBuilder(surfaceBuilder)
 }
 
 // Builder represents a layer builder
@@ -25,5 +25,5 @@ type Builder interface {
 type Layer interface {
 	Alpha() uint8
 	Viewport() ints.Rectangle
-	Surfaces() surfaces.Surfaces
+	Surface() surfaces.Surface
 }

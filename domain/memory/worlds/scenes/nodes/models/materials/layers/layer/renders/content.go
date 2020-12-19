@@ -1,4 +1,4 @@
-package render
+package renders
 
 import (
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/colors"

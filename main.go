@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"math/rand"
 	"time"
 
 	"github.com/xmn-services/buckets-network/bundles/gui"
@@ -22,7 +21,6 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/renders"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/renders/render"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/pixels"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/pixels/pixel"
@@ -96,9 +94,9 @@ func nodeFromCamera(camera cameras.Camera) nodes.Node {
 }
 
 func nodeFromModel(model models.Model) nodes.Node {
-	pos := fl32.Vec3{5.0, 5.0, 5.0}
-	angle := float32(1.0)
-	direction := fl32.Vec3{1.0, 1.0, 1.0}
+	pos := fl32.Vec3{1.0, 1.0, 1.0}
+	angle := float32(200.0)
+	direction := fl32.Vec3{0.0, 1.0, 0.0}
 	node, err := nodes.NewBuilder().Create().WithPosition(pos).WithOrientationAngle(angle).WithOrientationDirection(direction).WithModel(model).Now()
 	if err != nil {
 		panic(err)
@@ -109,7 +107,7 @@ func nodeFromModel(model models.Model) nodes.Node {
 
 func camera(width uint, height uint, index uint) cameras.Camera {
 	lookAtVariable := "camera"
-	eye := fl32.Vec3{3, 3, 3}
+	eye := fl32.Vec3{5, 5, 5}
 	center := fl32.Vec3{0, 0, 0}
 	up := fl32.Vec3{0, 1, 0}
 
@@ -154,7 +152,7 @@ func cubeModel() models.Model {
 
 func cubeGeometry() geometries.Geometry {
 	list := []vertex.Vertex{}
-	amount := len(cubeVertices) / 5
+	amount := len(cubeVertices)
 	vertexBuilder := vertex.NewBuilder()
 	for i := 0; i < amount; i++ {
 		pos := fl32.Vec3{
@@ -174,6 +172,7 @@ func cubeGeometry() geometries.Geometry {
 		}
 
 		list = append(list, vertex)
+		i += 4
 	}
 
 	vertices, err := vertices.NewBuilder().Create().WithoutHash().WithVertices(list).IsTriangle().Now()
@@ -207,20 +206,12 @@ func cubeMaterial() materials.Material {
 	}
 
 	tex := generateTexture()
-	rdn, err := render.NewBuilder().Create().WithOpacity(1.0).WithViewport(viewport).WithTexture(tex).Now()
+	rdn, err := renders.NewBuilder().Create().WithOpacity(1.0).WithViewport(viewport).WithTexture(tex).Now()
 	if err != nil {
 		panic(err)
 	}
 
-	rdns, err := renders.NewBuilder().Create().WithoutHash().WithRenders([]render.Render{
-		rdn,
-	}).Now()
-
-	if err != nil {
-		panic(err)
-	}
-
-	lyr, err := layer.NewBuilder().Create().WithAlpha(1.0).WithViewport(viewport).WithRenders(rdns).Now()
+	lyr, err := layer.NewBuilder().Create().WithAlpha(1.0).WithViewport(viewport).WithRender(rdn).Now()
 	if err != nil {
 		panic(err)
 	}
@@ -286,7 +277,7 @@ func cubeFragmentShader() shaders.Shaders {
 
 func generateTexture() textures.Texture {
 	pos := ints.Vec2{0, 0}
-	dim := ints.Vec2{500, 500}
+	dim := ints.Vec2{512, 512}
 	dimension, err := ints.NewBuilder().Create().WithPosition(pos).WithDimension(dim).Now()
 	if err != nil {
 		panic(err)
@@ -303,9 +294,9 @@ func generateTexture() textures.Texture {
 	for i := 0; i < width; i++ {
 		list := []pixel.Pixel{}
 		for j := 0; j < height; j++ {
-			red := rand.Uint32() % 256
-			green := rand.Uint32() % 256
-			blue := rand.Uint32() % 256
+			red := 0xff
+			green := 0x00
+			blue := 0x00
 			color := colorBuilder.Create().WithRed(uint8(red)).WithGreen(uint8(green)).WithBlue(uint8(blue)).Now()
 			pixel, err := pixelBuilder.Create().WithColor(color).WithAlpha(alpha).Now()
 			if err != nil {

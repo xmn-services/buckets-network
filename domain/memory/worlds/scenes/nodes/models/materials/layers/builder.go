@@ -2,6 +2,7 @@ package layers
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -93,6 +94,16 @@ func (app *builder) Now() (Layers, error) {
 		}
 
 		app.hash = hsh
+	}
+
+	totalAlpha := int32(0)
+	for _, oneLayer := range app.layers {
+		totalAlpha += int32(oneLayer.Alpha())
+	}
+
+	if totalAlpha >= maxAlpha {
+		str := fmt.Sprintf("the layers cannot have a combined alpha greater than %d, %d provided", maxAlpha, totalAlpha)
+		return nil, errors.New(str)
 	}
 
 	if app.hash == nil {

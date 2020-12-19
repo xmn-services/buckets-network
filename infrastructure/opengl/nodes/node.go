@@ -1,8 +1,11 @@
 package nodes
 
 import (
+	"time"
+
 	domain_nodes "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/renders"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/spaces"
 )
 
@@ -112,15 +115,17 @@ func (obj *node) Children() []Node {
 }
 
 // Render renders the node
-func (obj *node) Render(camera cameras.Camera, globalSpace spaces.Space) error {
+func (obj *node) Render(delta time.Duration, camera cameras.Camera, globalSpace spaces.Space, renderApp renders.Application) error {
 	if obj.HasContent() {
 		if !obj.content.IsModel() {
 			return nil
 		}
 
 		err := obj.content.Model().Render(
+			delta,
 			camera,
 			obj.Space(),
+			renderApp,
 		)
 
 		if err != nil {
@@ -130,7 +135,7 @@ func (obj *node) Render(camera cameras.Camera, globalSpace spaces.Space) error {
 
 	if obj.HasChildren() {
 		for _, oneChildren := range obj.children {
-			err := oneChildren.Render(camera, globalSpace)
+			err := oneChildren.Render(delta, camera, globalSpace, renderApp)
 			if err != nil {
 				return err
 			}

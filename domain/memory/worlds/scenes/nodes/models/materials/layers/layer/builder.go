@@ -16,7 +16,7 @@ type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	alpha            uint8
 	viewport         ints.Rectangle
-	renders          renders.Renders
+	render           renders.Render
 	createdOn        *time.Time
 }
 
@@ -29,7 +29,7 @@ func createBuilder(
 		immutableBuilder: immutableBuilder,
 		alpha:            uint8(1),
 		viewport:         nil,
-		renders:          nil,
+		render:           nil,
 		createdOn:        nil,
 	}
 
@@ -53,9 +53,9 @@ func (app *builder) WithViewport(viewport ints.Rectangle) Builder {
 	return app
 }
 
-// WithRenders add renders to the builder
-func (app *builder) WithRenders(renders renders.Renders) Builder {
-	app.renders = renders
+// WithRender add render to the builder
+func (app *builder) WithRender(render renders.Render) Builder {
+	app.render = render
 	return app
 }
 
@@ -71,14 +71,14 @@ func (app *builder) Now() (Layer, error) {
 		return nil, errors.New("the viewport is mandatory in order to build a Layer instance")
 	}
 
-	if app.renders == nil {
-		return nil, errors.New("the renders is mandatory in order to build a Layer instance")
+	if app.render == nil {
+		return nil, errors.New("the render is mandatory in order to build a Layer instance")
 	}
 
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
 		[]byte(strconv.Itoa(int(app.alpha))),
 		[]byte(app.viewport.String()),
-		app.renders.Hash().Bytes(),
+		app.render.Hash().Bytes(),
 	})
 
 	if err != nil {
@@ -90,5 +90,5 @@ func (app *builder) Now() (Layer, error) {
 		return nil, err
 	}
 
-	return createLayer(immutable, app.alpha, app.viewport, app.renders), nil
+	return createLayer(immutable, app.alpha, app.viewport, app.render), nil
 }

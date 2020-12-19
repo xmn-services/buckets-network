@@ -8,6 +8,8 @@ import (
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
+const maxAlpha = 256
+
 // NewFactory creates a new factory instance
 func NewFactory() Factory {
 	builder := NewBuilder()

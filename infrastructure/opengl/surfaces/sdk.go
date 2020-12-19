@@ -1,26 +1,36 @@
 package surfaces
 
 import (
+	image_color "image/color"
+
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/renders"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs"
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/surfaces/surface"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/textures"
 )
 
-// NewBuilder creates a new surface builder
+// NewBuilder creates a new builder instance
 func NewBuilder() Builder {
-	surfaceBuilder := surface.NewBuilder()
-	return createBuilder(surfaceBuilder)
+	textureBuilder := textures.NewBuilder()
+	return createBuilder(
+		textureBuilder,
+	)
 }
 
-// Builder represents a surfaces builder
+// Builder represents a surface builder
 type Builder interface {
 	Create() Builder
 	WithProgram(prog programs.Program) Builder
-	WithRenders(renders renders.Renders) Builder
-	Now() (Surfaces, error)
+	WithRender(render renders.Render) Builder
+	Now() (Surface, error)
 }
 
-// Surfaces represents surfaces
-type Surfaces interface {
-	All() []surface.Surface
+// Surface represents a surface
+type Surface interface {
+	IsCamera() bool
+	Camera() cameras.Camera
+	IsTexture() bool
+	Texture() textures.Texture
+	IsColor() bool
+	Color() image_color.Color
 }

@@ -1,4 +1,4 @@
-package surface
+package surfaces
 
 import (
 	image_color "image/color"

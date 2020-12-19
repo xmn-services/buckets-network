@@ -21,7 +21,7 @@ type Builder interface {
 	Create() Builder
 	WithAlpha(alpha uint8) Builder
 	WithViewport(viewport ints.Rectangle) Builder
-	WithRenders(renders renders.Renders) Builder
+	WithRender(render renders.Render) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Layer, error)
 }
@@ -31,5 +31,5 @@ type Layer interface {
 	entities.Immutable
 	Alpha() uint8
 	Viewport() ints.Rectangle
-	Renders() renders.Renders
+	Render() renders.Render
 }

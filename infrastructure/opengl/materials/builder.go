@@ -62,5 +62,5 @@ func (app *builder) Now() (Material, error) {
 
 	alpha := app.material.Alpha()
 	viewport := app.material.Viewport()
-	return createMaterial(alpha, viewport, layers), nil
+	return createMaterial(app.material, alpha, viewport, layers), nil
 }

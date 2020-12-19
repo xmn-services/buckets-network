@@ -23,8 +23,8 @@ type Builder interface {
 
 // Material represents a material
 type Material interface {
+	Original() domain_materials.Material
 	Alpha() uint8
 	Viewport() ints.Rectangle
 	Layers() layers.Layers
-	Render() error
 }

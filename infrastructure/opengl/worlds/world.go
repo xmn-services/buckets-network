@@ -1,6 +1,9 @@
 package worlds
 
 import (
+	"time"
+
+	"github.com/go-gl/gl/v4.6-core/gl"
 	domain_worlds "github.com/xmn-services/buckets-network/domain/memory/worlds"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/scenes"
 )
@@ -61,10 +64,13 @@ func (obj *world) Scene() scenes.Scene {
 }
 
 // Render renders the world
-func (obj *world) Render() error {
+func (obj *world) Render(delta time.Duration) error {
+	gl.ClearDepth(10.0)
+	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
 	if !obj.HasScene() {
 		return nil
 	}
 
-	return obj.scene.Render()
+	return obj.scene.Render(delta)
 }

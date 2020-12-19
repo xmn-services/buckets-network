@@ -43,7 +43,7 @@ func (app *builder) Now() (Program, error) {
 		return nil, errors.New("the shaders are mandatory in order to build a Program instance")
 	}
 
-	// compile thwe shaders:
+	// compile the shaders:
 	shaders, err := app.shadersBuilder.Create().WithShaders(app.shaders).Now()
 	if err != nil {
 		return nil, err

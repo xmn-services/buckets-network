@@ -1,14 +1,18 @@
 package scenes
 
 import (
+	"time"
+
 	domain_scenes "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/nodes"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/renders/applications"
 )
 
 // NewBuilder creates a new builder instance
 func NewBuilder(defaultCameraIndex uint) Builder {
+	renderAppBuilder := applications.NewBuilder()
 	nodesBuilder := nodes.NewBuilder()
-	return createBuilder(nodesBuilder, defaultCameraIndex)
+	return createBuilder(renderAppBuilder, nodesBuilder, defaultCameraIndex)
 }
 
 // Builder represents the scene builder
@@ -25,5 +29,5 @@ type Scene interface {
 	CameraIndex() uint
 	HasNodes() bool
 	Nodes() nodes.Nodes
-	Render() error
+	Render(delta time.Duration) error
 }

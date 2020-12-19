@@ -8,18 +8,18 @@ import (
 type layer struct {
 	alpha    uint8
 	viewport ints.Rectangle
-	surfaces surfaces.Surfaces
+	surface  surfaces.Surface
 }
 
 func createLayer(
 	alpha uint8,
 	viewport ints.Rectangle,
-	surfaces surfaces.Surfaces,
+	surface surfaces.Surface,
 ) Layer {
 	out := layer{
 		alpha:    alpha,
 		viewport: viewport,
-		surfaces: surfaces,
+		surface:  surface,
 	}
 
 	return &out
@@ -35,7 +35,7 @@ func (obj *layer) Viewport() ints.Rectangle {
 	return obj.viewport
 }
 
-// Surfaces returns the surfaces
-func (obj *layer) Surfaces() surfaces.Surfaces {
-	return obj.surfaces
+// Surface returns the surface
+func (obj *layer) Surface() surfaces.Surface {
+	return obj.surface
 }

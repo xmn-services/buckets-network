@@ -1,6 +1,8 @@
 package worlds
 
 import (
+	"time"
+
 	domain_worlds "github.com/xmn-services/buckets-network/domain/memory/worlds"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/scenes"
 )
@@ -28,5 +30,5 @@ type World interface {
 	SceneIndex() uint
 	HasScene() bool
 	Scene() scenes.Scene
-	Render() error
+	Render(delta time.Duration) error
 }

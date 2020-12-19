@@ -1,40 +1,48 @@
 package scenes
 
 import (
+	"time"
+
 	domain_scenes "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/nodes"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/renders/applications"
 )
 
 type scene struct {
-	original    domain_scenes.Scene
-	cameraIndex uint
-	nodes       nodes.Nodes
+	renderAppBuilder applications.Builder
+	original         domain_scenes.Scene
+	cameraIndex      uint
+	nodes            nodes.Nodes
 }
 
 func createScene(
+	renderAppBuilder applications.Builder,
 	original domain_scenes.Scene,
 	cameraIndex uint,
 ) Scene {
-	return createSceneInternally(original, cameraIndex, nil)
+	return createSceneInternally(renderAppBuilder, original, cameraIndex, nil)
 }
 
 func createSceneWithNodes(
+	renderAppBuilder applications.Builder,
 	original domain_scenes.Scene,
 	cameraIndex uint,
 	nodes nodes.Nodes,
 ) Scene {
-	return createSceneInternally(original, cameraIndex, nodes)
+	return createSceneInternally(renderAppBuilder, original, cameraIndex, nodes)
 }
 
 func createSceneInternally(
+	renderAppBuilder applications.Builder,
 	original domain_scenes.Scene,
 	cameraIndex uint,
 	nodes nodes.Nodes,
 ) Scene {
 	out := scene{
-		original:    original,
-		cameraIndex: cameraIndex,
-		nodes:       nodes,
+		renderAppBuilder: renderAppBuilder,
+		original:         original,
+		cameraIndex:      cameraIndex,
+		nodes:            nodes,
 	}
 
 	return &out
@@ -61,9 +69,15 @@ func (obj *scene) Nodes() nodes.Nodes {
 }
 
 // Render renders the scene
-func (obj *scene) Render() error {
+func (obj *scene) Render(delta time.Duration) error {
 	if !obj.HasNodes() {
 		return nil
+	}
+
+	// render all cameras contained in a surface, to a texture:
+	renderApp, err := obj.renderAppBuilder.Create().WithNodes(obj.nodes).Now()
+	if err != nil {
+		return err
 	}
 
 	// find the camera:
@@ -72,5 +86,6 @@ func (obj *scene) Render() error {
 		return err
 	}
 
-	return obj.nodes.Render(currentCamera, currentCameraSpace)
+	// render the nodes:
+	return obj.nodes.Render(delta, currentCamera, currentCameraSpace, renderApp)
 }

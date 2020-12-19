@@ -2,7 +2,7 @@ package models
 
 import (
 	"fmt"
-	"math"
+	"time"
 
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
@@ -10,6 +10,7 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/materials"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/renders"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/spaces"
 )
 
@@ -21,6 +22,7 @@ type model struct {
 	uniformVariable int32
 	prog            programs.Program
 	material        materials.Material
+	angle           float32
 }
 
 func createModel(
@@ -40,6 +42,7 @@ func createModel(
 		uniformVariable: uniformVariable,
 		prog:            prog,
 		material:        material,
+		angle:           0.0,
 	}
 
 	return &out
@@ -81,11 +84,10 @@ func (obj *model) Material() materials.Material {
 }
 
 // Render renders the model
-func (obj *model) Render(camera cameras.Camera, space spaces.Space) error {
-	pos := space.Position()
+func (obj *model) Render(delta time.Duration, camera cameras.Camera, space spaces.Space, renderApp renders.Application) error {
+	//pos := space.Position()
 	orientation := space.Orientation()
 
-	// use the program:
 	identifier := obj.Program().Identifier()
 	gl.UseProgram(identifier)
 
@@ -119,7 +121,7 @@ func (obj *model) Render(camera cameras.Camera, space spaces.Space) error {
 	// lookAt:
 	lookAt := camera.LookAt()
 	lookAtVariable := fmt.Sprintf(glStrPattern, lookAt.Variable())
-	eye := lookAt.Eye()
+	eye := lookAt.Eye() // Configure global settings
 	center := lookAt.Center()
 	up := lookAt.Up()
 
@@ -142,31 +144,37 @@ func (obj *model) Render(camera cameras.Camera, space spaces.Space) error {
 	)
 
 	// rotate then translate:
-	radAngle := float32(orientation[3] * math.Pi / 180)
-	rorateMat := mgl32.HomogRotate3D(radAngle, mgl32.Vec3{orientation[0], orientation[1], orientation[2]})
+	obj.angle += float32(delta.Seconds()) // * float32(orientation[3]*math.Pi/180)
+	fmt.Printf("\n%f\n", obj.angle)
+	rorateMat := mgl32.HomogRotate3D(obj.angle, mgl32.Vec3{orientation[0], orientation[1], orientation[2]})
 
 	// translate:
-	transMat := mgl32.Translate3D(pos[0], pos[1], pos[2])
+	//transMat := mgl32.Translate3D(pos[0], pos[1], pos[2])
 
 	// model matrix:
-	modelMat := transMat.Add(rorateMat)
+	//modelMat := mgl32.Ident4() //transMat.Add(rorateMat)
 
 	// apply the model matrix:
 	uniform := obj.UniformVariable()
-	gl.UniformMatrix4fv(uniform, 1, false, &modelMat[0])
+	gl.UniformMatrix4fv(uniform, 1, false, &rorateMat[0])
 
 	// vao:
 	vao := obj.VAO()
 	gl.BindVertexArray(vao)
 
-	// material:
-	err := obj.Material().Render()
+	// render the material:
+	texture, err := renderApp.Render(obj.material)
 	if err != nil {
 		return err
 	}
 
+	// render the material:
+	gl.ActiveTexture(gl.TEXTURE0)
+	gl.BindTexture(gl.TEXTURE_2D, texture.Identifier())
+
 	// draw:
 	amount := obj.VertexAmount()
 	gl.DrawArrays(gl.TRIANGLES, 0, amount)
+
 	return nil
 }

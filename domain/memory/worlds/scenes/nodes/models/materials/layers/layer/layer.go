@@ -13,20 +13,20 @@ type layer struct {
 	immutable entities.Immutable
 	alpha     uint8
 	viewport  ints.Rectangle
-	renders   renders.Renders
+	render    renders.Render
 }
 
 func createLayer(
 	immutable entities.Immutable,
 	alpha uint8,
 	viewport ints.Rectangle,
-	renders renders.Renders,
+	render renders.Render,
 ) Layer {
 	out := layer{
 		immutable: immutable,
 		alpha:     alpha,
 		viewport:  viewport,
-		renders:   renders,
+		render:    render,
 	}
 
 	return &out
@@ -47,9 +47,9 @@ func (obj *layer) Viewport() ints.Rectangle {
 	return obj.viewport
 }
 
-// Renders returns the renders
-func (obj *layer) Renders() renders.Renders {
-	return obj.renders
+// Render returns the render
+func (obj *layer) Render() renders.Render {
+	return obj.render
 }
 
 // CreatedOn returns the creation time

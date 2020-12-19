@@ -5,9 +5,11 @@ import (
 
 	domain_scenes "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/nodes"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/renders/applications"
 )
 
 type builder struct {
+	renderAppBuilder   applications.Builder
 	nodesBuilder       nodes.Builder
 	defaultCameraIndex uint
 	cameraIndex        uint
@@ -15,10 +17,12 @@ type builder struct {
 }
 
 func createBuilder(
+	renderAppBuilder applications.Builder,
 	nodesBuilder nodes.Builder,
 	defaultCameraIndex uint,
 ) Builder {
 	out := builder{
+		renderAppBuilder:   renderAppBuilder,
 		nodesBuilder:       nodesBuilder,
 		defaultCameraIndex: defaultCameraIndex,
 		cameraIndex:        defaultCameraIndex,
@@ -30,7 +34,7 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.nodesBuilder, app.defaultCameraIndex)
+	return createBuilder(app.renderAppBuilder, app.nodesBuilder, app.defaultCameraIndex)
 }
 
 // WithScene adds a scene to the builder
@@ -58,8 +62,8 @@ func (app *builder) Now() (Scene, error) {
 			return nil, err
 		}
 
-		return createSceneWithNodes(app.scene, app.cameraIndex, list), nil
+		return createSceneWithNodes(app.renderAppBuilder, app.scene, app.cameraIndex, list), nil
 	}
 
-	return createScene(app.scene, app.cameraIndex), nil
+	return createScene(app.renderAppBuilder, app.scene, app.cameraIndex), nil
 }

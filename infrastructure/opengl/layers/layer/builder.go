@@ -9,18 +9,18 @@ import (
 )
 
 type builder struct {
-	surfacesBuilder surfaces.Builder
-	layer           domain_layer.Layer
-	prog            programs.Program
+	surfaceBuilder surfaces.Builder
+	layer          domain_layer.Layer
+	prog           programs.Program
 }
 
 func createBuilder(
-	surfacesBuilder surfaces.Builder,
+	surfaceBuilder surfaces.Builder,
 ) Builder {
 	out := builder{
-		surfacesBuilder: surfacesBuilder,
-		layer:           nil,
-		prog:            nil,
+		surfaceBuilder: surfaceBuilder,
+		layer:          nil,
+		prog:           nil,
 	}
 
 	return &out
@@ -28,7 +28,7 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.surfacesBuilder)
+	return createBuilder(app.surfaceBuilder)
 }
 
 // WithLayer adds a layer to the builder
@@ -49,18 +49,18 @@ func (app *builder) Now() (Layer, error) {
 		return nil, errors.New("the layer is mandatory in order to build a Layer instance")
 	}
 
-	renders := app.layer.Renders()
-	surfacesBuilder := app.surfacesBuilder.Create().WithRenders(renders)
+	render := app.layer.Render()
+	surfaceBuilder := app.surfaceBuilder.Create().WithRender(render)
 	if app.prog != nil {
-		surfacesBuilder.WithProgram(app.prog)
+		surfaceBuilder.WithProgram(app.prog)
 	}
 
-	surfaces, err := surfacesBuilder.Now()
+	surface, err := surfaceBuilder.Now()
 	if err != nil {
 		return nil, err
 	}
 
 	alpha := app.layer.Alpha()
 	viewport := app.layer.Viewport()
-	return createLayer(alpha, viewport, surfaces), nil
+	return createLayer(alpha, viewport, surface), nil
 }

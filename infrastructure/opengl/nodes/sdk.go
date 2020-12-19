@@ -1,10 +1,13 @@
 package nodes
 
 import (
+	"time"
+
 	domain_nodes "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/models"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/renders"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/spaces"
 )
 
@@ -33,7 +36,7 @@ type Builder interface {
 type Nodes interface {
 	All() []Node
 	Camera(index uint) (cameras.Camera, spaces.Space, error)
-	Render(camera cameras.Camera, globalSpace spaces.Space) error
+	Render(delta time.Duration, camera cameras.Camera, globalSpace spaces.Space, renderApp renders.Application) error
 }
 
 // NodeBuilder represents a node builder
@@ -51,7 +54,7 @@ type Node interface {
 	Content() Content
 	HasChildren() bool
 	Children() []Node
-	Render(camera cameras.Camera, globalSpace spaces.Space) error
+	Render(delta time.Duration, camera cameras.Camera, globalSpace spaces.Space, renderApp renders.Application) error
 }
 
 // Content represents the node content

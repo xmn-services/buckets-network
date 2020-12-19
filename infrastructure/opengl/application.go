@@ -3,6 +3,7 @@ package opengl
 import (
 	"time"
 
+	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/xmn-services/buckets-network/application/gui"
 	application_window "github.com/xmn-services/buckets-network/application/windows"
 	"github.com/xmn-services/buckets-network/domain/memory/windows"
@@ -46,6 +47,11 @@ func (app *application) Execute(win windows.Window, domainWorld domain_worlds.Wo
 		return err
 	}
 
+	// Configure global settings
+	gl.Enable(gl.DEPTH_TEST)
+	gl.DepthFunc(gl.LESS)
+	gl.ClearColor(0.5, 0.2, 0.4, 1.0)
+
 	// set the world:
 	app.currentWorld = world
 
@@ -55,7 +61,8 @@ func (app *application) Execute(win windows.Window, domainWorld domain_worlds.Wo
 
 func (app *application) updateFn(prev time.Time, current time.Time) error {
 	// render the world:
-	err := app.currentWorld.Render()
+	elapsed := current.Sub(prev)
+	err := app.currentWorld.Render(elapsed)
 	if err != nil {
 		return err
 	}

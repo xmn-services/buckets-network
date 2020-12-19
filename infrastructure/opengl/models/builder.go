@@ -107,6 +107,8 @@ func (app *builder) geometry(program programs.Program, geometry geometries.Geome
 		}...)
 	}
 
+	fmt.Printf("\n%v\n", list)
+
 	verticesType := vertices.Type()
 	if verticesType.IsTriangle() {
 		triSize := int32(3)
@@ -137,7 +139,7 @@ func (app *builder) geometry(program programs.Program, geometry geometries.Geome
 		gl.VertexAttribPointer(texCoordAttrib, texSize, gl.FLOAT, false, stride, gl.PtrOffset(texOffset))
 
 		// return:
-		return vao, len(list), true, nil
+		return vao, len(all), true, nil
 	}
 
 	return 0, 0, false, errors.New("the vertices type is invalid")

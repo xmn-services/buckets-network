@@ -3,8 +3,10 @@ package nodes
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/renders"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/spaces"
 )
 
@@ -28,9 +30,9 @@ func (obj *nodes) All() []Node {
 }
 
 // Render render the nodes
-func (obj *nodes) Render(camera cameras.Camera, globalSpace spaces.Space) error {
+func (obj *nodes) Render(delta time.Duration, camera cameras.Camera, globalSpace spaces.Space, renderApp renders.Application) error {
 	for _, oneNode := range obj.all {
-		err := oneNode.Render(camera, globalSpace)
+		err := oneNode.Render(delta, camera, globalSpace, renderApp)
 		if err != nil {
 			return err
 		}

@@ -2,24 +2,25 @@ package surfaces
 
 import (
 	"errors"
+	image_color "image/color"
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/renders"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs"
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/surfaces/surface"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/textures"
 )
 
 type builder struct {
-	surfaceBuilder surface.Builder
-	renders        renders.Renders
+	textureBuilder textures.Builder
+	render         renders.Render
 	prog           programs.Program
 }
 
 func createBuilder(
-	surfaceBuilder surface.Builder,
+	textureBuilder textures.Builder,
 ) Builder {
 	out := builder{
-		surfaceBuilder: surfaceBuilder,
-		renders:        nil,
+		textureBuilder: textureBuilder,
+		render:         nil,
 		prog:           nil,
 	}
 
@@ -28,12 +29,12 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.surfaceBuilder)
+	return createBuilder(app.textureBuilder)
 }
 
-// WithRenders add renders to the builder
-func (app *builder) WithRenders(renders renders.Renders) Builder {
-	app.renders = renders
+// WithRender adds a render to the builder
+func (app *builder) WithRender(render renders.Render) Builder {
+	app.render = render
 	return app
 }
 
@@ -43,27 +44,35 @@ func (app *builder) WithProgram(prog programs.Program) Builder {
 	return app
 }
 
-// Now builds a new Surfaces instance
-func (app *builder) Now() (Surfaces, error) {
-	if app.renders == nil {
-		return nil, errors.New("the renders is mandatory in order to build a Surfaces instance")
+// Now builds a new Surface instance
+func (app *builder) Now() (Surface, error) {
+	if app.render == nil {
+		return nil, errors.New("the render is mandatory in order to build a Surface instance")
 	}
 
-	out := []surface.Surface{}
-	all := app.renders.All()
-	for _, oneRender := range all {
-		surfaceBuilder := app.surfaceBuilder.Create().WithRender(oneRender)
-		if app.prog != nil {
-			surfaceBuilder.WithProgram(app.prog)
-		}
-
-		surface, err := surfaceBuilder.Now()
+	content := app.render.Content()
+	if content.IsTexture() {
+		domainTex := content.Texture()
+		tex, err := app.textureBuilder.Create().WithTexture(domainTex).Now()
 		if err != nil {
 			return nil, err
 		}
 
-		out = append(out, surface)
+		return createSurfaceWithTexture(tex), nil
 	}
 
-	return createSurfaces(out), nil
+	if content.IsCamera() {
+		cam := content.Camera()
+		return createSurfaceWithCamera(cam), nil
+	}
+
+	col := content.Color()
+	rgba := image_color.RGBA{
+		R: col.Red(),
+		G: col.Green(),
+		B: col.Blue(),
+		A: 0xff,
+	}
+
+	return createSurfaceWithColor(rgba), nil
 }
