@@ -1,31 +1,25 @@
 package nodes
 
 import (
-	"github.com/go-gl/mathgl/mgl32"
 	domain_nodes "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes"
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/spaces"
 )
 
 type node struct {
-	original    domain_nodes.Node
-	program     programs.Program
-	pos         mgl32.Vec3
-	orientation mgl32.Vec4
-	content     Content
-	children    []Node
+	original domain_nodes.Node
+	space    spaces.Space
+	content  Content
+	children []Node
 }
 
 func createNode(
 	original domain_nodes.Node,
-	program programs.Program,
-	pos mgl32.Vec3,
-	orientation mgl32.Vec4,
+	space spaces.Space,
 ) Node {
 	return createNodeInternally(
 		original,
-		program,
-		pos,
-		orientation,
+		space,
 		nil,
 		nil,
 	)
@@ -33,16 +27,12 @@ func createNode(
 
 func createNodeWithContent(
 	original domain_nodes.Node,
-	program programs.Program,
-	pos mgl32.Vec3,
-	orientation mgl32.Vec4,
+	space spaces.Space,
 	content Content,
 ) Node {
 	return createNodeInternally(
 		original,
-		program,
-		pos,
-		orientation,
+		space,
 		content,
 		nil,
 	)
@@ -50,16 +40,12 @@ func createNodeWithContent(
 
 func createNodeWithChildren(
 	original domain_nodes.Node,
-	program programs.Program,
-	pos mgl32.Vec3,
-	orientation mgl32.Vec4,
+	space spaces.Space,
 	children []Node,
 ) Node {
 	return createNodeInternally(
 		original,
-		program,
-		pos,
-		orientation,
+		space,
 		nil,
 		children,
 	)
@@ -67,17 +53,13 @@ func createNodeWithChildren(
 
 func createNodeWithContentAndChildren(
 	original domain_nodes.Node,
-	program programs.Program,
-	pos mgl32.Vec3,
-	orientation mgl32.Vec4,
+	space spaces.Space,
 	content Content,
 	children []Node,
 ) Node {
 	return createNodeInternally(
 		original,
-		program,
-		pos,
-		orientation,
+		space,
 		content,
 		children,
 	)
@@ -85,19 +67,15 @@ func createNodeWithContentAndChildren(
 
 func createNodeInternally(
 	original domain_nodes.Node,
-	program programs.Program,
-	pos mgl32.Vec3,
-	orientation mgl32.Vec4,
+	space spaces.Space,
 	content Content,
 	children []Node,
 ) Node {
 	out := node{
-		original:    original,
-		program:     program,
-		pos:         pos,
-		orientation: orientation,
-		content:     content,
-		children:    children,
+		original: original,
+		space:    space,
+		content:  content,
+		children: children,
 	}
 
 	return &out
@@ -108,19 +86,9 @@ func (obj *node) Original() domain_nodes.Node {
 	return obj.original
 }
 
-// Program returns the program
-func (obj *node) Program() programs.Program {
-	return obj.program
-}
-
-// Position returns the position
-func (obj *node) Position() mgl32.Vec3 {
-	return obj.pos
-}
-
-// Orientation returns the orientation
-func (obj *node) Orientation() mgl32.Vec4 {
-	return obj.orientation
+// Space returns the space
+func (obj *node) Space() spaces.Space {
+	return obj.space
 }
 
 // HasContent returns true if there is content, false otherwise
@@ -144,33 +112,25 @@ func (obj *node) Children() []Node {
 }
 
 // Render renders the node
-func (obj *node) Render(cameraIndex uint) error {
+func (obj *node) Render(camera cameras.Camera, globalSpace spaces.Space) error {
 	if obj.HasContent() {
-		if obj.content.IsCamera() {
-			camera := obj.content.Camera()
-			if camera.Original().Index() == cameraIndex {
-				err := obj.content.Camera().Render()
-				if err != nil {
-					return err
-				}
-			}
+		if !obj.content.IsModel() {
+			return nil
 		}
 
-		if obj.content.IsModel() {
-			err := obj.content.Model().Render(
-				obj.Position(),
-				obj.Orientation(),
-			)
+		err := obj.content.Model().Render(
+			camera,
+			obj.Space(),
+		)
 
-			if err != nil {
-				return err
-			}
+		if err != nil {
+			return err
 		}
 	}
 
 	if obj.HasChildren() {
 		for _, oneChildren := range obj.children {
-			err := oneChildren.Render(cameraIndex)
+			err := oneChildren.Render(camera, globalSpace)
 			if err != nil {
 				return err
 			}

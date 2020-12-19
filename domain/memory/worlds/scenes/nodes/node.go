@@ -7,7 +7,6 @@ import (
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -15,7 +14,6 @@ import (
 type node struct {
 	immutable   entities.Immutable
 	position    fl32.Vec3
-	shaders     shaders.Shaders
 	orientation Orientation
 	content     Content
 	nodes       []Node
@@ -24,47 +22,42 @@ type node struct {
 func createNode(
 	immutable entities.Immutable,
 	position fl32.Vec3,
-	shaders shaders.Shaders,
 	orientation Orientation,
 ) Node {
-	return createNodeInternally(immutable, position, shaders, orientation, nil, nil)
+	return createNodeInternally(immutable, position, orientation, nil, nil)
 }
 
 func createNodeWithContent(
 	immutable entities.Immutable,
 	position fl32.Vec3,
-	shaders shaders.Shaders,
 	orientation Orientation,
 	content Content,
 ) Node {
-	return createNodeInternally(immutable, position, shaders, orientation, content, nil)
+	return createNodeInternally(immutable, position, orientation, content, nil)
 }
 
 func createNodeWithNodes(
 	immutable entities.Immutable,
 	position fl32.Vec3,
-	shaders shaders.Shaders,
 	orientation Orientation,
 	nodes []Node,
 ) Node {
-	return createNodeInternally(immutable, position, shaders, orientation, nil, nodes)
+	return createNodeInternally(immutable, position, orientation, nil, nodes)
 }
 
 func createNodeWithContentAndNodes(
 	immutable entities.Immutable,
 	position fl32.Vec3,
-	shaders shaders.Shaders,
 	orientation Orientation,
 	content Content,
 	nodes []Node,
 ) Node {
-	return createNodeInternally(immutable, position, shaders, orientation, content, nodes)
+	return createNodeInternally(immutable, position, orientation, content, nodes)
 }
 
 func createNodeInternally(
 	immutable entities.Immutable,
 	position fl32.Vec3,
-	shaders shaders.Shaders,
 	orientation Orientation,
 	content Content,
 	nodes []Node,
@@ -72,7 +65,6 @@ func createNodeInternally(
 	out := node{
 		immutable:   immutable,
 		position:    position,
-		shaders:     shaders,
 		orientation: orientation,
 		content:     content,
 		nodes:       nodes,
@@ -112,11 +104,6 @@ func (obj *node) Camera(index uint) (cameras.Camera, error) {
 
 	str := fmt.Sprintf("the camera (index: %d) could not be found in the node (hash: %s)", index, obj.Hash().String())
 	return nil, errors.New(str)
-}
-
-// Shaders returns the shaders
-func (obj *node) Shaders() shaders.Shaders {
-	return obj.shaders
 }
 
 // Position returns the position

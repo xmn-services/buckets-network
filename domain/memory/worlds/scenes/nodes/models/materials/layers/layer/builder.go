@@ -7,7 +7,6 @@ import (
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/renders"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -18,7 +17,6 @@ type builder struct {
 	alpha            uint8
 	viewport         ints.Rectangle
 	renders          renders.Renders
-	shaders          shaders.Shaders
 	createdOn        *time.Time
 }
 
@@ -32,7 +30,6 @@ func createBuilder(
 		alpha:            uint8(1),
 		viewport:         nil,
 		renders:          nil,
-		shaders:          nil,
 		createdOn:        nil,
 	}
 
@@ -62,12 +59,6 @@ func (app *builder) WithRenders(renders renders.Renders) Builder {
 	return app
 }
 
-// WithShaders add shaders to the builder
-func (app *builder) WithShaders(shaders shaders.Shaders) Builder {
-	app.shaders = shaders
-	return app
-}
-
 // CreatedOn add a creation time to the builder
 func (app *builder) CreatedOn(createdOn time.Time) Builder {
 	app.createdOn = &createdOn
@@ -84,19 +75,10 @@ func (app *builder) Now() (Layer, error) {
 		return nil, errors.New("the renders is mandatory in order to build a Layer instance")
 	}
 
-	if app.shaders == nil {
-		return nil, errors.New("the shaders is mandatory in order to build a Layer instance")
-	}
-
-	if !app.shaders.IsFragment() {
-		return nil, errors.New("the material's layer shaders were expected to be fragment shaders")
-	}
-
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
 		[]byte(strconv.Itoa(int(app.alpha))),
 		[]byte(app.viewport.String()),
 		app.renders.Hash().Bytes(),
-		app.shaders.Hash().Bytes(),
 	})
 
 	if err != nil {
@@ -108,5 +90,5 @@ func (app *builder) Now() (Layer, error) {
 		return nil, err
 	}
 
-	return createLayer(immutable, app.alpha, app.viewport, app.renders, app.shaders), nil
+	return createLayer(immutable, app.alpha, app.viewport, app.renders), nil
 }

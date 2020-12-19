@@ -5,7 +5,6 @@ import (
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/renders"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -23,7 +22,6 @@ type Builder interface {
 	WithAlpha(alpha uint8) Builder
 	WithViewport(viewport ints.Rectangle) Builder
 	WithRenders(renders renders.Renders) Builder
-	WithShaders(shaders shaders.Shaders) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Layer, error)
 }
@@ -34,5 +32,4 @@ type Layer interface {
 	Alpha() uint8
 	Viewport() ints.Rectangle
 	Renders() renders.Renders
-	Shaders() shaders.Shaders
 }

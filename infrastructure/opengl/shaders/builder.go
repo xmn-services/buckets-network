@@ -3,13 +3,13 @@ package shaders
 import (
 	"errors"
 
-	domain_shaders "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
+	domain_shader "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders/shader"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/shaders/shader"
 )
 
 type builder struct {
 	shaderBuilder shader.Builder
-	domainShaders domain_shaders.Shaders
+	domainShaders []domain_shader.Shader
 }
 
 func createBuilder(
@@ -28,8 +28,8 @@ func (app *builder) Create() Builder {
 	return createBuilder(app.shaderBuilder)
 }
 
-// WithShaders add shaders to the list
-func (app *builder) WithShaders(shaders domain_shaders.Shaders) Builder {
+// WithShaders add shaders list to the list
+func (app *builder) WithShaders(shaders []domain_shader.Shader) Builder {
 	app.domainShaders = shaders
 	return app
 }
@@ -41,8 +41,7 @@ func (app *builder) Now() (Shaders, error) {
 	}
 
 	list := []shader.Shader{}
-	all := app.domainShaders.All()
-	for _, oneDomainShader := range all {
+	for _, oneDomainShader := range app.domainShaders {
 		shader, err := app.shaderBuilder.Create().WithShader(oneDomainShader).Now()
 		if err != nil {
 			return nil, err

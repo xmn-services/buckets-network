@@ -5,25 +5,21 @@ import (
 	image_color "image/color"
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/renders/render"
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/cameras"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/textures"
 )
 
 type builder struct {
 	textureBuilder textures.Builder
-	cameraBuilder  cameras.Builder
 	render         render.Render
 	prog           programs.Program
 }
 
 func createBuilder(
 	textureBuilder textures.Builder,
-	cameraBuilder cameras.Builder,
 ) Builder {
 	out := builder{
 		textureBuilder: textureBuilder,
-		cameraBuilder:  cameraBuilder,
 		render:         nil,
 		prog:           nil,
 	}
@@ -33,7 +29,7 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.textureBuilder, app.cameraBuilder)
+	return createBuilder(app.textureBuilder)
 }
 
 // WithRender adds a render to the builder
@@ -66,16 +62,7 @@ func (app *builder) Now() (Surface, error) {
 	}
 
 	if content.IsCamera() {
-		domainCam := content.Camera()
-		if app.prog == nil {
-			return nil, errors.New("the program is mandatory in order to build a Surface with Camera")
-		}
-
-		cam, err := app.cameraBuilder.Create().WithProgram(app.prog).WithCamera(domainCam).Now()
-		if err != nil {
-			return nil, err
-		}
-
+		cam := content.Camera()
 		return createSurfaceWithCamera(cam), nil
 	}
 

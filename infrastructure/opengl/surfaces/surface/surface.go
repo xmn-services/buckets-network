@@ -3,7 +3,7 @@ package surface
 import (
 	image_color "image/color"
 
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/cameras"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/textures"
 )
 

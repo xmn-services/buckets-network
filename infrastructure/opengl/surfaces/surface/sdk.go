@@ -3,8 +3,8 @@ package surface
 import (
 	image_color "image/color"
 
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/renders/render"
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/cameras"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/textures"
 )
@@ -12,10 +12,8 @@ import (
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
 	textureBuilder := textures.NewBuilder()
-	cameraBuilder := cameras.NewBuilder()
 	return createBuilder(
 		textureBuilder,
-		cameraBuilder,
 	)
 }
 

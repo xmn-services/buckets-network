@@ -1,39 +1,57 @@
 package nodes
 
 import (
-	"github.com/go-gl/mathgl/mgl32"
 	domain_nodes "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes"
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/cameras"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/models"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/spaces"
 )
 
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
-	cameraBuilder := cameras.NewBuilder()
-	programBuilder := programs.NewBuilder()
-	modelBuilder := models.NewBuilder()
-	return createBuilder(programBuilder, cameraBuilder, modelBuilder)
+	nodeBuilder := NewNodeBuilder()
+	return createBuilder(nodeBuilder)
 }
 
-// Builder represents a node builder
+// NewNodeBuilder creates a new node builder instance
+func NewNodeBuilder() NodeBuilder {
+	spaceBuilder := spaces.NewBuilder()
+	programBuilder := programs.NewBuilder()
+	modelBuilder := models.NewBuilder()
+	return createNodeBuilder(spaceBuilder, programBuilder, modelBuilder)
+}
+
+// Builder represents the nodes builder
 type Builder interface {
 	Create() Builder
-	WithNode(node domain_nodes.Node) Builder
+	WithNodes(nodes []domain_nodes.Node) Builder
+	Now() (Nodes, error)
+}
+
+// Nodes represents the nodes
+type Nodes interface {
+	All() []Node
+	Camera(index uint) (cameras.Camera, spaces.Space, error)
+	Render(camera cameras.Camera, globalSpace spaces.Space) error
+}
+
+// NodeBuilder represents a node builder
+type NodeBuilder interface {
+	Create() NodeBuilder
+	WithNode(node domain_nodes.Node) NodeBuilder
 	Now() (Node, error)
 }
 
 // Node represents a node
 type Node interface {
 	Original() domain_nodes.Node
-	Program() programs.Program
-	Position() mgl32.Vec3
-	Orientation() mgl32.Vec4
+	Space() spaces.Space
 	HasContent() bool
 	Content() Content
 	HasChildren() bool
 	Children() []Node
-	Render(cameraIndex uint) error
+	Render(camera cameras.Camera, globalSpace spaces.Space) error
 }
 
 // Content represents the node content

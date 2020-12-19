@@ -5,6 +5,7 @@ import (
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -14,6 +15,7 @@ type material struct {
 	alpha     uint8
 	viewport  ints.Rectangle
 	layers    layers.Layers
+	shaders   shaders.Shaders
 }
 
 func createMaterial(
@@ -21,12 +23,14 @@ func createMaterial(
 	alpha uint8,
 	viewport ints.Rectangle,
 	layers layers.Layers,
+	shaders shaders.Shaders,
 ) Material {
 	out := material{
 		immutable: immutable,
 		alpha:     alpha,
 		viewport:  viewport,
 		layers:    layers,
+		shaders:   shaders,
 	}
 
 	return &out
@@ -50,6 +54,11 @@ func (obj *material) Viewport() ints.Rectangle {
 // Layers returns the layers
 func (obj *material) Layers() layers.Layers {
 	return obj.layers
+}
+
+// Shaders returns the shaders
+func (obj *material) Shaders() shaders.Shaders {
+	return obj.shaders
 }
 
 // CreatedOn returns the creation time

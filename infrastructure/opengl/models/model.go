@@ -1,13 +1,16 @@
 package models
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/go-gl/gl/v4.6-core/gl"
 	"github.com/go-gl/mathgl/mgl32"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/materials"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/spaces"
 )
 
 type model struct {
@@ -78,10 +81,65 @@ func (obj *model) Material() materials.Material {
 }
 
 // Render renders the model
-func (obj *model) Render(pos mgl32.Vec3, orientation mgl32.Vec4) error {
+func (obj *model) Render(camera cameras.Camera, space spaces.Space) error {
+	pos := space.Position()
+	orientation := space.Orientation()
+
 	// use the program:
 	identifier := obj.Program().Identifier()
 	gl.UseProgram(identifier)
+
+	// projection:
+	projection := camera.Projection()
+	projVariable := fmt.Sprintf(glStrPattern, projection.Variable())
+	fov := projection.FieldOfView()
+	aspectRatio := projection.AspectRation()
+	near := projection.Near()
+	far := projection.Far()
+
+	projMat := mgl32.Perspective(
+		mgl32.DegToRad(fov),
+		aspectRatio,
+		near,
+		far,
+	)
+
+	projectionUniform := gl.GetUniformLocation(
+		obj.prog.Identifier(),
+		gl.Str(projVariable),
+	)
+
+	gl.UniformMatrix4fv(
+		projectionUniform,
+		1,
+		false,
+		&projMat[0],
+	)
+
+	// lookAt:
+	lookAt := camera.LookAt()
+	lookAtVariable := fmt.Sprintf(glStrPattern, lookAt.Variable())
+	eye := lookAt.Eye()
+	center := lookAt.Center()
+	up := lookAt.Up()
+
+	lookAtMat := mgl32.LookAtV(
+		mgl32.Vec3{eye[0], eye[1], eye[2]},
+		mgl32.Vec3{center[0], center[1], center[2]},
+		mgl32.Vec3{up[0], up[1], up[2]},
+	)
+
+	lookAtUniform := gl.GetUniformLocation(
+		obj.prog.Identifier(),
+		gl.Str(lookAtVariable),
+	)
+
+	gl.UniformMatrix4fv(
+		lookAtUniform,
+		1,
+		false,
+		&lookAtMat[0],
+	)
 
 	// rotate then translate:
 	radAngle := float32(orientation[3] * math.Pi / 180)

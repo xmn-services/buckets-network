@@ -8,7 +8,7 @@ import (
 type scene struct {
 	original    domain_scenes.Scene
 	cameraIndex uint
-	nodes       []nodes.Node
+	nodes       nodes.Nodes
 }
 
 func createScene(
@@ -21,7 +21,7 @@ func createScene(
 func createSceneWithNodes(
 	original domain_scenes.Scene,
 	cameraIndex uint,
-	nodes []nodes.Node,
+	nodes nodes.Nodes,
 ) Scene {
 	return createSceneInternally(original, cameraIndex, nodes)
 }
@@ -29,7 +29,7 @@ func createSceneWithNodes(
 func createSceneInternally(
 	original domain_scenes.Scene,
 	cameraIndex uint,
-	nodes []nodes.Node,
+	nodes nodes.Nodes,
 ) Scene {
 	out := scene{
 		original:    original,
@@ -56,7 +56,7 @@ func (obj *scene) HasNodes() bool {
 }
 
 // Nodes returns the nodes
-func (obj *scene) Nodes() []nodes.Node {
+func (obj *scene) Nodes() nodes.Nodes {
 	return obj.nodes
 }
 
@@ -66,12 +66,11 @@ func (obj *scene) Render() error {
 		return nil
 	}
 
-	for _, oneNode := range obj.nodes {
-		err := oneNode.Render(obj.cameraIndex)
-		if err != nil {
-			return err
-		}
+	// find the camera:
+	currentCamera, currentCameraSpace, err := obj.nodes.Camera(obj.cameraIndex)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	return obj.nodes.Render(currentCamera, currentCameraSpace)
 }

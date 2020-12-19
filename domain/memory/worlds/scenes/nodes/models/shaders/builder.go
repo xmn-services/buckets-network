@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders/shader"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders/shader"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )

@@ -5,6 +5,7 @@ import (
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/geometries"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders/shader"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -32,4 +33,5 @@ type Model interface {
 	Geometry() geometries.Geometry
 	Material() materials.Material
 	Variable() string
+	Shaders() []shader.Shader
 }

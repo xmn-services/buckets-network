@@ -1,10 +1,11 @@
 package models
 
 import (
-	"github.com/go-gl/mathgl/mgl32"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/materials"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/spaces"
 )
 
 const float32SizeInBytes = 32 / 8
@@ -13,15 +14,15 @@ const glStrPattern = "%s\x00"
 
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
+	programBuilder := programs.NewBuilder()
 	materialBuilder := materials.NewBuilder()
-	return createBuilder(materialBuilder)
+	return createBuilder(programBuilder, materialBuilder)
 }
 
 // Builder represents a model builder
 type Builder interface {
 	Create() Builder
 	WithModel(model models.Model) Builder
-	WithProgram(prog programs.Program) Builder
 	Now() (Model, error)
 }
 
@@ -34,7 +35,7 @@ type Model interface {
 	UniformVariable() int32
 	Program() programs.Program
 	Material() materials.Material
-	Render(pos mgl32.Vec3, orientation mgl32.Vec4) error
+	Render(camera cameras.Camera, space spaces.Space) error
 }
 
 // Type represents the model type

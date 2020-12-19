@@ -7,8 +7,8 @@ import (
 
 // NewBuilder creates a new builder instance
 func NewBuilder(defaultCameraIndex uint) Builder {
-	nodeBuilder := nodes.NewBuilder()
-	return createBuilder(nodeBuilder, defaultCameraIndex)
+	nodesBuilder := nodes.NewBuilder()
+	return createBuilder(nodesBuilder, defaultCameraIndex)
 }
 
 // Builder represents the scene builder
@@ -24,6 +24,6 @@ type Scene interface {
 	Original() domain_scenes.Scene
 	CameraIndex() uint
 	HasNodes() bool
-	Nodes() []nodes.Node
+	Nodes() nodes.Nodes
 	Render() error
 }

@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/go-gl/gl/v4.6-core/gl"
-	domain_shader "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders/shader"
+	domain_shader "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders/shader"
 )
 
 type builder struct {

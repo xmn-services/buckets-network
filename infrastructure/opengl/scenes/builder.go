@@ -8,18 +8,18 @@ import (
 )
 
 type builder struct {
-	nodeBuilder        nodes.Builder
+	nodesBuilder       nodes.Builder
 	defaultCameraIndex uint
 	cameraIndex        uint
 	scene              domain_scenes.Scene
 }
 
 func createBuilder(
-	nodeBuilder nodes.Builder,
+	nodesBuilder nodes.Builder,
 	defaultCameraIndex uint,
 ) Builder {
 	out := builder{
-		nodeBuilder:        nodeBuilder,
+		nodesBuilder:       nodesBuilder,
 		defaultCameraIndex: defaultCameraIndex,
 		cameraIndex:        defaultCameraIndex,
 		scene:              nil,
@@ -30,7 +30,7 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.nodeBuilder, app.defaultCameraIndex)
+	return createBuilder(app.nodesBuilder, app.defaultCameraIndex)
 }
 
 // WithScene adds a scene to the builder
@@ -51,22 +51,15 @@ func (app *builder) Now() (Scene, error) {
 		return nil, errors.New("the scene is mandatory in order to build a Scene instance")
 	}
 
-	list := []nodes.Node{}
 	if app.scene.HasNodes() {
 		domainNodes := app.scene.Nodes()
-		for _, oneDomainNode := range domainNodes {
-			node, err := app.nodeBuilder.Create().WithNode(oneDomainNode).Now()
-			if err != nil {
-				return nil, err
-			}
-
-			list = append(list, node)
+		list, err := app.nodesBuilder.Create().WithNodes(domainNodes).Now()
+		if err != nil {
+			return nil, err
 		}
+
+		return createSceneWithNodes(app.scene, app.cameraIndex, list), nil
 	}
 
-	if len(list) <= 0 {
-		return createScene(app.scene, app.cameraIndex), nil
-	}
-
-	return createSceneWithNodes(app.scene, app.cameraIndex, list), nil
+	return createScene(app.scene, app.cameraIndex), nil
 }

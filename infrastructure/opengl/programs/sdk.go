@@ -1,7 +1,7 @@
 package programs
 
 import (
-	domain_shaders "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
+	domain_shader "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders/shader"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/shaders"
 )
 
@@ -14,7 +14,7 @@ func NewBuilder() Builder {
 // Builder represents a program builder
 type Builder interface {
 	Create() Builder
-	WithShaders(shaders domain_shaders.Shaders) Builder
+	WithShaders(shaders []domain_shader.Shader) Builder
 	Now() (Program, error)
 }
 

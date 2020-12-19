@@ -6,7 +6,6 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -22,7 +21,6 @@ func NewBuilder() Builder {
 type Builder interface {
 	Create() Builder
 	WithPosition(pos fl32.Vec3) Builder
-	WithShaders(shaders shaders.Shaders) Builder
 	WithOrientationAngle(angle float32) Builder
 	WithOrientationDirection(direction fl32.Vec3) Builder
 	WithModel(model models.Model) Builder
@@ -36,7 +34,6 @@ type Builder interface {
 type Node interface {
 	entities.Immutable
 	Camera(index uint) (cameras.Camera, error)
-	Shaders() shaders.Shaders
 	Position() fl32.Vec3
 	Orientation() Orientation
 	HasContent() bool

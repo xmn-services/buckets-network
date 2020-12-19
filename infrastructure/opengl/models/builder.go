@@ -13,15 +13,18 @@ import (
 )
 
 type builder struct {
+	programBuilder  programs.Builder
 	materialBuilder materials.Builder
 	model           models.Model
 	prog            programs.Program
 }
 
 func createBuilder(
+	programBuilder programs.Builder,
 	materialBuilder materials.Builder,
 ) Builder {
 	out := builder{
+		programBuilder:  programBuilder,
 		materialBuilder: materialBuilder,
 		model:           nil,
 		prog:            nil,
@@ -32,18 +35,12 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.materialBuilder)
+	return createBuilder(app.programBuilder, app.materialBuilder)
 }
 
 // WithModel adds a model to the builder
 func (app *builder) WithModel(model models.Model) Builder {
 	app.model = model
-	return app
-}
-
-// WithProgram adds a program to the builder
-func (app *builder) WithProgram(prog programs.Program) Builder {
-	app.prog = prog
 	return app
 }
 
@@ -53,24 +50,26 @@ func (app *builder) Now() (Model, error) {
 		return nil, errors.New("the model is mandatory in order to build a Model instance")
 	}
 
-	if app.prog == nil {
-		return nil, errors.New("the program is mandatory in order to build a Model instance")
+	domainShaders := app.model.Shaders()
+	prog, err := app.programBuilder.Create().WithShaders(domainShaders).Now()
+	if err != nil {
+		return nil, err
 	}
 
 	domainMaterial := app.model.Material()
-	material, err := app.materialBuilder.Create().WithMaterial(domainMaterial).WithProgram(app.prog).Now()
+	material, err := app.materialBuilder.Create().WithMaterial(domainMaterial).WithProgram(prog).Now()
 	if err != nil {
 		return nil, err
 	}
 
 	domainGeo := app.model.Geometry()
-	vao, vertexAmount, isTriangle, err := app.geometry(app.prog, domainGeo)
+	vao, vertexAmount, isTriangle, err := app.geometry(prog, domainGeo)
 	if err != nil {
 		return nil, err
 	}
 
 	modelMat := mgl32.Ident4()
-	identifier := app.prog.Identifier()
+	identifier := prog.Identifier()
 	varName := fmt.Sprintf(glStrPattern, app.model.Variable())
 	modelUniform := gl.GetUniformLocation(identifier, gl.Str(varName))
 	gl.UniformMatrix4fv(modelUniform, 1, false, &modelMat[0])
@@ -85,7 +84,7 @@ func (app *builder) Now() (Model, error) {
 		return nil, errors.New("the type (isTriangle) is mandatory in order to build a Model instance")
 	}
 
-	return createModel(app.model, typ, vao, int32(vertexAmount), modelUniform, app.prog, material), nil
+	return createModel(app.model, typ, vao, int32(vertexAmount), modelUniform, prog, material), nil
 }
 
 func (app *builder) geometry(program programs.Program, geometry geometries.Geometry) (uint32, int, bool, error) {

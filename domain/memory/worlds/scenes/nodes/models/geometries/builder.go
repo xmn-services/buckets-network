@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/geometries/vertices"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -14,6 +15,7 @@ type builder struct {
 	immutableBuilder      entities.ImmutableBuilder
 	verticesFactory       vertices.Factory
 	vertices              vertices.Vertices
+	shaders               shaders.Shaders
 	vertexCoordinatesVar  string
 	textureCoordinatesVar string
 	createdOn             *time.Time
@@ -29,6 +31,7 @@ func createBuilder(
 		immutableBuilder:      immutableBuilder,
 		verticesFactory:       verticesFactory,
 		vertices:              nil,
+		shaders:               nil,
 		vertexCoordinatesVar:  "",
 		textureCoordinatesVar: "",
 		createdOn:             nil,
@@ -45,6 +48,12 @@ func (app *builder) Create() Builder {
 // WithVertices add vertices to the builder
 func (app *builder) WithVertices(vertices vertices.Vertices) Builder {
 	app.vertices = vertices
+	return app
+}
+
+// WithShaders add shaders to the builder
+func (app *builder) WithShaders(shaders shaders.Shaders) Builder {
+	app.shaders = shaders
 	return app
 }
 
@@ -77,6 +86,14 @@ func (app *builder) Now() (Geometry, error) {
 		app.vertices = vertices
 	}
 
+	if app.shaders == nil {
+		return nil, errors.New("the shaders are mandatory in order to build a Geometry instance")
+	}
+
+	if !app.shaders.IsVertex() {
+		return nil, errors.New("the geometry's shaders were expected to be vertex shaders")
+	}
+
 	if app.vertexCoordinatesVar == "" {
 		return nil, errors.New("the vertex coordinates variable is mandatory in order to build a Geometry instance")
 	}
@@ -101,5 +118,5 @@ func (app *builder) Now() (Geometry, error) {
 	}
 
 	variables := createVariables(app.vertexCoordinatesVar, app.textureCoordinatesVar)
-	return createGeometry(immutable, variables, app.vertices), nil
+	return createGeometry(immutable, app.shaders, variables, app.vertices), nil
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -17,6 +18,7 @@ type builder struct {
 	alpha            uint8
 	viewport         ints.Rectangle
 	layers           layers.Layers
+	shaders          shaders.Shaders
 	createdOn        *time.Time
 }
 
@@ -30,6 +32,7 @@ func createBuilder(
 		alpha:            uint8(0),
 		viewport:         nil,
 		layers:           nil,
+		shaders:          nil,
 		createdOn:        nil,
 	}
 
@@ -59,6 +62,12 @@ func (app *builder) WithLayers(layers layers.Layers) Builder {
 	return app
 }
 
+// WithShaders add shaders to the builder
+func (app *builder) WithShaders(shaders shaders.Shaders) Builder {
+	app.shaders = shaders
+	return app
+}
+
 // CreatedOn adds a creation time to the builder
 func (app *builder) CreatedOn(createdOn time.Time) Builder {
 	app.createdOn = &createdOn
@@ -75,10 +84,19 @@ func (app *builder) Now() (Material, error) {
 		return nil, errors.New("the layers are mandatory in order to build a Material instance")
 	}
 
+	if app.shaders == nil {
+		return nil, errors.New("the shaders is mandatory in order to build a Layer instance")
+	}
+
+	if !app.shaders.IsFragment() {
+		return nil, errors.New("the material's shaders were expected to be fragment shaders")
+	}
+
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
 		[]byte(strconv.Itoa(int(app.alpha))),
 		[]byte(app.viewport.String()),
 		app.layers.Hash().Bytes(),
+		app.shaders.Hash().Bytes(),
 	})
 
 	if err != nil {
@@ -90,5 +108,5 @@ func (app *builder) Now() (Material, error) {
 		return nil, err
 	}
 
-	return createMaterial(immutable, app.alpha, app.viewport, app.layers), nil
+	return createMaterial(immutable, app.alpha, app.viewport, app.layers, app.shaders), nil
 }

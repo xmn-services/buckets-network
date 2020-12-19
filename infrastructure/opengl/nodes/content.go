@@ -1,7 +1,7 @@
 package nodes
 
 import (
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/cameras"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/models"
 )
 

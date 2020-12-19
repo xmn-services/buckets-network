@@ -27,8 +27,8 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/pixels"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/pixels/pixel"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/rows"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders/shader"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders/shader"
 )
 
 func main() {
@@ -85,10 +85,9 @@ func main() {
 
 func nodeFromCamera(camera cameras.Camera) nodes.Node {
 	pos := fl32.Vec3{0.0, 0.0, 0.0}
-	angle := float32(0.0)
-	direction := fl32.Vec3{0.0, 0.0, 0.0}
-	shaders := cubeVertexShader()
-	node, err := nodes.NewBuilder().Create().WithShaders(shaders).WithPosition(pos).WithOrientationAngle(angle).WithOrientationDirection(direction).WithCamera(camera).Now()
+	angle := float32(45.0)
+	direction := fl32.Vec3{5.0, 5.0, 5.0}
+	node, err := nodes.NewBuilder().Create().WithPosition(pos).WithOrientationAngle(angle).WithOrientationDirection(direction).WithCamera(camera).Now()
 	if err != nil {
 		panic(err)
 	}
@@ -97,11 +96,10 @@ func nodeFromCamera(camera cameras.Camera) nodes.Node {
 }
 
 func nodeFromModel(model models.Model) nodes.Node {
-	pos := fl32.Vec3{1.0, 0.0, 0.0}
-	angle := float32(0.0)
-	direction := fl32.Vec3{0.0, 0.0, 0.0}
-	shaders := cubeVertexShader()
-	node, err := nodes.NewBuilder().Create().WithShaders(shaders).WithPosition(pos).WithOrientationAngle(angle).WithOrientationDirection(direction).WithModel(model).Now()
+	pos := fl32.Vec3{5.0, 5.0, 5.0}
+	angle := float32(1.0)
+	direction := fl32.Vec3{1.0, 1.0, 1.0}
+	node, err := nodes.NewBuilder().Create().WithPosition(pos).WithOrientationAngle(angle).WithOrientationDirection(direction).WithModel(model).Now()
 	if err != nil {
 		panic(err)
 	}
@@ -185,8 +183,10 @@ func cubeGeometry() geometries.Geometry {
 
 	vertexCoordinatesVar := "vert"
 	texCoordinatesVar := "vertTexCoord"
+	shaders := cubeVertexShader()
 	geo, err := geometries.NewBuilder().Create().
 		WithVertices(vertices).
+		WithShaders(shaders).
 		WithVertexCoordinatesVariable(vertexCoordinatesVar).
 		WithTextureCoordinatesVariable(texCoordinatesVar).
 		Now()
@@ -220,8 +220,7 @@ func cubeMaterial() materials.Material {
 		panic(err)
 	}
 
-	shades := cubeFragmentShader()
-	lyr, err := layer.NewBuilder().Create().WithAlpha(1.0).WithViewport(viewport).WithRenders(rdns).WithShaders(shades).Now()
+	lyr, err := layer.NewBuilder().Create().WithAlpha(1.0).WithViewport(viewport).WithRenders(rdns).Now()
 	if err != nil {
 		panic(err)
 	}
@@ -234,7 +233,8 @@ func cubeMaterial() materials.Material {
 		panic(err)
 	}
 
-	mat, err := materials.NewBuilder().Create().WithAlpha(1.0).WithViewport(viewport).WithLayers(layerList).Now()
+	shades := cubeFragmentShader()
+	mat, err := materials.NewBuilder().Create().WithShaders(shades).WithAlpha(1.0).WithViewport(viewport).WithLayers(layerList).Now()
 	if err != nil {
 		panic(err)
 	}

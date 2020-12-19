@@ -6,13 +6,13 @@ import (
 	"strings"
 
 	"github.com/go-gl/gl/v4.6-core/gl"
-	domain_shaders "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
+	domain_shader "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders/shader"
 	"github.com/xmn-services/buckets-network/infrastructure/opengl/shaders"
 )
 
 type builder struct {
 	shadersBuilder shaders.Builder
-	shaders        domain_shaders.Shaders
+	shaders        []domain_shader.Shader
 }
 
 func createBuilder(
@@ -32,7 +32,7 @@ func (app *builder) Create() Builder {
 }
 
 // WithShaders add shaders to the builder
-func (app *builder) WithShaders(shaders domain_shaders.Shaders) Builder {
+func (app *builder) WithShaders(shaders []domain_shader.Shader) Builder {
 	app.shaders = shaders
 	return app
 }

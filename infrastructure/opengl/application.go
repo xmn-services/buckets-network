@@ -55,10 +55,10 @@ func (app *application) Execute(win windows.Window, domainWorld domain_worlds.Wo
 
 func (app *application) updateFn(prev time.Time, current time.Time) error {
 	// render the world:
-	/*err := app.currentWorld.Render()
+	err := app.currentWorld.Render()
 	if err != nil {
 		return err
-	}*/
+	}
 
 	//log.Printf("\nupdate: %s -- %s", prev.String(), current.String())
 	time.Sleep(time.Second / 20)
