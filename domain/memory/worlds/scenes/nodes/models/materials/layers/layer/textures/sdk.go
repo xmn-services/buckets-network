@@ -3,8 +3,8 @@ package textures
 import (
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/rows"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -19,7 +19,7 @@ func NewBuilder() Builder {
 // Builder represents a texture builder
 type Builder interface {
 	Create() Builder
-	WithDimension(dimension rectangles.Rectangle) Builder
+	WithDimension(dimension ints.Rectangle) Builder
 	WithPixels(pixels rows.Rows) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Texture, error)
@@ -28,7 +28,7 @@ type Builder interface {
 // Texture represents a texture
 type Texture interface {
 	entities.Immutable
-	Dimension() rectangles.Rectangle
+	Dimension() ints.Rectangle
 	Pixels() rows.Rows
 }
 

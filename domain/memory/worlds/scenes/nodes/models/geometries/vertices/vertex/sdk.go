@@ -1,8 +1,6 @@
 package vertex
 
-import (
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/math"
-)
+import "github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
 
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
@@ -12,14 +10,14 @@ func NewBuilder() Builder {
 // Builder represents a vertex builder
 type Builder interface {
 	Create() Builder
-	WithPosition(pos math.Vec3) Builder
-	WithTexture(tex math.Vec2) Builder
+	WithPosition(pos fl32.Vec3) Builder
+	WithTexture(tex fl32.Vec2) Builder
 	Now() (Vertex, error)
 }
 
 // Vertex represents a vertex
 type Vertex interface {
-	Position() math.Vec3
-	Texture() math.Vec2
+	Position() fl32.Vec3
+	Texture() fl32.Vec2
 	String() string
 }

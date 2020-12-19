@@ -1,55 +1,25 @@
 package programs
 
 import (
-	"github.com/xmn-services/buckets-network/domain/memory/worlds"
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs/layers"
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs/layers/layer"
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs/materials"
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs/materials/material"
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs/program"
-	"github.com/xmn-services/buckets-network/infrastructure/opengl/programs/shaders"
-	"github.com/xmn-services/buckets-network/libs/hash"
+	domain_shaders "github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
+	"github.com/xmn-services/buckets-network/infrastructure/opengl/shaders"
 )
-
-// NewApplication creates a new application instance
-func NewApplication() Application {
-	programBuilder := program.NewBuilder()
-	programsBuilder := NewBuilder()
-	materialBuilder := material.NewBuilder()
-	materialsBuilder := materials.NewBuilder()
-	layerBuilder := layer.NewBuilder()
-	layersBuilder := layers.NewBuilder()
-	shadersApplication := shaders.NewApplication()
-	return createApplication(
-		programBuilder,
-		programsBuilder,
-		materialBuilder,
-		materialsBuilder,
-		layerBuilder,
-		layersBuilder,
-		shadersApplication,
-	)
-}
 
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
-	return createBuilder()
+	shadersBuilder := shaders.NewBuilder()
+	return createBuilder(shadersBuilder)
 }
 
-// Application represents a program application
-type Application interface {
-	Execute(world worlds.World) (Programs, error)
-}
-
-// Builder represents programs builder
+// Builder represents a program builder
 type Builder interface {
 	Create() Builder
-	WithPrograms(progs []program.Program) Builder
-	Now() (Programs, error)
+	WithShaders(shaders domain_shaders.Shaders) Builder
+	Now() (Program, error)
 }
 
-// Programs represents compiled programs
-type Programs interface {
-	All() []program.Program
-	Fetch(scene hash.Hash) (program.Program, error)
+// Program represents a program
+type Program interface {
+	Shaders() shaders.Shaders
+	Identifier() uint32
 }

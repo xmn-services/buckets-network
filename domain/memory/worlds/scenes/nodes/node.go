@@ -5,61 +5,77 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type node struct {
-	immutable entities.Immutable
-	space     Space
-	content   Content
-	nodes     []Node
+	immutable   entities.Immutable
+	position    fl32.Vec3
+	shaders     shaders.Shaders
+	orientation Orientation
+	content     Content
+	nodes       []Node
 }
 
 func createNode(
 	immutable entities.Immutable,
-	space Space,
+	position fl32.Vec3,
+	shaders shaders.Shaders,
+	orientation Orientation,
 ) Node {
-	return createNodeInternally(immutable, space, nil, nil)
+	return createNodeInternally(immutable, position, shaders, orientation, nil, nil)
 }
 
 func createNodeWithContent(
 	immutable entities.Immutable,
-	space Space,
+	position fl32.Vec3,
+	shaders shaders.Shaders,
+	orientation Orientation,
 	content Content,
 ) Node {
-	return createNodeInternally(immutable, space, content, nil)
+	return createNodeInternally(immutable, position, shaders, orientation, content, nil)
 }
 
 func createNodeWithNodes(
 	immutable entities.Immutable,
-	space Space,
+	position fl32.Vec3,
+	shaders shaders.Shaders,
+	orientation Orientation,
 	nodes []Node,
 ) Node {
-	return createNodeInternally(immutable, space, nil, nodes)
+	return createNodeInternally(immutable, position, shaders, orientation, nil, nodes)
 }
 
 func createNodeWithContentAndNodes(
 	immutable entities.Immutable,
-	space Space,
+	position fl32.Vec3,
+	shaders shaders.Shaders,
+	orientation Orientation,
 	content Content,
 	nodes []Node,
 ) Node {
-	return createNodeInternally(immutable, space, content, nodes)
+	return createNodeInternally(immutable, position, shaders, orientation, content, nodes)
 }
 
 func createNodeInternally(
 	immutable entities.Immutable,
-	space Space,
+	position fl32.Vec3,
+	shaders shaders.Shaders,
+	orientation Orientation,
 	content Content,
 	nodes []Node,
 ) Node {
 	out := node{
-		immutable: immutable,
-		space:     space,
-		content:   content,
-		nodes:     nodes,
+		immutable:   immutable,
+		position:    position,
+		shaders:     shaders,
+		orientation: orientation,
+		content:     content,
+		nodes:       nodes,
 	}
 
 	return &out
@@ -98,9 +114,19 @@ func (obj *node) Camera(index uint) (cameras.Camera, error) {
 	return nil, errors.New(str)
 }
 
-// Space returns the space
-func (obj *node) Space() Space {
-	return obj.space
+// Shaders returns the shaders
+func (obj *node) Shaders() shaders.Shaders {
+	return obj.shaders
+}
+
+// Position returns the position
+func (obj *node) Position() fl32.Vec3 {
+	return obj.position
+}
+
+// Orientation returns the orientation
+func (obj *node) Orientation() Orientation {
+	return obj.orientation
 }
 
 // CreatedOn returns the creation time

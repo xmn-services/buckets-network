@@ -13,17 +13,20 @@ type model struct {
 	immutable entities.Immutable
 	geo       geometries.Geometry
 	mat       materials.Material
+	variable  string
 }
 
 func createModel(
 	immutable entities.Immutable,
 	geo geometries.Geometry,
 	mat materials.Material,
+	variable string,
 ) Model {
 	out := model{
 		immutable: immutable,
 		geo:       geo,
 		mat:       mat,
+		variable:  variable,
 	}
 
 	return &out
@@ -42,6 +45,11 @@ func (obj *model) Geometry() geometries.Geometry {
 // Material returns the material
 func (obj *model) Material() materials.Material {
 	return obj.mat
+}
+
+// Variable returns the variable
+func (obj *model) Variable() string {
+	return obj.variable
 }
 
 // CreatedOn returns the creation time

@@ -3,16 +3,13 @@ package cameras
 import (
 	"time"
 
-	"github.com/go-gl/mathgl/mgl32"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/math"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
-	mgl32.LookAtV(mgl32.Vec3{3, 3, 3}, mgl32.Vec3{0, 0, 0}, mgl32.Vec3{0, 1, 0})
-
 	hashAdapter := hash.NewAdapter()
 	immutableBuilder := entities.NewImmutableBuilder()
 	return createBuilder(hashAdapter, immutableBuilder)
@@ -22,9 +19,9 @@ func NewBuilder() Builder {
 type Builder interface {
 	Create() Builder
 	WithLookAtVariable(lookAtVariable string) Builder
-	WithLookAtEye(eye math.Vec3) Builder
-	WithLookAtCenter(center math.Vec3) Builder
-	WithLookAtUp(up math.Vec3) Builder
+	WithLookAtEye(eye fl32.Vec3) Builder
+	WithLookAtCenter(center fl32.Vec3) Builder
+	WithLookAtUp(up fl32.Vec3) Builder
 	WithProjectionVariable(projVariable string) Builder
 	WithProjectionFieldofView(fov float32) Builder
 	WithProjectionAspectRatio(aspectRatio float32) Builder
@@ -46,9 +43,9 @@ type Camera interface {
 // LookAt represents the direction where the camera looks at
 type LookAt interface {
 	Variable() string
-	Eye() math.Vec3
-	Center() math.Vec3
-	Up() math.Vec3
+	Eye() fl32.Vec3
+	Center() fl32.Vec3
+	Up() fl32.Vec3
 }
 
 // Projection represents the camera projection

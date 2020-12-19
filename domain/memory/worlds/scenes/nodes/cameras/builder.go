@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/math"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -14,9 +14,9 @@ type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
 	lookAtVariable   string
-	eye              *math.Vec3
-	center           *math.Vec3
-	up               *math.Vec3
+	eye              *fl32.Vec3
+	center           *fl32.Vec3
+	up               *fl32.Vec3
 	projVariable     string
 	fov              *float32
 	aspectRatio      *float32
@@ -64,19 +64,19 @@ func (app *builder) WithLookAtVariable(lookAtVariable string) Builder {
 }
 
 // WithLookAtEye adds the lookAt eye to the builder
-func (app *builder) WithLookAtEye(eye math.Vec3) Builder {
+func (app *builder) WithLookAtEye(eye fl32.Vec3) Builder {
 	app.eye = &eye
 	return app
 }
 
 // WithLookAtCenter adds the lookAt center to the builder
-func (app *builder) WithLookAtCenter(center math.Vec3) Builder {
+func (app *builder) WithLookAtCenter(center fl32.Vec3) Builder {
 	app.center = &center
 	return app
 }
 
 // WithLookAtUp adds the lookAt up to the builder
-func (app *builder) WithLookAtUp(up math.Vec3) Builder {
+func (app *builder) WithLookAtUp(up fl32.Vec3) Builder {
 	app.up = &up
 	return app
 }

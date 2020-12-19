@@ -4,8 +4,8 @@ import (
 	"errors"
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/rows"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -13,7 +13,7 @@ import (
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
-	dimension        rectangles.Rectangle
+	dimension        ints.Rectangle
 	pixels           rows.Rows
 	createdOn        *time.Time
 }
@@ -39,7 +39,7 @@ func (app *builder) Create() Builder {
 }
 
 // WithDimension adds a dimension to the builder
-func (app *builder) WithDimension(dimension rectangles.Rectangle) Builder {
+func (app *builder) WithDimension(dimension ints.Rectangle) Builder {
 	app.dimension = dimension
 	return app
 }

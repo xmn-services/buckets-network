@@ -3,31 +3,31 @@ package layer
 import (
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/renders"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type layer struct {
 	immutable entities.Immutable
-	opacity   float64
-	viewport  rectangles.Rectangle
+	alpha     uint8
+	viewport  ints.Rectangle
 	renders   renders.Renders
 	shaders   shaders.Shaders
 }
 
 func createLayer(
 	immutable entities.Immutable,
-	opacity float64,
-	viewport rectangles.Rectangle,
+	alpha uint8,
+	viewport ints.Rectangle,
 	renders renders.Renders,
 	shaders shaders.Shaders,
 ) Layer {
 	out := layer{
 		immutable: immutable,
-		opacity:   opacity,
+		alpha:     alpha,
 		viewport:  viewport,
 		renders:   renders,
 		shaders:   shaders,
@@ -41,13 +41,13 @@ func (obj *layer) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// Opacity returns the opacity
-func (obj *layer) Opacity() float64 {
-	return obj.opacity
+// Alpha returns the alpha
+func (obj *layer) Alpha() uint8 {
+	return obj.alpha
 }
 
 // Viewport returns the viewport
-func (obj *layer) Viewport() rectangles.Rectangle {
+func (obj *layer) Viewport() ints.Rectangle {
 	return obj.viewport
 }
 

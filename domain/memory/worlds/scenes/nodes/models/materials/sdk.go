@@ -3,8 +3,8 @@ package materials
 import (
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -19,8 +19,8 @@ func NewBuilder() Builder {
 // Builder represents the material builder
 type Builder interface {
 	Create() Builder
-	WithOpacity(opacity float64) Builder
-	WithViewport(viewport rectangles.Rectangle) Builder
+	WithAlpha(alpha uint8) Builder
+	WithViewport(viewport ints.Rectangle) Builder
 	WithLayers(layers layers.Layers) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Material, error)
@@ -29,7 +29,7 @@ type Builder interface {
 // Material represents a material
 type Material interface {
 	entities.Immutable
-	Opacity() float64
-	Viewport() rectangles.Rectangle
+	Alpha() uint8
+	Viewport() ints.Rectangle
 	Layers() layers.Layers
 }

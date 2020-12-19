@@ -1,9 +1,9 @@
 package colors
 
 type builder struct {
-	red   uint32
-	green uint32
-	blue  uint32
+	red   uint8
+	green uint8
+	blue  uint8
 }
 
 func createBuilder() Builder {
@@ -22,19 +22,19 @@ func (app *builder) Create() Builder {
 }
 
 // WithRed adds a red color to the builder
-func (app *builder) WithRed(red uint32) Builder {
+func (app *builder) WithRed(red uint8) Builder {
 	app.red = red
 	return app
 }
 
 // WithGreen adds a green color to the builder
-func (app *builder) WithGreen(green uint32) Builder {
+func (app *builder) WithGreen(green uint8) Builder {
 	app.green = green
 	return app
 }
 
 // WithBlue adds a blue color to the builder
-func (app *builder) WithBlue(blue uint32) Builder {
+func (app *builder) WithBlue(blue uint8) Builder {
 	app.blue = blue
 	return app
 }

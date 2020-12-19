@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/geometries/vertices"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -20,8 +19,9 @@ func NewBuilder() Builder {
 // Builder represents the geometry builder
 type Builder interface {
 	Create() Builder
-	WithShaders(shaders shaders.Shaders) Builder
 	WithVertices(vertices vertices.Vertices) Builder
+	WithVertexCoordinatesVariable(vertexCoordinatesVar string) Builder
+	WithTextureCoordinatesVariable(texCoordinatesVar string) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Geometry, error)
 }
@@ -29,6 +29,12 @@ type Builder interface {
 // Geometry reporesents a geometry
 type Geometry interface {
 	entities.Immutable
-	Shaders() shaders.Shaders
 	Vertices() vertices.Vertices
+	Variables() Variables
+}
+
+// Variables represents a geometry variables
+type Variables interface {
+	VertexCoordinates() string
+	TextureCoordinates() string
 }

@@ -1,0 +1,24 @@
+package models
+
+type typ struct {
+	isTriangle bool
+}
+
+func createTypeWithTriangle() Type {
+	return createTypeInternally(true)
+}
+
+func createTypeInternally(
+	isTriangle bool,
+) Type {
+	out := typ{
+		isTriangle: isTriangle,
+	}
+
+	return &out
+}
+
+// IsTriangle returns true if the type is triangles, false otherwise
+func (obj *typ) IsTriangle() bool {
+	return obj.isTriangle
+}

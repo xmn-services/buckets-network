@@ -8,16 +8,16 @@ func NewBuilder() Builder {
 // Builder represents a color builder
 type Builder interface {
 	Create() Builder
-	WithRed(red uint32) Builder
-	WithGreen(green uint32) Builder
-	WithBlue(blue uint32) Builder
+	WithRed(red uint8) Builder
+	WithGreen(green uint8) Builder
+	WithBlue(blue uint8) Builder
 	Now() Color
 }
 
 // Color represents a color
 type Color interface {
-	Red() uint32
-	Green() uint32
-	Blue() uint32
+	Red() uint8
+	Green() uint8
+	Blue() uint8
 	String() string
 }

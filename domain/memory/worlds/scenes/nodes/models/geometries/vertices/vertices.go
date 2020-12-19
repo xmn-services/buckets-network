@@ -11,15 +11,18 @@ import (
 type vertices struct {
 	mutable entities.Mutable
 	list    []vertex.Vertex
+	typ     Type
 }
 
 func createVertices(
 	mutable entities.Mutable,
 	list []vertex.Vertex,
+	typ Type,
 ) Vertices {
 	out := vertices{
 		mutable: mutable,
 		list:    list,
+		typ:     typ,
 	}
 
 	return &out
@@ -33,6 +36,11 @@ func (obj *vertices) Hash() hash.Hash {
 // All returns the list of vertex
 func (obj *vertices) All() []vertex.Vertex {
 	return obj.list
+}
+
+// Type returns the type
+func (obj *vertices) Type() Type {
+	return obj.typ
 }
 
 // CreatedOn returns the creation time

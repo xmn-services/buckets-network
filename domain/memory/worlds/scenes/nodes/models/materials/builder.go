@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -14,8 +14,8 @@ import (
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
-	opacity          float64
-	viewport         rectangles.Rectangle
+	alpha            uint8
+	viewport         ints.Rectangle
 	layers           layers.Layers
 	createdOn        *time.Time
 }
@@ -27,7 +27,7 @@ func createBuilder(
 	out := builder{
 		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
-		opacity:          float64(0),
+		alpha:            uint8(0),
 		viewport:         nil,
 		layers:           nil,
 		createdOn:        nil,
@@ -41,14 +41,14 @@ func (app *builder) Create() Builder {
 	return createBuilder(app.hashAdapter, app.immutableBuilder)
 }
 
-// WithOpacity adds an opacity to the builder
-func (app *builder) WithOpacity(opacity float64) Builder {
-	app.opacity = opacity
+// WithAlpha adds an alpha to the builder
+func (app *builder) WithAlpha(alpha uint8) Builder {
+	app.alpha = alpha
 	return app
 }
 
 // WithViewport adds a viewport to the builder
-func (app *builder) WithViewport(viewport rectangles.Rectangle) Builder {
+func (app *builder) WithViewport(viewport ints.Rectangle) Builder {
 	app.viewport = viewport
 	return app
 }
@@ -75,12 +75,8 @@ func (app *builder) Now() (Material, error) {
 		return nil, errors.New("the layers are mandatory in order to build a Material instance")
 	}
 
-	if app.opacity < 0.0 || app.opacity > 1.0 {
-		return nil, errors.New("the opacity must be a float between 0.0 and 1.0")
-	}
-
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
-		[]byte(strconv.FormatFloat(app.opacity, 'f', 10, 64)),
+		[]byte(strconv.Itoa(int(app.alpha))),
 		[]byte(app.viewport.String()),
 		app.layers.Hash().Bytes(),
 	})
@@ -94,5 +90,5 @@ func (app *builder) Now() (Material, error) {
 		return nil, err
 	}
 
-	return createMaterial(immutable, app.opacity, app.viewport, app.layers), nil
+	return createMaterial(immutable, app.alpha, app.viewport, app.layers), nil
 }

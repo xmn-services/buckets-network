@@ -32,6 +32,7 @@ type Builder interface {
 	WithHash(hash hash.Hash) Builder
 	WithoutHash() Builder
 	WithVertices(vertices []vertex.Vertex) Builder
+	IsTriangle() Builder
 	CreatedOn(createdOn time.Time) Builder
 	LastUpdatedOn(lastUpdatedOn time.Time) Builder
 	Now() (Vertices, error)
@@ -41,4 +42,10 @@ type Builder interface {
 type Vertices interface {
 	entities.Mutable
 	All() []vertex.Vertex
+	Type() Type
+}
+
+// Type represents vertices types
+type Type interface {
+	IsTriangle() bool
 }

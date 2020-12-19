@@ -39,6 +39,7 @@ type Builder interface {
 type World interface {
 	entities.Immutable
 	Add(scene scenes.Scene) error
-	Scenes() []scenes.Scene
 	Scene(index uint) (scenes.Scene, error)
+	HasScenes() bool
+	Scenes() []scenes.Scene
 }

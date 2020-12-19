@@ -8,12 +8,12 @@ import (
 
 type pixel struct {
 	color colors.Color
-	alpha uint32
+	alpha uint8
 }
 
 func createPixel(
 	color colors.Color,
-	alpha uint32,
+	alpha uint8,
 ) Pixel {
 	out := pixel{
 		color: color,
@@ -29,7 +29,7 @@ func (obj *pixel) Color() colors.Color {
 }
 
 // Alpha returns the alpha
-func (obj *pixel) Alpha() uint32 {
+func (obj *pixel) Alpha() uint8 {
 	return obj.alpha
 }
 

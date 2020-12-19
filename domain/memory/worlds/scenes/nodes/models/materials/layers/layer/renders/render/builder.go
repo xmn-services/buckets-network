@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/colors"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -17,7 +17,7 @@ type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
 	opacity          float64
-	viewport         rectangles.Rectangle
+	viewport         ints.Rectangle
 	tex              textures.Texture
 	camera           cameras.Camera
 	color            colors.Color
@@ -54,7 +54,7 @@ func (app *builder) WithOpacity(opacity float64) Builder {
 }
 
 // WithViewport adds a viewport to the builder
-func (app *builder) WithViewport(viewport rectangles.Rectangle) Builder {
+func (app *builder) WithViewport(viewport ints.Rectangle) Builder {
 	app.viewport = viewport
 	return app
 }

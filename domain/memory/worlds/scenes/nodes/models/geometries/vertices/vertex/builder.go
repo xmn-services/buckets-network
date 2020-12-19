@@ -3,12 +3,12 @@ package vertex
 import (
 	"errors"
 
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/math"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
 )
 
 type builder struct {
-	pos *math.Vec3
-	tex *math.Vec2
+	pos *fl32.Vec3
+	tex *fl32.Vec2
 }
 
 func createBuilder() Builder {
@@ -26,13 +26,13 @@ func (app *builder) Create() Builder {
 }
 
 // WithPosition adds a position to the builder
-func (app *builder) WithPosition(pos math.Vec3) Builder {
+func (app *builder) WithPosition(pos fl32.Vec3) Builder {
 	app.pos = &pos
 	return app
 }
 
 // WithTexture adds a texture to the builder
-func (app *builder) WithTexture(tex math.Vec2) Builder {
+func (app *builder) WithTexture(tex fl32.Vec2) Builder {
 	app.tex = &tex
 	return app
 }

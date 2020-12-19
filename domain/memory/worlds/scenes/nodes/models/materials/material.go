@@ -3,28 +3,28 @@ package materials
 import (
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type material struct {
 	immutable entities.Immutable
-	opacity   float64
-	viewport  rectangles.Rectangle
+	alpha     uint8
+	viewport  ints.Rectangle
 	layers    layers.Layers
 }
 
 func createMaterial(
 	immutable entities.Immutable,
-	opacity float64,
-	viewport rectangles.Rectangle,
+	alpha uint8,
+	viewport ints.Rectangle,
 	layers layers.Layers,
 ) Material {
 	out := material{
 		immutable: immutable,
-		opacity:   opacity,
+		alpha:     alpha,
 		viewport:  viewport,
 		layers:    layers,
 	}
@@ -37,13 +37,13 @@ func (obj *material) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// Opacity returns the opacity
-func (obj *material) Opacity() float64 {
-	return obj.opacity
+// Alpha returns the alpha
+func (obj *material) Alpha() uint8 {
+	return obj.alpha
 }
 
 // Viewport returns the viewport
-func (obj *material) Viewport() rectangles.Rectangle {
+func (obj *material) Viewport() ints.Rectangle {
 	return obj.viewport
 }
 

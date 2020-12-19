@@ -3,6 +3,7 @@ package glfw
 import (
 	"errors"
 	"fmt"
+	"runtime"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	application_windows "github.com/xmn-services/buckets-network/application/windows"
@@ -37,6 +38,9 @@ func (app *builder) Now() (application_windows.Application, error) {
 	if app.win == nil {
 		return nil, errors.New("the window is mandatory in order to build a GLFW Application")
 	}
+
+	// GLFW event handling must run on the main OS thread
+	runtime.LockOSThread()
 
 	err := glfw.Init()
 	if err != nil {

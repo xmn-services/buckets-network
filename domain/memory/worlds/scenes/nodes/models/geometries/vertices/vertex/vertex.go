@@ -3,17 +3,17 @@ package vertex
 import (
 	"fmt"
 
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/math"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
 )
 
 type vertex struct {
-	pos math.Vec3
-	tex math.Vec2
+	pos fl32.Vec3
+	tex fl32.Vec2
 }
 
 func createVertex(
-	pos math.Vec3,
-	tex math.Vec2,
+	pos fl32.Vec3,
+	tex fl32.Vec2,
 ) Vertex {
 	out := vertex{
 		pos: pos,
@@ -24,12 +24,12 @@ func createVertex(
 }
 
 // Position returns the position
-func (obj *vertex) Position() math.Vec3 {
+func (obj *vertex) Position() fl32.Vec3 {
 	return obj.pos
 }
 
 // Texture returns the texture
-func (obj *vertex) Texture() math.Vec2 {
+func (obj *vertex) Texture() fl32.Vec2 {
 	return obj.tex
 }
 

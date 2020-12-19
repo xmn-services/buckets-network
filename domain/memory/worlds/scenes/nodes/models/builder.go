@@ -15,6 +15,7 @@ type builder struct {
 	immutableBuilder entities.ImmutableBuilder
 	geo              geometries.Geometry
 	mat              materials.Material
+	variable         string
 	createdOn        *time.Time
 }
 
@@ -27,6 +28,7 @@ func createBuilder(
 		immutableBuilder: immutableBuilder,
 		geo:              nil,
 		mat:              nil,
+		variable:         "",
 		createdOn:        nil,
 	}
 
@@ -50,6 +52,12 @@ func (app *builder) WithMaterial(mat materials.Material) Builder {
 	return app
 }
 
+// WithVariable adds a variable to the builder
+func (app *builder) WithVariable(variable string) Builder {
+	app.variable = variable
+	return app
+}
+
 // CreatedOn adds a creation time to the builder
 func (app *builder) CreatedOn(createdOn time.Time) Builder {
 	app.createdOn = &createdOn
@@ -66,9 +74,14 @@ func (app *builder) Now() (Model, error) {
 		return nil, errors.New("the material is mandatory in order to build a Model instance")
 	}
 
+	if app.variable == "" {
+		return nil, errors.New("the variable is mandatory in order to build a Model instance")
+	}
+
 	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
 		app.geo.Hash().Bytes(),
 		app.mat.Hash().Bytes(),
+		[]byte(app.variable),
 	})
 
 	if err != nil {
@@ -80,5 +93,5 @@ func (app *builder) Now() (Model, error) {
 		return nil, err
 	}
 
-	return createModel(immutable, app.geo, app.mat), nil
+	return createModel(immutable, app.geo, app.mat, app.variable), nil
 }

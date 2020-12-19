@@ -8,7 +8,7 @@ import (
 
 type builder struct {
 	color colors.Color
-	alpha uint32
+	alpha uint8
 }
 
 func createBuilder() Builder {
@@ -32,7 +32,7 @@ func (app *builder) WithColor(color colors.Color) Builder {
 }
 
 // WithAlpha adds an alpha to the builder
-func (app *builder) WithAlpha(alpha uint32) Builder {
+func (app *builder) WithAlpha(alpha uint8) Builder {
 	app.alpha = alpha
 	return app
 }

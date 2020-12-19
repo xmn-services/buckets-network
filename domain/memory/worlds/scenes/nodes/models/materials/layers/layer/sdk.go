@@ -3,9 +3,9 @@ package layer
 import (
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/renders"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -20,8 +20,8 @@ func NewBuilder() Builder {
 // Builder represents a layer builder
 type Builder interface {
 	Create() Builder
-	WithOpacity(opacity float64) Builder
-	WithViewport(viewport rectangles.Rectangle) Builder
+	WithAlpha(alpha uint8) Builder
+	WithViewport(viewport ints.Rectangle) Builder
 	WithRenders(renders renders.Renders) Builder
 	WithShaders(shaders shaders.Shaders) Builder
 	CreatedOn(createdOn time.Time) Builder
@@ -31,8 +31,8 @@ type Builder interface {
 // Layer represents layer of textures
 type Layer interface {
 	entities.Immutable
-	Opacity() float64
-	Viewport() rectangles.Rectangle
+	Alpha() uint8
+	Viewport() ints.Rectangle
 	Renders() renders.Renders
 	Shaders() shaders.Shaders
 }

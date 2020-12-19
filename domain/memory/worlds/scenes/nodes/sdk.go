@@ -3,9 +3,10 @@ package nodes
 import (
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/math"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -20,9 +21,10 @@ func NewBuilder() Builder {
 // Builder represents the node builder
 type Builder interface {
 	Create() Builder
-	WithPosition(pos math.Vec3) Builder
-	WithRight(right math.Vec3) Builder
-	WithUp(up math.Vec3) Builder
+	WithPosition(pos fl32.Vec3) Builder
+	WithShaders(shaders shaders.Shaders) Builder
+	WithOrientationAngle(angle float32) Builder
+	WithOrientationDirection(direction fl32.Vec3) Builder
 	WithModel(model models.Model) Builder
 	WithCamera(camera cameras.Camera) Builder
 	WithChildren(children []Node) Builder
@@ -34,18 +36,19 @@ type Builder interface {
 type Node interface {
 	entities.Immutable
 	Camera(index uint) (cameras.Camera, error)
-	Space() Space
+	Shaders() shaders.Shaders
+	Position() fl32.Vec3
+	Orientation() Orientation
 	HasContent() bool
 	Content() Content
 	HasChildren() bool
 	Children() []Node
 }
 
-// Space represents the position and orientation of the node
-type Space interface {
-	Position() math.Vec3
-	Right() math.Vec3
-	Up() math.Vec3
+// Orientation represents an orientation
+type Orientation interface {
+	Angle() float32
+	Direction() fl32.Vec3
 }
 
 // Content represents the node content

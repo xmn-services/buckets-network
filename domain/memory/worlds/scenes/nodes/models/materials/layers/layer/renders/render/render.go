@@ -3,7 +3,7 @@ package render
 import (
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -11,14 +11,14 @@ import (
 type render struct {
 	immutable entities.Immutable
 	opacity   float64
-	viewport  rectangles.Rectangle
+	viewport  ints.Rectangle
 	content   Content
 }
 
 func createRender(
 	immutable entities.Immutable,
 	opacity float64,
-	viewport rectangles.Rectangle,
+	viewport ints.Rectangle,
 	content Content,
 ) Render {
 	out := render{
@@ -42,18 +42,13 @@ func (obj *render) Opacity() float64 {
 }
 
 // Viewport returns the viewport
-func (obj *render) Viewport() rectangles.Rectangle {
+func (obj *render) Viewport() ints.Rectangle {
 	return obj.viewport
 }
 
 // CreatedOn returns the creation time
 func (obj *render) CreatedOn() time.Time {
 	return obj.immutable.CreatedOn()
-}
-
-// HasContent returns true if there is content, false otherwise
-func (obj *render) HasContent() bool {
-	return obj.content != nil
 }
 
 // Content returns the content, if any

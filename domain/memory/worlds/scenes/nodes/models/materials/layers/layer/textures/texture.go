@@ -3,21 +3,21 @@ package textures
 import (
 	"time"
 
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/rows"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type texture struct {
 	immutable entities.Immutable
-	dimension rectangles.Rectangle
+	dimension ints.Rectangle
 	pixels    rows.Rows
 }
 
 func createTexture(
 	immutable entities.Immutable,
-	dimension rectangles.Rectangle,
+	dimension ints.Rectangle,
 	pixels rows.Rows,
 ) Texture {
 	out := texture{
@@ -35,7 +35,7 @@ func (obj *texture) Hash() hash.Hash {
 }
 
 // Dimension returns the dimension
-func (obj *texture) Dimension() rectangles.Rectangle {
+func (obj *texture) Dimension() ints.Rectangle {
 	return obj.dimension
 }
 

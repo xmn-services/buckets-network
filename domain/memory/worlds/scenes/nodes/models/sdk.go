@@ -21,6 +21,7 @@ type Builder interface {
 	Create() Builder
 	WithGeometry(geo geometries.Geometry) Builder
 	WithMaterial(material materials.Material) Builder
+	WithVariable(variable string) Builder
 	CreatedOn(createdOn time.Time) Builder
 	Now() (Model, error)
 }
@@ -30,4 +31,5 @@ type Model interface {
 	entities.Immutable
 	Geometry() geometries.Geometry
 	Material() materials.Material
+	Variable() string
 }

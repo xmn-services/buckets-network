@@ -3,15 +3,15 @@ package colors
 import "fmt"
 
 type color struct {
-	red   uint32
-	green uint32
-	blue  uint32
+	red   uint8
+	green uint8
+	blue  uint8
 }
 
 func createColor(
-	red uint32,
-	green uint32,
-	blue uint32,
+	red uint8,
+	green uint8,
+	blue uint8,
 ) Color {
 	out := color{
 		red:   red,
@@ -23,17 +23,17 @@ func createColor(
 }
 
 // Red returns the red value
-func (obj *color) Red() uint32 {
+func (obj *color) Red() uint8 {
 	return obj.red
 }
 
 // Green returns the green value
-func (obj *color) Green() uint32 {
+func (obj *color) Green() uint8 {
 	return obj.green
 }
 
 // Blue returns the blue value
-func (obj *color) Blue() uint32 {
+func (obj *color) Blue() uint8 {
 	return obj.blue
 }
 

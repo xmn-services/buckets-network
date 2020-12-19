@@ -16,6 +16,7 @@ type builder struct {
 	hash           *hash.Hash
 	withoutHash    bool
 	vertices       []vertex.Vertex
+	isTriangle     bool
 	createdOn      *time.Time
 	lastUpdatedOn  *time.Time
 }
@@ -30,6 +31,7 @@ func createBuilder(
 		hash:           nil,
 		withoutHash:    false,
 		vertices:       nil,
+		isTriangle:     false,
 		createdOn:      nil,
 		lastUpdatedOn:  nil,
 	}
@@ -60,6 +62,12 @@ func (app *builder) WithVertices(vertices []vertex.Vertex) Builder {
 	return app
 }
 
+// IsTriangle flags the builder as triangles
+func (app *builder) IsTriangle() Builder {
+	app.isTriangle = true
+	return app
+}
+
 // CreatedOn adds the creation time to the builder
 func (app *builder) CreatedOn(createdOn time.Time) Builder {
 	app.createdOn = &createdOn
@@ -79,7 +87,13 @@ func (app *builder) Now() (Vertices, error) {
 	}
 
 	if app.withoutHash {
+		typeStr := ""
+		if app.isTriangle {
+			typeStr = "triangle"
+		}
+
 		data := [][]byte{
+			[]byte(typeStr),
 			[]byte(strconv.Itoa(int(time.Now().UTC().Nanosecond()))),
 		}
 
@@ -95,6 +109,15 @@ func (app *builder) Now() (Vertices, error) {
 		app.hash = hsh
 	}
 
+	var typ Type
+	if app.isTriangle {
+		typ = createTypeWithTriangle()
+	}
+
+	if typ == nil {
+		return nil, errors.New("the type (isTriangle) is mandatory in order to build a Vertices instance")
+	}
+
 	if app.hash == nil {
 		return nil, errors.New("the hash is mandatory in order to build a Vertices instance")
 	}
@@ -104,5 +127,5 @@ func (app *builder) Now() (Vertices, error) {
 		return nil, err
 	}
 
-	return createVertices(mutable, app.vertices), nil
+	return createVertices(mutable, app.vertices, typ), nil
 }

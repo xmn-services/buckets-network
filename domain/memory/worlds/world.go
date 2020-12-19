@@ -49,11 +49,6 @@ func (obj *world) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// Scenes returns the scenes
-func (obj *world) Scenes() []scenes.Scene {
-	return obj.list
-}
-
 // Add adds a scene instance
 func (obj *world) Add(scene scenes.Scene) error {
 	if obj.mp == nil {
@@ -83,6 +78,16 @@ func (obj *world) Scene(index uint) (scenes.Scene, error) {
 
 	str := fmt.Sprintf("the scene (index: %d) could not be found in the world (hash: %s)", index, obj.Hash().String())
 	return nil, errors.New(str)
+}
+
+// HasScenes returns true if there is scenes, false otherwise
+func (obj *world) HasScenes() bool {
+	return obj.list != nil
+}
+
+// Scenes returns the scenes
+func (obj *world) Scenes() []scenes.Scene {
+	return obj.list
 }
 
 // CreatedOn returns the creation time

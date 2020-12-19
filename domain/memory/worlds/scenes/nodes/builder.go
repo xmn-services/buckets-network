@@ -2,25 +2,28 @@ package nodes
 
 import (
 	"errors"
+	"strconv"
 	"time"
 
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/math"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/shaders"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type builder struct {
-	hashAdapter      hash.Adapter
-	immutableBuilder entities.ImmutableBuilder
-	pos              *math.Vec3
-	right            *math.Vec3
-	up               *math.Vec3
-	model            models.Model
-	camera           cameras.Camera
-	children         []Node
-	createdOn        *time.Time
+	hashAdapter          hash.Adapter
+	immutableBuilder     entities.ImmutableBuilder
+	position             *fl32.Vec3
+	shaders              shaders.Shaders
+	orientationAngle     *float32
+	orientationDirection *fl32.Vec3
+	model                models.Model
+	camera               cameras.Camera
+	children             []Node
+	createdOn            *time.Time
 }
 
 func createBuilder(
@@ -28,15 +31,16 @@ func createBuilder(
 	immutableBuilder entities.ImmutableBuilder,
 ) Builder {
 	out := builder{
-		hashAdapter:      hashAdapter,
-		immutableBuilder: immutableBuilder,
-		pos:              nil,
-		right:            nil,
-		up:               nil,
-		model:            nil,
-		camera:           nil,
-		children:         nil,
-		createdOn:        nil,
+		hashAdapter:          hashAdapter,
+		immutableBuilder:     immutableBuilder,
+		position:             nil,
+		shaders:              nil,
+		orientationAngle:     nil,
+		orientationDirection: nil,
+		model:                nil,
+		camera:               nil,
+		children:             nil,
+		createdOn:            nil,
 	}
 
 	return &out
@@ -48,20 +52,26 @@ func (app *builder) Create() Builder {
 }
 
 // WithPosition adds a position to the builder
-func (app *builder) WithPosition(pos math.Vec3) Builder {
-	app.pos = &pos
+func (app *builder) WithPosition(pos fl32.Vec3) Builder {
+	app.position = &pos
 	return app
 }
 
-// WithRight adds a right to the builder
-func (app *builder) WithRight(right math.Vec3) Builder {
-	app.right = &right
+// WithShaders add shaders to the builder
+func (app *builder) WithShaders(shaders shaders.Shaders) Builder {
+	app.shaders = shaders
 	return app
 }
 
-// WithUp adds an up to the builder
-func (app *builder) WithUp(up math.Vec3) Builder {
-	app.up = &up
+// WithOrientationAngle adds an orientation angle to the builder
+func (app *builder) WithOrientationAngle(angle float32) Builder {
+	app.orientationAngle = &angle
+	return app
+}
+
+// WithOrientationDirection adds an orientation direction to the builder
+func (app *builder) WithOrientationDirection(direction fl32.Vec3) Builder {
+	app.orientationDirection = &direction
 	return app
 }
 
@@ -91,16 +101,24 @@ func (app *builder) CreatedOn(createdOn time.Time) Builder {
 
 // Now builds a new Node instance
 func (app *builder) Now() (Node, error) {
-	if app.pos == nil {
+	if app.position == nil {
 		return nil, errors.New("the position is mandatory in order to build a Node instance")
 	}
 
-	if app.right == nil {
-		return nil, errors.New("the right is mandatory in order to build a Node instance")
+	if app.shaders == nil {
+		return nil, errors.New("the shaders are mandatory in order to build a Node instance")
 	}
 
-	if app.up == nil {
-		return nil, errors.New("the up is mandatory in order to build a Node instance")
+	if !app.shaders.IsVertex() {
+		return nil, errors.New("the geometry shaders were expected to be vertex shaders")
+	}
+
+	if app.orientationAngle == nil {
+		return nil, errors.New("the orientation angle is mandatory in order to build a Node instance")
+	}
+
+	if app.orientationDirection == nil {
+		return nil, errors.New("the orientation direction is mandatory in order to build a Node instance")
 	}
 
 	var content Content
@@ -122,9 +140,10 @@ func (app *builder) Now() (Node, error) {
 
 	data := [][]byte{
 		content.Hash().Bytes(),
-		[]byte(app.pos.String()),
-		[]byte(app.right.String()),
-		[]byte(app.up.String()),
+		[]byte(app.position.String()),
+		[]byte(app.shaders.Hash().Bytes()),
+		[]byte(app.orientationDirection.String()),
+		[]byte(strconv.FormatFloat(float64(*app.orientationAngle), 'f', 10, 32)),
 	}
 
 	if app.children != nil {
@@ -151,18 +170,18 @@ func (app *builder) Now() (Node, error) {
 		return nil, err
 	}
 
-	space := createSpace(*app.pos, *app.right, *app.up)
+	orientation := createOrientation(*app.orientationAngle, *app.orientationDirection)
 	if content != nil && app.children != nil {
-		return createNodeWithContentAndNodes(immutable, space, content, app.children), nil
+		return createNodeWithContentAndNodes(immutable, *app.position, app.shaders, orientation, content, app.children), nil
 	}
 
 	if content != nil {
-		return createNodeWithContent(immutable, space, content), nil
+		return createNodeWithContent(immutable, *app.position, app.shaders, orientation, content), nil
 	}
 
 	if app.children != nil {
-		return createNodeWithNodes(immutable, space, app.children), nil
+		return createNodeWithNodes(immutable, *app.position, app.shaders, orientation, app.children), nil
 	}
 
-	return createNode(immutable, space), nil
+	return createNode(immutable, *app.position, app.shaders, orientation), nil
 }

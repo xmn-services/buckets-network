@@ -4,9 +4,9 @@ import (
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/colors"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/shapes/rectangles"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -22,7 +22,7 @@ func NewBuilder() Builder {
 type Builder interface {
 	Create() Builder
 	WithOpacity(opacity float64) Builder
-	WithViewport(viewport rectangles.Rectangle) Builder
+	WithViewport(viewport ints.Rectangle) Builder
 	WithTexture(tex textures.Texture) Builder
 	WithCamera(cam cameras.Camera) Builder
 	WithColor(color colors.Color) Builder
@@ -34,8 +34,7 @@ type Builder interface {
 type Render interface {
 	entities.Immutable
 	Opacity() float64
-	Viewport() rectangles.Rectangle
-	HasContent() bool
+	Viewport() ints.Rectangle
 	Content() Content
 }
 

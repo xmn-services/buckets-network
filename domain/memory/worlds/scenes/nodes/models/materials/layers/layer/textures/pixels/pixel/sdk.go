@@ -11,13 +11,13 @@ func NewBuilder() Builder {
 type Builder interface {
 	Create() Builder
 	WithColor(color colors.Color) Builder
-	WithAlpha(alpha uint32) Builder
+	WithAlpha(alpha uint8) Builder
 	Now() (Pixel, error)
 }
 
 // Pixel represents a pixel
 type Pixel interface {
 	Color() colors.Color
-	Alpha() uint32
+	Alpha() uint8
 	String() string
 }
