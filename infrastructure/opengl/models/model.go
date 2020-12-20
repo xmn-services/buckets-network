@@ -121,7 +121,7 @@ func (obj *model) Render(delta time.Duration, camera cameras.Camera, space space
 	// lookAt:
 	lookAt := camera.LookAt()
 	lookAtVariable := fmt.Sprintf(glStrPattern, lookAt.Variable())
-	eye := lookAt.Eye() // Configure global settings
+	eye := lookAt.Eye()
 	center := lookAt.Center()
 	up := lookAt.Up()
 
@@ -145,7 +145,6 @@ func (obj *model) Render(delta time.Duration, camera cameras.Camera, space space
 
 	// rotate then translate:
 	obj.angle += float32(delta.Seconds()) // * float32(orientation[3]*math.Pi/180)
-	fmt.Printf("\n%f\n", obj.angle)
 	rorateMat := mgl32.HomogRotate3D(obj.angle, mgl32.Vec3{orientation[0], orientation[1], orientation[2]})
 
 	// translate:

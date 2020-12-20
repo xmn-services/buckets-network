@@ -23,8 +23,6 @@ import (
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/renders"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/pixels"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/pixels/pixel"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/rows"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders/shader"
 )
@@ -32,7 +30,7 @@ import (
 func main() {
 	// create the window:
 	title := "My Window"
-	width := uint(800)
+	width := uint(1600)
 	height := uint(600)
 	window, err := windows.NewBuilder().Create().WithTitle(title).WithWidth(width).WithHeight(height).Now()
 	if err != nil {
@@ -96,7 +94,7 @@ func nodeFromCamera(camera cameras.Camera) nodes.Node {
 func nodeFromModel(model models.Model) nodes.Node {
 	pos := fl32.Vec3{1.0, 1.0, 1.0}
 	angle := float32(200.0)
-	direction := fl32.Vec3{0.0, 1.0, 0.0}
+	direction := fl32.Vec3{0.0, 0.0, 1.0}
 	node, err := nodes.NewBuilder().Create().WithPosition(pos).WithOrientationAngle(angle).WithOrientationDirection(direction).WithModel(model).Now()
 	if err != nil {
 		panic(err)
@@ -278,48 +276,33 @@ func cubeFragmentShader() shaders.Shaders {
 func generateTexture() textures.Texture {
 	pos := ints.Vec2{0, 0}
 	dim := ints.Vec2{512, 512}
-	dimension, err := ints.NewBuilder().Create().WithPosition(pos).WithDimension(dim).Now()
+	viewport, err := ints.NewBuilder().Create().WithPosition(pos).WithDimension(dim).Now()
 	if err != nil {
 		panic(err)
 	}
 
 	colorBuilder := colors.NewBuilder()
-	pixelBuilder := pixel.NewBuilder()
-	pixelsBuilder := pixels.NewBuilder()
+	pixelBuilder := pixels.NewBuilder()
 
-	width := 500
-	height := 500
-	alpha := uint8(1)
-	rowsList := []pixels.Pixels{}
-	for i := 0; i < width; i++ {
-		list := []pixel.Pixel{}
-		for j := 0; j < height; j++ {
-			red := 0xff
-			green := 0x00
-			blue := 0x00
-			color := colorBuilder.Create().WithRed(uint8(red)).WithGreen(uint8(green)).WithBlue(uint8(blue)).Now()
-			pixel, err := pixelBuilder.Create().WithColor(color).WithAlpha(alpha).Now()
-			if err != nil {
-				panic(err)
-			}
-
-			list = append(list, pixel)
-		}
-
-		pixels, err := pixelsBuilder.Create().WithoutHash().WithPixels(list).Now()
+	width := pos.X() + dim.X()
+	height := pos.X() + dim.Y()
+	total := width * height
+	alpha := uint8(255)
+	pixels := []pixels.Pixel{}
+	for i := 0; i < total; i++ {
+		red := 0xff
+		green := 0x00
+		blue := 0x00
+		color := colorBuilder.Create().WithRed(uint8(red)).WithGreen(uint8(green)).WithBlue(uint8(blue)).Now()
+		pixel, err := pixelBuilder.Create().WithColor(color).WithAlpha(alpha).Now()
 		if err != nil {
 			panic(err)
 		}
 
-		rowsList = append(rowsList, pixels)
+		pixels = append(pixels, pixel)
 	}
 
-	rws, err := rows.NewBuilder().WithoutHash().WithRows(rowsList).Now()
-	if err != nil {
-		panic(err)
-	}
-
-	tex, err := textures.NewBuilder().Create().WithDimension(dimension).WithPixels(rws).Now()
+	tex, err := textures.NewBuilder().Create().WithViewport(viewport).WithPixels(pixels).Now()
 	if err != nil {
 		panic(err)
 	}

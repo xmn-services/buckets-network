@@ -2,10 +2,11 @@ package textures
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/rows"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/pixels"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
@@ -13,8 +14,8 @@ import (
 type builder struct {
 	hashAdapter      hash.Adapter
 	immutableBuilder entities.ImmutableBuilder
-	dimension        ints.Rectangle
-	pixels           rows.Rows
+	viewport         ints.Rectangle
+	pixels           []pixels.Pixel
 	createdOn        *time.Time
 }
 
@@ -25,7 +26,7 @@ func createBuilder(
 	out := builder{
 		hashAdapter:      hashAdapter,
 		immutableBuilder: immutableBuilder,
-		dimension:        nil,
+		viewport:         nil,
 		pixels:           nil,
 		createdOn:        nil,
 	}
@@ -38,14 +39,14 @@ func (app *builder) Create() Builder {
 	return createBuilder(app.hashAdapter, app.immutableBuilder)
 }
 
-// WithDimension adds a dimension to the builder
-func (app *builder) WithDimension(dimension ints.Rectangle) Builder {
-	app.dimension = dimension
+// WithViewport adds a viewport to the builder
+func (app *builder) WithViewport(viewport ints.Rectangle) Builder {
+	app.viewport = viewport
 	return app
 }
 
 // WithPixels adds pixels to the builder
-func (app *builder) WithPixels(pixels rows.Rows) Builder {
+func (app *builder) WithPixels(pixels []pixels.Pixel) Builder {
 	app.pixels = pixels
 	return app
 }
@@ -58,19 +59,38 @@ func (app *builder) CreatedOn(createdOn time.Time) Builder {
 
 // Now builds a new Texture instance
 func (app *builder) Now() (Texture, error) {
-	if app.dimension == nil {
-		return nil, errors.New("the dimension is mandatory in order to build a Texture instance")
+	if app.viewport == nil {
+		return nil, errors.New("the viewport is mandatory in order to build a Texture instance")
+	}
+
+	if app.pixels != nil && len(app.pixels) <= 0 {
+		app.pixels = nil
 	}
 
 	if app.pixels == nil {
 		return nil, errors.New("the pixels are mandatory in order to build a Texture instance")
 	}
 
-	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
-		[]byte(app.dimension.String()),
-		app.pixels.Hash().Bytes(),
-	})
+	position := app.viewport.Position()
+	dimension := app.viewport.Dimension()
+	width := (position.X() + dimension.X())
+	height := (position.Y() + dimension.Y())
+	expectedTotal := width * height
+	pixAmount := len(app.pixels)
+	if expectedTotal != pixAmount {
+		str := fmt.Sprintf("the texture (width: %d, height: %d) was expecting %d pixels, %d provided", width, height, expectedTotal, pixAmount)
+		return nil, errors.New(str)
+	}
 
+	data := [][]byte{
+		[]byte(app.viewport.String()),
+	}
+
+	for _, onePixel := range app.pixels {
+		data = append(data, []byte(onePixel.String()))
+	}
+
+	hsh, err := app.hashAdapter.FromMultiBytes(data)
 	if err != nil {
 		return nil, err
 	}
@@ -80,5 +100,5 @@ func (app *builder) Now() (Texture, error) {
 		return nil, err
 	}
 
-	return createTexture(immutable, app.dimension, app.pixels), nil
+	return createTexture(immutable, app.viewport, app.pixels), nil
 }

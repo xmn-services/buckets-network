@@ -4,25 +4,25 @@ import (
 	"time"
 
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/rows"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/pixels"
 	"github.com/xmn-services/buckets-network/libs/entities"
 	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type texture struct {
 	immutable entities.Immutable
-	dimension ints.Rectangle
-	pixels    rows.Rows
+	viewport  ints.Rectangle
+	pixels    []pixels.Pixel
 }
 
 func createTexture(
 	immutable entities.Immutable,
-	dimension ints.Rectangle,
-	pixels rows.Rows,
+	viewport ints.Rectangle,
+	pixels []pixels.Pixel,
 ) Texture {
 	out := texture{
 		immutable: immutable,
-		dimension: dimension,
+		viewport:  viewport,
 		pixels:    pixels,
 	}
 
@@ -34,13 +34,13 @@ func (obj *texture) Hash() hash.Hash {
 	return obj.immutable.Hash()
 }
 
-// Dimension returns the dimension
-func (obj *texture) Dimension() ints.Rectangle {
-	return obj.dimension
+// Viewport returns the viewport
+func (obj *texture) Viewport() ints.Rectangle {
+	return obj.viewport
 }
 
 // Pixels returns the pixels
-func (obj *texture) Pixels() rows.Rows {
+func (obj *texture) Pixels() []pixels.Pixel {
 	return obj.pixels
 }
 

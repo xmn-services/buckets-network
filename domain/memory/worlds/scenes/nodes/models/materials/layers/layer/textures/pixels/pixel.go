@@ -1,4 +1,4 @@
-package pixel
+package pixels
 
 import (
 	"fmt"

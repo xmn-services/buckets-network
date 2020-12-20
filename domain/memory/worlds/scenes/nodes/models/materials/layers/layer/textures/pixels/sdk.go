@@ -1,45 +1,23 @@
 package pixels
 
-import (
-	"time"
-
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer/textures/pixels/pixel"
-	"github.com/xmn-services/buckets-network/libs/entities"
-	"github.com/xmn-services/buckets-network/libs/hash"
-)
-
-// NewFactory creates a new factory instance
-func NewFactory() Factory {
-	builder := NewBuilder()
-	return createFactory(builder)
-}
+import "github.com/xmn-services/buckets-network/domain/memory/worlds/colors"
 
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
-	hashAdapter := hash.NewAdapter()
-	mutableBuilder := entities.NewMutableBuilder()
-	return createBuilder(hashAdapter, mutableBuilder)
+	return createBuilder()
 }
 
-// Factory represents a pixels factory
-type Factory interface {
-	Create() (Pixels, error)
-}
-
-// Builder represents the pixels builder
+// Builder represents a pixel builder
 type Builder interface {
 	Create() Builder
-	WithHash(hash hash.Hash) Builder
-	WithoutHash() Builder
-	WithPixels(pixels []pixel.Pixel) Builder
-	CreatedOn(createdOn time.Time) Builder
-	LastUpdatedOn(lastUpdatedOn time.Time) Builder
-	Now() (Pixels, error)
+	WithColor(color colors.Color) Builder
+	WithAlpha(alpha uint8) Builder
+	Now() (Pixel, error)
 }
 
-// Pixels represents pixels
-type Pixels interface {
-	entities.Immutable
-	All() []pixel.Pixel
-	Amount() uint
+// Pixel represents a pixel
+type Pixel interface {
+	Color() colors.Color
+	Alpha() uint8
+	String() string
 }

@@ -41,10 +41,12 @@ func (app *builder) Now() (Texture, error) {
 	}
 
 	pixels := app.tex.Pixels()
-	uWidth, uHeight := pixels.Dimension()
+	viewport := app.tex.Viewport()
+	texPos := viewport.Position()
+	texDimension := viewport.Dimension()
 
-	width := int(uWidth)
-	height := int(uHeight)
+	width := int(texPos.X() + texDimension.X())
+	height := int(texDimension.X() + texDimension.Y())
 	srcRGBA := image.NewRGBA(image.Rectangle{
 		Min: image.Point{
 			X: 0,
@@ -56,36 +58,34 @@ func (app *builder) Now() (Texture, error) {
 		},
 	})
 
-	rows := pixels.All()
-	for x, oneRow := range rows {
-		elements := oneRow.All()
-		for y, oneElemnt := range elements {
-			color := oneElemnt.Color()
-			alpha := oneElemnt.Alpha()
-			rgbaColor := image_color.RGBA{
-				R: color.Red(),
-				G: color.Green(),
-				B: color.Blue(),
-				A: alpha,
-			}
+	y := -1
+	for index, onePixel := range pixels {
+		color := onePixel.Color()
+		alpha := onePixel.Alpha()
+		rgbaColor := image_color.RGBA{
+			R: color.Red(),
+			G: color.Green(),
+			B: color.Blue(),
+			A: alpha,
+		}
 
-			srcRGBA.Set(x, y, rgbaColor)
+		x := index % width
+		srcRGBA.Set(x, y, rgbaColor)
+
+		if x == 0 {
+			y++
 		}
 	}
-
-	dimension := app.tex.Dimension()
-	pos := dimension.Position()
-	dim := dimension.Dimension()
 
 	dstRGBA := image.NewRGBA(
 		image.Rectangle{
 			Min: image.Point{
-				X: pos.X(),
-				Y: pos.Y(),
+				X: texPos.X(),
+				Y: texPos.Y(),
 			},
 			Max: image.Point{
-				X: dim.X(),
-				Y: dim.Y(),
+				X: texDimension.X(),
+				Y: texDimension.Y(),
 			},
 		},
 	)

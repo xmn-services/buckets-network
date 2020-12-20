@@ -107,8 +107,6 @@ func (app *builder) geometry(program programs.Program, geometry geometries.Geome
 		}...)
 	}
 
-	fmt.Printf("\n%v\n", list)
-
 	verticesType := vertices.Type()
 	if verticesType.IsTriangle() {
 		triSize := int32(3)
