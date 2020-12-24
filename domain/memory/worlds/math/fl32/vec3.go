@@ -19,5 +19,5 @@ func (obj Vec3) Z() float32 {
 
 // String returns the string representation of the vector
 func (obj Vec3) String() string {
-	return fmt.Sprintf("%f, %f, %f", obj[0], obj[1], obj[2])
+	return fmt.Sprintf("[x: %f, y: %f, z: %f]", obj[0], obj[1], obj[2])
 }

@@ -1,58 +1,50 @@
 package geometries
 
 import (
-	"time"
-
+	uuid "github.com/satori/go.uuid"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/geometries/shaders"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/geometries/vertices"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
-	"github.com/xmn-services/buckets-network/libs/entities"
-	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type geometry struct {
-	immutable entities.Immutable
-	shaders   shaders.Shaders
-	variables Variables
-	vertices  vertices.Vertices
+	id       *uuid.UUID
+	typ      Type
+	shader   shaders.Shader
+	vertices []vertices.Vertex
 }
 
 func createGeometry(
-	immutable entities.Immutable,
-	shaders shaders.Shaders,
-	variables Variables,
-	vertices vertices.Vertices,
+	id *uuid.UUID,
+	typ Type,
+	shader shaders.Shader,
+	vertices []vertices.Vertex,
 ) Geometry {
 	out := geometry{
-		immutable: immutable,
-		shaders:   shaders,
-		variables: variables,
-		vertices:  vertices,
+		id:       id,
+		typ:      typ,
+		shader:   shader,
+		vertices: vertices,
 	}
 
 	return &out
 }
 
-// Hash returns the hash
-func (obj *geometry) Hash() hash.Hash {
-	return obj.immutable.Hash()
+// ID returns the id
+func (obj *geometry) ID() *uuid.UUID {
+	return obj.id
+}
+
+// Type returns the type
+func (obj *geometry) Type() Type {
+	return obj.typ
+}
+
+// Shader returns the shader
+func (obj *geometry) Shader() shaders.Shader {
+	return obj.shader
 }
 
 // Vertices returns the vertices
-func (obj *geometry) Vertices() vertices.Vertices {
+func (obj *geometry) Vertices() []vertices.Vertex {
 	return obj.vertices
-}
-
-// Shaders returns the shaders
-func (obj *geometry) Shaders() shaders.Shaders {
-	return obj.shaders
-}
-
-// Variables return the variables
-func (obj *geometry) Variables() Variables {
-	return obj.variables
-}
-
-// CreatedOn returns the creation time
-func (obj *geometry) CreatedOn() time.Time {
-	return obj.immutable.CreatedOn()
 }

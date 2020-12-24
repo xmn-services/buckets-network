@@ -19,5 +19,4 @@ type Color interface {
 	Red() uint8
 	Green() uint8
 	Blue() uint8
-	String() string
 }

@@ -196,15 +196,16 @@ func cubeGeometry() geometries.Geometry {
 }
 
 func cubeMaterial() materials.Material {
-	pos := ints.Vec2{0.0, 0.0}
-	dimension := ints.Vec2{1.0, 1.0}
+	alpha := uint8(0x00)
+	pos := ints.Vec2{0, 0}
+	dimension := ints.Vec2{512, 512}
 	viewport, err := ints.NewBuilder().Create().WithPosition(pos).WithDimension(dimension).Now()
 	if err != nil {
 		panic(err)
 	}
 
 	tex := generateTexture()
-	rdn, err := renders.NewBuilder().Create().WithOpacity(1.0).WithViewport(viewport).WithTexture(tex).Now()
+	rdn, err := renders.NewBuilder().Create().WithAlpha(alpha).WithViewport(viewport).WithTexture(tex).Now()
 	if err != nil {
 		panic(err)
 	}
@@ -290,8 +291,8 @@ func generateTexture() textures.Texture {
 	alpha := uint8(255)
 	pixels := []pixels.Pixel{}
 	for i := 0; i < total; i++ {
-		red := 0xff
-		green := 0x00
+		red := 0x00
+		green := 0xff
 		blue := 0x00
 		color := colorBuilder.Create().WithRed(uint8(red)).WithGreen(uint8(green)).WithBlue(uint8(blue)).Now()
 		pixel, err := pixelBuilder.Create().WithColor(color).WithAlpha(alpha).Now()

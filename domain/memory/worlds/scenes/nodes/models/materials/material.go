@@ -1,67 +1,60 @@
 package materials
 
 import (
-	"time"
-
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
+	uuid "github.com/satori/go.uuid"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/alphas"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
-	"github.com/xmn-services/buckets-network/libs/entities"
-	"github.com/xmn-services/buckets-network/libs/hash"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/shaders"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/viewports"
 )
 
 type material struct {
-	immutable entities.Immutable
-	alpha     uint8
-	viewport  ints.Rectangle
-	layers    layers.Layers
-	shaders   shaders.Shaders
+	id       *uuid.UUID
+	alpha    alphas.Alpha
+	shader   shaders.Shader
+	viewport viewports.Viewport
+	layers   []layers.Layer
 }
 
 func createMaterial(
-	immutable entities.Immutable,
-	alpha uint8,
-	viewport ints.Rectangle,
-	layers layers.Layers,
-	shaders shaders.Shaders,
+	id *uuid.UUID,
+	alpha alphas.Alpha,
+	shader shaders.Shader,
+	viewport viewports.Viewport,
+	layers []layers.Layer,
 ) Material {
 	out := material{
-		immutable: immutable,
-		alpha:     alpha,
-		viewport:  viewport,
-		layers:    layers,
-		shaders:   shaders,
+		id:       id,
+		alpha:    alpha,
+		shader:   shader,
+		viewport: viewport,
+		layers:   layers,
 	}
 
 	return &out
 }
 
-// Hash returns the hash
-func (obj *material) Hash() hash.Hash {
-	return obj.immutable.Hash()
+// ID returns the id
+func (obj *material) ID() *uuid.UUID {
+	return obj.id
 }
 
 // Alpha returns the alpha
-func (obj *material) Alpha() uint8 {
+func (obj *material) Alpha() alphas.Alpha {
 	return obj.alpha
 }
 
+// Shader returns the shader
+func (obj *material) Shader() shaders.Shader {
+	return obj.shader
+}
+
 // Viewport returns the viewport
-func (obj *material) Viewport() ints.Rectangle {
+func (obj *material) Viewport() viewports.Viewport {
 	return obj.viewport
 }
 
 // Layers returns the layers
-func (obj *material) Layers() layers.Layers {
+func (obj *material) Layers() []layers.Layer {
 	return obj.layers
-}
-
-// Shaders returns the shaders
-func (obj *material) Shaders() shaders.Shaders {
-	return obj.shaders
-}
-
-// CreatedOn returns the creation time
-func (obj *material) CreatedOn() time.Time {
-	return obj.immutable.CreatedOn()
 }

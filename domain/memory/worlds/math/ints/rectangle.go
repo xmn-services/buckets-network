@@ -31,5 +31,5 @@ func (obj *rectangle) Dimension() Vec2 {
 
 // String returns the string representation of a rectangle
 func (obj *rectangle) String() string {
-	return fmt.Sprintf("position: %s0, dimension: %s", obj.pos.String(), obj.dim.String())
+	return fmt.Sprintf("[pos: %s, dim: %s]", obj.pos.String(), obj.dim.String())
 }

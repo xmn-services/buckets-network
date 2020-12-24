@@ -1,7 +1,5 @@
 package colors
 
-import "fmt"
-
 type color struct {
 	red   uint8
 	green uint8
@@ -35,9 +33,4 @@ func (obj *color) Green() uint8 {
 // Blue returns the blue value
 func (obj *color) Blue() uint8 {
 	return obj.blue
-}
-
-// String returns the color as string
-func (obj *color) String() string {
-	return fmt.Sprintf("%d,%d,%d", obj.red, obj.green, obj.blue)
 }

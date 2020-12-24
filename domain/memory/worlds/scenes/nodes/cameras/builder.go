@@ -2,48 +2,38 @@ package cameras
 
 import (
 	"errors"
-	"strconv"
-	"time"
 
+	uuid "github.com/satori/go.uuid"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
-	"github.com/xmn-services/buckets-network/libs/entities"
-	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type builder struct {
-	hashAdapter      hash.Adapter
-	immutableBuilder entities.ImmutableBuilder
-	lookAtVariable   string
-	eye              *fl32.Vec3
-	center           *fl32.Vec3
-	up               *fl32.Vec3
-	projVariable     string
-	fov              *float32
-	aspectRatio      *float32
-	near             *float32
-	far              *float32
-	index            uint
-	createdOn        *time.Time
+	id             *uuid.UUID
+	lookAtVariable string
+	eye            *fl32.Vec3
+	center         *fl32.Vec3
+	up             *fl32.Vec3
+	projVariable   string
+	fov            *float32
+	aspectRatio    *float32
+	near           *float32
+	far            *float32
+	index          uint
 }
 
-func createBuilder(
-	hashAdapter hash.Adapter,
-	immutableBuilder entities.ImmutableBuilder,
-) Builder {
+func createBuilder() Builder {
 	out := builder{
-		hashAdapter:      hashAdapter,
-		immutableBuilder: immutableBuilder,
-		lookAtVariable:   "",
-		eye:              nil,
-		center:           nil,
-		up:               nil,
-		projVariable:     "",
-		fov:              nil,
-		aspectRatio:      nil,
-		near:             nil,
-		far:              nil,
-		index:            uint(0),
-		createdOn:        nil,
+		id:             nil,
+		lookAtVariable: "",
+		eye:            nil,
+		center:         nil,
+		up:             nil,
+		projVariable:   "",
+		fov:            nil,
+		aspectRatio:    nil,
+		near:           nil,
+		far:            nil,
+		index:          uint(0),
 	}
 
 	return &out
@@ -51,10 +41,13 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(
-		app.hashAdapter,
-		app.immutableBuilder,
-	)
+	return createBuilder()
+}
+
+// WithID returns the id
+func (app *builder) WithID(id *uuid.UUID) Builder {
+	app.id = id
+	return app
 }
 
 // WithLookAtVariable adds the lookAt variable to the builder
@@ -117,14 +110,12 @@ func (app *builder) WithIndex(index uint) Builder {
 	return app
 }
 
-// CreatedOn adds a creation time to the builder
-func (app *builder) CreatedOn(createdOn time.Time) Builder {
-	app.createdOn = &createdOn
-	return app
-}
-
 // Now builds a new Camera instance
 func (app *builder) Now() (Camera, error) {
+	if app.id == nil {
+		return nil, errors.New("the ID is mandatory in order to build a Camera instance")
+	}
+
 	if app.lookAtVariable == "" {
 		return nil, errors.New("the lookAt variable is mandatory in order to build a Camera instance")
 	}
@@ -161,29 +152,7 @@ func (app *builder) Now() (Camera, error) {
 		return nil, errors.New("the projection far is mandatory in order to build a Camera instance")
 	}
 
-	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
-		[]byte(app.lookAtVariable),
-		[]byte(app.eye.String()),
-		[]byte(app.center.String()),
-		[]byte(app.up.String()),
-		[]byte(app.projVariable),
-		[]byte(strconv.FormatFloat(float64(*app.fov), 'f', 10, 32)),
-		[]byte(strconv.FormatFloat(float64(*app.aspectRatio), 'f', 10, 32)),
-		[]byte(strconv.FormatFloat(float64(*app.near), 'f', 10, 32)),
-		[]byte(strconv.FormatFloat(float64(*app.far), 'f', 10, 32)),
-		[]byte(strconv.Itoa(int(app.index))),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	immutable, err := app.immutableBuilder.Create().WithHash(*hsh).CreatedOn(app.createdOn).Now()
-	if err != nil {
-		return nil, err
-	}
-
 	lookAt := createLookAt(app.lookAtVariable, *app.eye, *app.center, *app.up)
 	projection := createProjection(app.projVariable, *app.fov, *app.aspectRatio, *app.near, *app.far)
-	return createCamera(immutable, app.index, projection, lookAt), nil
+	return createCamera(app.id, app.index, projection, lookAt), nil
 }

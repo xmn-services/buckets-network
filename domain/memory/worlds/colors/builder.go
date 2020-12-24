@@ -8,9 +8,9 @@ type builder struct {
 
 func createBuilder() Builder {
 	out := builder{
-		red:   0x0000,
-		green: 0x0000,
-		blue:  0x0000,
+		red:   0x00,
+		green: 0x00,
+		blue:  0x00,
 	}
 
 	return &out

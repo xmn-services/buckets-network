@@ -1,51 +1,22 @@
 package vertices
 
-import (
-	"time"
-
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/geometries/vertices/vertex"
-	"github.com/xmn-services/buckets-network/libs/entities"
-	"github.com/xmn-services/buckets-network/libs/hash"
-)
-
-// NewFactory creates a new factory instance
-func NewFactory() Factory {
-	builder := NewBuilder()
-	return createFactory(builder)
-}
+import "github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
 
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
-	hashAdapter := hash.NewAdapter()
-	mutableBuilder := entities.NewMutableBuilder()
-	return createBuilder(hashAdapter, mutableBuilder)
+	return createBuilder()
 }
 
-// Factory represents a vertices factory
-type Factory interface {
-	Create() (Vertices, error)
-}
-
-// Builder represents the vertices builder
+// Builder represents a vertex builder
 type Builder interface {
 	Create() Builder
-	WithHash(hash hash.Hash) Builder
-	WithoutHash() Builder
-	WithVertices(vertices []vertex.Vertex) Builder
-	IsTriangle() Builder
-	CreatedOn(createdOn time.Time) Builder
-	LastUpdatedOn(lastUpdatedOn time.Time) Builder
-	Now() (Vertices, error)
+	WithSpace(pos fl32.Vec3) Builder
+	WithTexture(tex fl32.Vec2) Builder
+	Now() (Vertex, error)
 }
 
-// Vertices represents vertices
-type Vertices interface {
-	entities.Mutable
-	All() []vertex.Vertex
-	Type() Type
-}
-
-// Type represents vertices types
-type Type interface {
-	IsTriangle() bool
+// Vertex represents a vertex
+type Vertex interface {
+	Space() fl32.Vec3
+	Texture() fl32.Vec2
 }

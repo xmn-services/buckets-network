@@ -36,8 +36,8 @@ func (obj *projection) FieldOfView() float32 {
 	return obj.fov
 }
 
-// AspectRation returns the aspect ratio
-func (obj *projection) AspectRation() float32 {
+// AspectRatio returns the aspect ratio
+func (obj *projection) AspectRatio() float32 {
 	return obj.aspect
 }
 

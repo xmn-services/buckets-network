@@ -14,5 +14,5 @@ func (obj Vec2) Y() float32 {
 
 // String returns the string representation of the vector
 func (obj Vec2) String() string {
-	return fmt.Sprintf("%f, %f", obj.X(), obj.Y())
+	return fmt.Sprintf("[x: %f, y: %f]", obj.X(), obj.Y())
 }

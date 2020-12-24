@@ -1,43 +1,37 @@
 package geometries
 
 import (
-	"time"
-
+	uuid "github.com/satori/go.uuid"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/geometries/primitives"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/geometries/shaders"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/geometries/vertices"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
-	"github.com/xmn-services/buckets-network/libs/entities"
-	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
-	hashAdapter := hash.NewAdapter()
-	immutableBuilder := entities.NewImmutableBuilder()
-	verticesFactory := vertices.NewFactory()
-	return createBuilder(hashAdapter, immutableBuilder, verticesFactory)
+	return createBuilder()
 }
 
 // Builder represents the geometry builder
 type Builder interface {
 	Create() Builder
-	WithVertices(vertices vertices.Vertices) Builder
-	WithShaders(shaders shaders.Shaders) Builder
-	WithVertexCoordinatesVariable(vertexCoordinatesVar string) Builder
-	WithTextureCoordinatesVariable(texCoordinatesVar string) Builder
-	CreatedOn(createdOn time.Time) Builder
+	WithID(id *uuid.UUID) Builder
+	WithPrimitive(primitive primitives.Primitive) Builder
+	WithVertices(vertices []vertices.Vertex) Builder
+	WithShader(shader shaders.Shader) Builder
+	IsTriangle() Builder
 	Now() (Geometry, error)
 }
 
-// Geometry reporesents a geometry
+// Geometry represents a geometry
 type Geometry interface {
-	entities.Immutable
-	Shaders() shaders.Shaders
-	Vertices() vertices.Vertices
-	Variables() Variables
+	ID() *uuid.UUID
+	Type() Type
+	Shader() shaders.Shader
+	Vertices() []vertices.Vertex
 }
 
-// Variables represents a geometry variables
-type Variables interface {
-	VertexCoordinates() string
-	TextureCoordinates() string
+// Type represents geometry type
+type Type interface {
+	IsTriangle() bool
 }

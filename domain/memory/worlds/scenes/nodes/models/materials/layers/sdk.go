@@ -1,46 +1,30 @@
 package layers
 
 import (
-	"time"
-
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/layer"
-	"github.com/xmn-services/buckets-network/libs/entities"
-	"github.com/xmn-services/buckets-network/libs/hash"
+	uuid "github.com/satori/go.uuid"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/alphas"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers/textures"
 )
-
-const maxAlpha = 256
-
-// NewFactory creates a new factory instance
-func NewFactory() Factory {
-	builder := NewBuilder()
-	return createFactory(builder)
-}
 
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
-	hashAdapter := hash.NewAdapter()
-	mutableBuilder := entities.NewMutableBuilder()
-	return createBuilder(hashAdapter, mutableBuilder)
+	return createBuilder()
 }
 
-// Factory represents a layers factory
-type Factory interface {
-	Create() (Layers, error)
-}
-
-// Builder represents the layers builder
+// Builder represents a layer builder
 type Builder interface {
 	Create() Builder
-	WithHash(hash hash.Hash) Builder
-	WithoutHash() Builder
-	WithLayers(layers []layer.Layer) Builder
-	CreatedOn(createdOn time.Time) Builder
-	LastUpdatedOn(lastUpdatedOn time.Time) Builder
-	Now() (Layers, error)
+	WithID(id *uuid.UUID) Builder
+	WithIndex(index uint) Builder
+	WithAlpha(alpha alphas.Alpha) Builder
+	WithTexture(tex textures.Texture) Builder
+	Now() (Layer, error)
 }
 
-// Layers represents layers
-type Layers interface {
-	entities.Immutable
-	All() []layer.Layer
+// Layer represents layer of textures
+type Layer interface {
+	ID() *uuid.UUID
+	Index() uint
+	Alpha() alphas.Alpha
+	Texture() textures.Texture
 }

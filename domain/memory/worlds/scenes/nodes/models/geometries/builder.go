@@ -2,39 +2,28 @@ package geometries
 
 import (
 	"errors"
-	"time"
 
+	uuid "github.com/satori/go.uuid"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/geometries/primitives"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/geometries/shaders"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/geometries/vertices"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
-	"github.com/xmn-services/buckets-network/libs/entities"
-	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type builder struct {
-	hashAdapter           hash.Adapter
-	immutableBuilder      entities.ImmutableBuilder
-	verticesFactory       vertices.Factory
-	vertices              vertices.Vertices
-	shaders               shaders.Shaders
-	vertexCoordinatesVar  string
-	textureCoordinatesVar string
-	createdOn             *time.Time
+	id         *uuid.UUID
+	isTriangle bool
+	primitive  primitives.Primitive
+	shader     shaders.Shader
+	vertices   []vertices.Vertex
 }
 
-func createBuilder(
-	hashAdapter hash.Adapter,
-	immutableBuilder entities.ImmutableBuilder,
-	verticesFactory vertices.Factory,
-) Builder {
+func createBuilder() Builder {
 	out := builder{
-		hashAdapter:           hashAdapter,
-		immutableBuilder:      immutableBuilder,
-		verticesFactory:       verticesFactory,
-		vertices:              nil,
-		shaders:               nil,
-		vertexCoordinatesVar:  "",
-		textureCoordinatesVar: "",
-		createdOn:             nil,
+		id:         nil,
+		isTriangle: false,
+		primitive:  nil,
+		shader:     nil,
+		vertices:   nil,
 	}
 
 	return &out
@@ -42,81 +31,69 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.hashAdapter, app.immutableBuilder, app.verticesFactory)
+	return createBuilder()
+}
+
+// WithID adds an ID to the builder
+func (app *builder) WithID(id *uuid.UUID) Builder {
+	app.id = id
+	return app
+}
+
+// WithPrimitive adds a primitive to the builder
+func (app *builder) WithPrimitive(primitive primitives.Primitive) Builder {
+	app.primitive = primitive
+	return app
 }
 
 // WithVertices add vertices to the builder
-func (app *builder) WithVertices(vertices vertices.Vertices) Builder {
+func (app *builder) WithVertices(vertices []vertices.Vertex) Builder {
 	app.vertices = vertices
 	return app
 }
 
-// WithShaders add shaders to the builder
-func (app *builder) WithShaders(shaders shaders.Shaders) Builder {
-	app.shaders = shaders
+// WithShader adds a shader to the builder
+func (app *builder) WithShader(shader shaders.Shader) Builder {
+	app.shader = shader
 	return app
 }
 
-// WithVertexCoordinatesVariable adds a vertex coordinates variable to the builder
-func (app *builder) WithVertexCoordinatesVariable(vertexCoordinatesVar string) Builder {
-	app.vertexCoordinatesVar = vertexCoordinatesVar
-	return app
-}
-
-// WithTextureCoordinatesVariable adds a texture coordinates variable to the builder
-func (app *builder) WithTextureCoordinatesVariable(texCoordinatesVar string) Builder {
-	app.textureCoordinatesVar = texCoordinatesVar
-	return app
-}
-
-// CreatedOn add creation time to the builder
-func (app *builder) CreatedOn(createdOn time.Time) Builder {
-	app.createdOn = &createdOn
+// IsTriangle flags the builder as triangles
+func (app *builder) IsTriangle() Builder {
+	app.isTriangle = true
 	return app
 }
 
 // Now builds a new Geometry instance
 func (app *builder) Now() (Geometry, error) {
+	if app.id == nil {
+		return nil, errors.New("the ID is mandatory in order to build a Geometry instance")
+	}
+
+	if app.primitive != nil {
+		return nil, errors.New("finish the primitives loading in geometries")
+	}
+
+	if app.shader == nil {
+		return nil, errors.New("the shader is mandatory in order to build a Geometry instance")
+	}
+
+	if app.vertices != nil && len(app.vertices) <= 0 {
+		app.vertices = nil
+	}
+
 	if app.vertices == nil {
-		vertices, err := app.verticesFactory.Create()
-		if err != nil {
-			return nil, err
-		}
-
-		app.vertices = vertices
+		return nil, errors.New("the vertices are mandatory in order to build a Geometry instance")
 	}
 
-	if app.shaders == nil {
-		return nil, errors.New("the shaders are mandatory in order to build a Geometry instance")
+	var typ Type
+	if app.isTriangle {
+		typ = createTypeWithTriangle()
 	}
 
-	if !app.shaders.IsVertex() {
-		return nil, errors.New("the geometry's shaders were expected to be vertex shaders")
+	if typ == nil {
+		return nil, errors.New("the type is mandatory in order to build a Geometry instance")
 	}
 
-	if app.vertexCoordinatesVar == "" {
-		return nil, errors.New("the vertex coordinates variable is mandatory in order to build a Geometry instance")
-	}
-
-	if app.textureCoordinatesVar == "" {
-		return nil, errors.New("the texture coordinates variable is mandatory in order to build a Geometry instance")
-	}
-
-	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
-		app.vertices.Hash().Bytes(),
-		[]byte(app.vertexCoordinatesVar),
-		[]byte(app.textureCoordinatesVar),
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	immutable, err := app.immutableBuilder.Create().WithHash(*hsh).CreatedOn(app.createdOn).Now()
-	if err != nil {
-		return nil, err
-	}
-
-	variables := createVariables(app.vertexCoordinatesVar, app.textureCoordinatesVar)
-	return createGeometry(immutable, app.shaders, variables, app.vertices), nil
+	return createGeometry(app.id, typ, app.shader, app.vertices), nil
 }

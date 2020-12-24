@@ -12,7 +12,12 @@ func (obj Vec2) Y() int {
 	return obj[1]
 }
 
+// Compare returns true if the two vectors are the same, false otehrwise
+func (obj *Vec2) Compare(input Vec2) bool {
+	return obj.X() == input.X() && obj.Y() == input.Y()
+}
+
 // String returns the string representation of the vector
 func (obj Vec2) String() string {
-	return fmt.Sprintf("%d, %d", obj.X(), obj.Y())
+	return fmt.Sprintf("[x: %d, y: %d]", obj.X(), obj.Y())
 }

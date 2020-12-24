@@ -1,23 +1,19 @@
 package cameras
 
 import (
-	"time"
-
+	uuid "github.com/satori/go.uuid"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/fl32"
-	"github.com/xmn-services/buckets-network/libs/entities"
-	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 // NewBuilder creates a new builder instance
 func NewBuilder() Builder {
-	hashAdapter := hash.NewAdapter()
-	immutableBuilder := entities.NewImmutableBuilder()
-	return createBuilder(hashAdapter, immutableBuilder)
+	return createBuilder()
 }
 
 // Builder represents a camera builder
 type Builder interface {
 	Create() Builder
+	WithID(id *uuid.UUID) Builder
 	WithLookAtVariable(lookAtVariable string) Builder
 	WithLookAtEye(eye fl32.Vec3) Builder
 	WithLookAtCenter(center fl32.Vec3) Builder
@@ -28,13 +24,12 @@ type Builder interface {
 	WithProjectionNear(near float32) Builder
 	WithProjectionFar(far float32) Builder
 	WithIndex(index uint) Builder
-	CreatedOn(createdOn time.Time) Builder
 	Now() (Camera, error)
 }
 
 // Camera represents a camera
 type Camera interface {
-	entities.Immutable
+	ID() *uuid.UUID
 	Index() uint
 	Projection() Projection
 	LookAt() LookAt
@@ -52,7 +47,7 @@ type LookAt interface {
 type Projection interface {
 	Variable() string
 	FieldOfView() float32
-	AspectRation() float32
+	AspectRatio() float32
 	Near() float32
 	Far() float32
 }

@@ -2,38 +2,31 @@ package materials
 
 import (
 	"errors"
-	"strconv"
-	"time"
+	"fmt"
 
+	uuid "github.com/satori/go.uuid"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/alphas"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/layers"
-	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/shaders"
-	"github.com/xmn-services/buckets-network/libs/entities"
-	"github.com/xmn-services/buckets-network/libs/hash"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models/materials/shaders"
+	"github.com/xmn-services/buckets-network/domain/memory/worlds/viewports"
 )
 
 type builder struct {
-	hashAdapter      hash.Adapter
-	immutableBuilder entities.ImmutableBuilder
-	alpha            uint8
-	viewport         ints.Rectangle
-	layers           layers.Layers
-	shaders          shaders.Shaders
-	createdOn        *time.Time
+	id       *uuid.UUID
+	alpha    alphas.Alpha
+	shader   shaders.Shader
+	viewport viewports.Viewport
+	layers   []layers.Layer
 }
 
-func createBuilder(
-	hashAdapter hash.Adapter,
-	immutableBuilder entities.ImmutableBuilder,
-) Builder {
+func createBuilder() Builder {
 	out := builder{
-		hashAdapter:      hashAdapter,
-		immutableBuilder: immutableBuilder,
-		alpha:            uint8(0),
-		viewport:         nil,
-		layers:           nil,
-		shaders:          nil,
-		createdOn:        nil,
+		id:       nil,
+		alpha:    nil,
+		shader:   nil,
+		viewport: nil,
+		layers:   nil,
 	}
 
 	return &out
@@ -41,72 +34,93 @@ func createBuilder(
 
 // Create initializes the builder
 func (app *builder) Create() Builder {
-	return createBuilder(app.hashAdapter, app.immutableBuilder)
+	return createBuilder()
+}
+
+// WithID adds an ID to the builder
+func (app *builder) WithID(id *uuid.UUID) Builder {
+	app.id = id
+	return app
 }
 
 // WithAlpha adds an alpha to the builder
-func (app *builder) WithAlpha(alpha uint8) Builder {
+func (app *builder) WithAlpha(alpha alphas.Alpha) Builder {
 	app.alpha = alpha
 	return app
 }
 
+// WithShader adds a shader to the builder
+func (app *builder) WithShader(shader shaders.Shader) Builder {
+	app.shader = shader
+	return app
+}
+
 // WithViewport adds a viewport to the builder
-func (app *builder) WithViewport(viewport ints.Rectangle) Builder {
+func (app *builder) WithViewport(viewport viewports.Viewport) Builder {
 	app.viewport = viewport
 	return app
 }
 
 // WithLayers add layers to the builder
-func (app *builder) WithLayers(layers layers.Layers) Builder {
+func (app *builder) WithLayers(layers []layers.Layer) Builder {
 	app.layers = layers
-	return app
-}
-
-// WithShaders add shaders to the builder
-func (app *builder) WithShaders(shaders shaders.Shaders) Builder {
-	app.shaders = shaders
-	return app
-}
-
-// CreatedOn adds a creation time to the builder
-func (app *builder) CreatedOn(createdOn time.Time) Builder {
-	app.createdOn = &createdOn
 	return app
 }
 
 // Now builds a new Material instance
 func (app *builder) Now() (Material, error) {
+	if app.id == nil {
+		return nil, errors.New("the ID is mandatory in order to build a Material instance")
+	}
+
+	if app.alpha == nil {
+		return nil, errors.New("the alpha is mandatory in order to build a Material instance")
+	}
+
+	if app.shader == nil {
+		return nil, errors.New("the shader is mandatory in order to build a Material instance")
+	}
+
 	if app.viewport == nil {
 		return nil, errors.New("the viewport is mandatory in order to build a Material instance")
 	}
 
+	if app.layers != nil && len(app.layers) <= 0 {
+		app.layers = nil
+	}
+
 	if app.layers == nil {
-		return nil, errors.New("the layers are mandatory in order to build a Material instance")
+		return nil, errors.New("there must be at least 1 Layer in order to build a Material instance")
 	}
 
-	if app.shaders == nil {
-		return nil, errors.New("the shaders is mandatory in order to build a Layer instance")
+	var dim *ints.Vec2
+	reOrdered := []layers.Layer{}
+	for index, oneLayer := range app.layers {
+		if dim == nil {
+			texDim := oneLayer.Texture().Dimension()
+			dim = &texDim
+		}
+
+		// make sure all layers have the same dimensions:
+		layerDim := oneLayer.Texture().Dimension()
+		if !layerDim.Compare(*dim) {
+			str := fmt.Sprintf("there layer (index: %d) was expected to be of dimension %s, %s provided", index, dim.String(), layerDim.String())
+			return nil, errors.New(str)
+		}
+
+		reOrdered[oneLayer.Index()] = oneLayer
 	}
 
-	if !app.shaders.IsFragment() {
-		return nil, errors.New("the material's shaders were expected to be fragment shaders")
+	// make sure the viewport can be contained within the textures:
+	if app.viewport.IsContained(*dim) {
+		str := fmt.Sprintf("the given viewport (%s) cannot be contained in the material's original dimensions: %s", app.viewport.Rectangle().String(), dim.String())
+		return nil, errors.New(str)
 	}
 
-	hsh, err := app.hashAdapter.FromMultiBytes([][]byte{
-		[]byte(strconv.Itoa(int(app.alpha))),
-		[]byte(app.viewport.String()),
-		app.layers.Hash().Bytes(),
-		app.shaders.Hash().Bytes(),
-	})
-
-	if err != nil {
-		return nil, err
+	if len(reOrdered) != len(app.layers) {
+		str := fmt.Sprintf("the re-ordered layers (amount: %d) do not match the amount of original layers (%d), the indexes may be overlapping in the layers list", len(reOrdered), len(app.layers))
+		return nil, errors.New(str)
 	}
 
-	immutable, err := app.immutableBuilder.Create().WithHash(*hsh).CreatedOn(app.createdOn).Now()
-	if err != nil {
-		return nil, err
-	}
-
-	return createMaterial(immutable, app.alpha, app.viewport, app.layers, app.shaders), nil
+	return createMaterial(app.id, app.alpha, app.shader, app.viewport, reOrdered), nil
 }

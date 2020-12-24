@@ -3,12 +3,11 @@ package nodes
 import (
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/cameras"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/scenes/nodes/models"
-	"github.com/xmn-services/buckets-network/libs/hash"
 )
 
 type content struct {
-	model  models.Model
-	camera cameras.Camera
+	model models.Model
+	cam   cameras.Camera
 }
 
 func createContentWithModel(
@@ -18,30 +17,21 @@ func createContentWithModel(
 }
 
 func createContentWithCamera(
-	camera cameras.Camera,
+	cam cameras.Camera,
 ) Content {
-	return createContentInternally(nil, camera)
+	return createContentInternally(nil, cam)
 }
 
 func createContentInternally(
 	model models.Model,
-	camera cameras.Camera,
+	cam cameras.Camera,
 ) Content {
 	out := content{
-		model:  model,
-		camera: camera,
+		model: model,
+		cam:   cam,
 	}
 
 	return &out
-}
-
-// Hash returns the hash
-func (obj *content) Hash() hash.Hash {
-	if obj.IsModel() {
-		return obj.Model().Hash()
-	}
-
-	return obj.Camera().Hash()
 }
 
 // IsModel returns true if the content is a model, false otherwise
@@ -56,10 +46,10 @@ func (obj *content) Model() models.Model {
 
 // IsCamera returns true if the content is a camera, false otherwise
 func (obj *content) IsCamera() bool {
-	return obj.camera != nil
+	return obj.cam != nil
 }
 
 // Camera returns the camera, if any
 func (obj *content) Camera() cameras.Camera {
-	return obj.camera
+	return obj.cam
 }
