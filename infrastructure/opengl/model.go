@@ -114,12 +114,19 @@ func (obj *model) Render(
 	orientationVarUniform := gl.GetUniformLocation(obj.prog, gl.Str(orientationVar))
 	gl.Uniform4f(orientationVarUniform, dirVec.X(), dirVec.Y(), dirVec.Z(), angle)
 
+	// prepare the geometry:
+	err := obj.geo.Prepare()
+	if err != nil {
+		return err
+	}
+
 	// render the material:
-	matTex, err := obj.mat.Render(delta, activeCamera, activeScene, obj.prog)
+	err = obj.mat.Render(delta, pos, orientation, activeScene, obj.prog)
 	if err != nil {
 		return err
 	}
 
 	// renders the geometry:
-	return obj.geo.Render(matTex)
+	return obj.geo.Render()
+	return nil
 }

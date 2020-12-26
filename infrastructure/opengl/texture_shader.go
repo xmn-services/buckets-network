@@ -44,7 +44,9 @@ func (obj *textureShader) IsDynamic() bool {
 // Render renders a texture shader
 func (obj *textureShader) Render(
 	delta time.Duration,
-	activeCamera WorldCamera,
-) (uint32, error) {
-	return 0, nil
+	pos Position,
+	orientation Orientation,
+	program uint32,
+) error {
+	return nil
 }

@@ -55,6 +55,7 @@ func (obj *camera) Render(
 	pos Position,
 	orientation Orientation,
 	activeScene Scene,
-) (uint32, error) {
-	return 0, nil
+	program uint32,
+) error {
+	return nil
 }

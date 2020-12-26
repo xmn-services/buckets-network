@@ -1,6 +1,10 @@
 package opengl
 
-import uuid "github.com/satori/go.uuid"
+import (
+	"time"
+
+	uuid "github.com/satori/go.uuid"
+)
 
 type hudNode struct {
 	id          *uuid.UUID
@@ -97,4 +101,45 @@ func (obj *hudNode) HasChildren() bool {
 // Children returns the children, if any
 func (obj *hudNode) Children() []HudNode {
 	return obj.children
+}
+
+// Render renders the hudNode:
+func (obj *hudNode) Render(
+	delta time.Duration,
+	activeScene Scene,
+) error {
+	// render the model of the node, if any:
+	if obj.HasContent() {
+		content := obj.Content()
+		if content.IsModel() {
+			model := content.Model()
+			err := model.Render(delta, nil, activeScene)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// render the children nodes, if any:
+	if obj.HasChildren() {
+		children := obj.Children()
+		for _, oneChildNode := range children {
+			// add the relative position:
+			//pos := obj.Position().Add(oneChildNode.Position())
+
+			// add the relative orientation:
+			//orientation := obj.Orientation().Add(oneChildNode.Orientation())
+
+			// update the camera:
+			//childActiveCamera := activeCamera.Slide(pos, orientation)
+
+			// render the child node:
+			err := oneChildNode.Render(delta, activeScene)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
 }

@@ -61,6 +61,11 @@ func (app *hudBuilder) Now() (Hud, error) {
 		nodes = nil
 	}
 
+	prog, err := app.programBuilder.Create().Now()
+	if err != nil {
+		return nil, err
+	}
+
 	id := app.hud.ID()
 	if app.hud.HasMaterial() {
 		domainMaterial := app.hud.Material()
@@ -70,14 +75,14 @@ func (app *hudBuilder) Now() (Hud, error) {
 		}
 
 		if nodes != nil {
-			return createHudWithNodesAndMaterial(id, nodes, mat), nil
+			return createHudWithNodesAndMaterial(id, prog, nodes, mat), nil
 		}
 
-		return createHudWithMaterial(id, mat), nil
+		return createHudWithMaterial(id, prog, mat), nil
 	}
 
 	if nodes != nil {
-		return createHudWithNodes(id, nodes), nil
+		return createHudWithNodes(id, prog, nodes), nil
 	}
 
 	return nil, errors.New("the HUD is invalid")

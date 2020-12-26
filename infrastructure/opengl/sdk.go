@@ -83,13 +83,13 @@ type HudBuilder interface {
 // Hud represents a head-up display
 type Hud interface {
 	ID() *uuid.UUID
+	Program() uint32
 	HasNodes() bool
 	Nodes() []HudNode
 	HasMaterial() bool
 	Material() Material
 	Render(
 		delta time.Duration,
-		activeCamera WorldCamera,
 		activeScene Scene,
 	) error
 }
@@ -110,6 +110,10 @@ type HudNode interface {
 	Content() HudNodeContent
 	HasChildren() bool
 	Children() []HudNode
+	Render(
+		delta time.Duration,
+		activeScene Scene,
+	) error
 }
 
 // HudNodeContent represents the hud node content
@@ -124,6 +128,7 @@ type HudNodeContent interface {
 type HudPosition interface {
 	Vector() mgl32.Vec2
 	Variable() string
+	Add(pos HudPosition) HudPosition
 }
 
 // HudDisplayBuilder represents a hud display builder
@@ -192,7 +197,8 @@ type Camera interface {
 		pos Position,
 		orientation Orientation,
 		activeScene Scene,
-	) (uint32, error)
+		program uint32,
+	) error
 }
 
 // CameraLookAt represents the direction where the camera looks at
@@ -248,7 +254,8 @@ type Geometry interface {
 	VertexAmount() int32
 	VertexType() VertexType
 	Shader() VertexShader
-	Render(tex uint32) error
+	Prepare() error
+	Render() error
 }
 
 // VertexType represents vertex type
@@ -283,10 +290,11 @@ type Material interface {
 	Layers() []Layer
 	Render(
 		delta time.Duration,
-		activeCamera WorldCamera,
+		pos Position,
+		orientation Orientation,
 		activeScene Scene,
 		program uint32,
-	) (uint32, error)
+	) error
 }
 
 // LayerBuilder represents a layer builder
@@ -304,7 +312,8 @@ type Layer interface {
 	Texture() Texture
 	Render(
 		delta time.Duration,
-		activeCamera WorldCamera,
+		pos Position,
+		orientation Orientation,
 		activeScene Scene,
 		program uint32,
 	) error
@@ -330,9 +339,11 @@ type Texture interface {
 	Shader() TextureShader
 	Render(
 		delta time.Duration,
-		activeCamera WorldCamera,
+		pos Position,
+		orientation Orientation,
 		activeScene Scene,
-	) (uint32, error)
+		program uint32,
+	) error
 }
 
 // TextureShader represents a texture shader
@@ -342,8 +353,10 @@ type TextureShader interface {
 	IsDynamic() bool
 	Render(
 		delta time.Duration,
-		activeCamera WorldCamera,
-	) (uint32, error)
+		pos Position,
+		orientation Orientation,
+		program uint32,
+	) error
 }
 
 // ProgramBuilder represents a program builder
@@ -389,4 +402,5 @@ type WorldCamera interface {
 	Position() Position
 	Orientation() Orientation
 	Update(pos Position, orientation Orientation) WorldCamera
+	Slide(pos HudPosition, orientation Orientation) WorldCamera
 }

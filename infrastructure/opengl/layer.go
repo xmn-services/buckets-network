@@ -54,19 +54,16 @@ func (obj *layer) Texture() Texture {
 // Render renders a texture
 func (obj *layer) Render(
 	delta time.Duration,
-	activeCamera WorldCamera,
+	pos Position,
+	orientation Orientation,
 	activeScene Scene,
 	program uint32,
 ) error {
 	// render the texture:
-	texRes, err := obj.Texture().Render(delta, activeCamera, activeScene)
+	err := obj.Texture().Render(delta, pos, orientation, activeScene, program)
 	if err != nil {
 		return err
 	}
-
-	// use the texture:
-	gl.ActiveTexture(gl.TEXTURE0)
-	gl.BindTexture(gl.TEXTURE_2D, texRes)
 
 	// fetch the unform variable on the alpha, and update it:
 	alphaValue := obj.alpha.Value()

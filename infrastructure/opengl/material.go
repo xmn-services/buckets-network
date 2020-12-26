@@ -55,18 +55,19 @@ func (obj *material) Layers() []Layer {
 // Render renders a material
 func (obj *material) Render(
 	delta time.Duration,
-	activeCamera WorldCamera,
+	pos Position,
+	orientation Orientation,
 	activeScene Scene,
 	program uint32,
-) (uint32, error) {
+) error {
 	// use the program:
 	gl.UseProgram(program)
 
 	// loop the layers:
 	for _, oneLayer := range obj.layers {
-		err := oneLayer.Render(delta, activeCamera, activeScene, program)
+		err := oneLayer.Render(delta, pos, orientation, activeScene, program)
 		if err != nil {
-			return 0, err
+			return err
 		}
 	}
 
@@ -79,12 +80,12 @@ func (obj *material) Render(
 
 	// update the viewport:
 	rect := obj.viewport.Rectangle()
-	pos := rect.Position()
-	dim := rect.Dimension()
+	rectPos := rect.Position()
+	rectDim := rect.Dimension()
 	viewportVar := obj.viewport.Variable()
 	viewportVarname := fmt.Sprintf(glStrPattern, viewportVar)
 	viewportUiform := gl.GetUniformLocation(program, gl.Str(viewportVarname))
-	gl.Uniform4i(viewportUiform, int32(pos.X()), int32(pos.Y()), int32(dim.X()), int32(dim.Y()))
+	gl.Uniform4i(viewportUiform, int32(rectPos.X()), int32(rectPos.Y()), int32(rectDim.X()), int32(rectDim.Y()))
 
-	return 0, nil
+	return nil
 }

@@ -3,6 +3,7 @@ package opengl
 import (
 	"time"
 
+	"github.com/go-gl/gl/v4.6-core/gl"
 	uuid "github.com/satori/go.uuid"
 	"github.com/xmn-services/buckets-network/domain/memory/worlds/math/ints"
 )
@@ -111,19 +112,21 @@ func (obj *texture) Shader() TextureShader {
 // Render renders a texture
 func (obj *texture) Render(
 	delta time.Duration,
-	activeCamera WorldCamera,
+	pos Position,
+	orientation Orientation,
 	activeScene Scene,
-) (uint32, error) {
+	program uint32,
+) error {
 	if obj.IsResource() {
-		res := obj.Resource()
-		return res, nil
+		// use the texture:
+		gl.ActiveTexture(gl.TEXTURE0)
+		gl.BindTexture(gl.TEXTURE_2D, obj.Resource())
+		return nil
 	}
 
 	if obj.IsShader() {
-		return obj.Shader().Render(delta, activeCamera)
+		return obj.Shader().Render(delta, pos, orientation, program)
 	}
 
-	pos := activeCamera.Position()
-	orientation := activeCamera.Orientation()
-	return obj.Camera().Render(delta, pos, orientation, activeScene)
+	return obj.Camera().Render(delta, pos, orientation, activeScene, program)
 }

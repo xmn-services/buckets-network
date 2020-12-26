@@ -64,16 +64,18 @@ func (obj *geometry) Shader() VertexShader {
 	return obj.shader
 }
 
-// Render renders the geometry
-func (obj *geometry) Render(tex uint32) error {
+// Prepare prepares the geometry to be rendered
+func (obj *geometry) Prepare() error {
 	// vao:
 	vao := obj.VAO()
 	gl.BindVertexArray(vao)
 
-	// render the texture:
-	gl.ActiveTexture(gl.TEXTURE0)
-	gl.BindTexture(gl.TEXTURE_2D, tex)
+	// returns:
+	return nil
+}
 
+// Render renders the geometry
+func (obj *geometry) Render() error {
 	// draw:
 	amount := obj.VertexAmount()
 	gl.DrawArrays(gl.TRIANGLES, 0, amount)

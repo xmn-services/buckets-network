@@ -88,7 +88,9 @@ func (obj *scene) Render(
 		}
 
 		// render the heads-up display:
-		return obj.hud.Render(delta, activeCamera, obj)
+		//pos := activeCamera.Position()
+		//orientation := activeCamera.Orientation()
+		return obj.hud.Render(delta, obj)
 	}
 
 	str := fmt.Sprintf("the given active Camera (ID: %s) does not exists in the current Scene (ID: %s)", keyname, obj.ID().String())

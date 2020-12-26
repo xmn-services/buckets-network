@@ -28,3 +28,9 @@ func (obj *hudPosition) Vector() mgl32.Vec2 {
 func (obj *hudPosition) Variable() string {
 	return obj.variable
 }
+
+// Add adds a position to the current position and returns it:
+func (obj *hudPosition) Add(pos HudPosition) HudPosition {
+	vec := obj.vec.Add(pos.Vector())
+	return createHudPosition(vec, obj.variable)
+}
